@@ -13,6 +13,8 @@ This repository holds every printable file used in the build. It mixes three pro
 
 ## Where do I start?
 
+**Read the [Build Manual](MANUAL.md)** for clear step-by-step instructions (printing, servo IDs, assembly, wiring, first test).
+
 1. **Hand:** print the fingers and palm from `amazing-hand/` (see its README for how many of each).
 2. **Hand drive (tendons):** print the parts in `matebot/stl/`. The assembly guide is in `matebot/docs/`.
 3. **Forearm:** print the shells listed in `inmoov/README.md`.
