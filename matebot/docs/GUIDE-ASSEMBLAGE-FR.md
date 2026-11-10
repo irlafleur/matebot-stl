@@ -17,12 +17,14 @@
 | Pièce | Fichier | Qté (1 main) | Note |
 |---|---|---|---|
 | Spool double gorge r8 | `spool_r8.stl` | 8 (+2 de rechange) | 100 % de remplissage ou 6 parois |
-| Bloc d'ancrage des gaines | `ptfe_anchor_8x.stl` | 4 (2 côté servos, 2 côté paume) | 8 logements par bloc pour 16 gaines. Le README ne parle que d'un bloc par extrémité, à confirmer |
+| Bloc d'ancrage des gaines (côté servos) | `ptfe_anchor_8x.stl` | 2 | 8 logements par bloc pour 16 gaines. Côté paume, les gaines sont maintenant dans la plaque `R-Hand_Plate_tendon` |
 | Support des servos | `servo_bay_8x_sts3215.stl` (v0), puis 4 supports de paire **à concevoir** | 1, puis 4 | ≈120 × 103 × 18 mm |
 | Link à tendons (remplace le Link) | `finger_link_tendon.stl` | 4 (+2 de rechange) | v0 non testé. Imprime-en 1 d'abord. Supports nécessaires. Voir le README de `matebot/` |
 | Doigt : Finger_Frame-1, Finger_Frame-2, Proximal, Distal, Gimbal, Proximal_Shell, Distal_Shell (pas de Link, voir ci-dessus) | `Amazing Hand Parts - <nom>.stl` | 4 de chaque | Shells en TPU (le README garde les coques/coussinets TPU d'origine) |
 | Spacer | `BallJoint_Rod - Spacer.stl` | 0 | **Inutile** avec les tendons (il ne sert qu'aux bielles à rotule d'origine) |
-| Paume, plaque, coque supérieure, interface poignet | `R-Palm_Shell`, `R-Hand_Plate`, `R-Top_Shell`, `R-Wrist_Interface` | 1 de chaque (main droite) | Paume à modifier : poches de servos retirées, plaque d'ancrage PTFE ajoutée |
+| Plaque de main à gaines (remplace `R-Hand_Plate`) | `R-Hand_Plate_tendon.stl` | 1 | v0 non testé. 12 logements de gaine (index, majeur, annulaire). Même contour et mêmes trous de vis que l'original. Pas de supports (comme l'original) |
+| Coque de paume (remplace `R-Palm_Shell`) | `R-Palm_Shell_tendon.stl` | 1 | 3 petites encoches là où les nouveaux logements touchent la coque |
+| Coque supérieure, interface poignet | `R-Top_Shell`, `R-Wrist_Interface` | 1 de chaque (main droite) | Inchangées. Le pouce se monte sur l'interface poignet : ses 4 gaines n'ont pas encore d'ancrage (adaptateur de poignet à concevoir) |
 
 ## 2. Quincaillerie et matériel
 - 8 × STS3215 12 V, 1 adaptateur Waveshare Bus Servo Adapter (A) dédié à la main, une alimentation 12 V 10 A.
@@ -50,7 +52,8 @@
 
 ## 6. Gaines PTFE
 - 16 gaines (8 boucles × 2), environ 30 à 40 cm chacune.
-- Fixe **les deux extrémités** : côté servos dans un `ptfe_anchor_8x` (logement de 8 mm de profondeur), côté paume dans la plaque d'ancrage.
+- Fixe **les deux extrémités** : côté servos dans un `ptfe_anchor_8x` (logement de 8 mm de profondeur), côté paume dans les logements de `R-Hand_Plate_tendon` (Ø4,2 × 8 mm de profondeur pour un tube de 4 mm ; 12 logements pour index, majeur et annulaire ; les 4 gaines du pouce attendent l'adaptateur de poignet). Mesure ton tube PTFE au pied à coulisse avant d'imprimer. Colle chaque gaine avec une goutte de colle cyanoacrylate.
+- Dans la plaque : chaque côté de doigt a une colonne sous la plaque avec 2 logements, **extenseur en haut, fléchisseur en bas**. Le bout de gaine est à 30 mm derrière le pivot du doigt. Ne croise pas les gaines entre doigts.
 - **Rayon de courbure d'au moins 30 mm** partout. Fais passer le faisceau **par le centre du poignet**.
 - Repère chaque gaine (doigt, A ou B, fléchisseur ou extenseur) avec du ruban de couleur.
 

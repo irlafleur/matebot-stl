@@ -27,8 +27,21 @@ Option considered: flexor-only tendons + return springs/elastic. Cheaper (4 fewe
 2. Flexor on the palm side (−Z, lower pocket and lower tangent), extensor on the back (+Z, upper pocket and upper tangent). The rim radius is 9.0 mm and the tendon centre radius 8.3 mm, so the tendon never bends tighter than about 3 mm (channel) and 8.3 mm (groove).
 3. Moment arm at the base joint: **8.3 mm** (about the spool radius → about 1:1 angle mapping). Loop conservation was checked numerically (flexor stroke minus extensor stroke ≤ 0.2 mm over 0 to −70°, tube ends assumed 40 mm behind the pivot).
 4. Proximal, Distal, Gimbal: **unchanged**. Nothing in the 4-bar needs to change.
-4. Palm: remove servo pockets, add a **PTFE tube termination plate** (`ptfe_anchor_8x`) at the wrist side of the palm.
+4. Palm: **`R-Hand_Plate_tendon`** (v0, untested) replaces the Hand_Plate: 6 anchor columns with 12 PTFE sockets for the index, middle and ring (the thumb sits on the Wrist_Interface and still needs its 4 anchors). See section 3b. `ptfe_anchor_8x` is now only for the servo side of the tubes.
 5. Keep TPU pads/shells from the original.
+
+## 3b. Palm plate with tube anchors (`R-Hand_Plate_tendon`, v0 untested)
+Source: `source/R-Hand_Plate_tendon.py`; checks: `source/verify_R-Hand_Plate_tendon.py`; images `R-Hand_Plate_tendon_preview.png` and `R-Hand_Plate_tendon_routing.png`.
+
+- **Count.** The plate carries 3 fingers. Each finger has 4 tendon ends (2 servos × flexor + extensor), so 12 sockets, not 8. The thumb is mounted on the Wrist_Interface, its 4 ends are still open.
+- **Finger poses on the plate** (fitted to the plate's own M2.8 holes at (±6, −7) in the finger frame, worst error 0.19 mm): index at (0, 0) rotated 0°, middle at (32.8, −6.0) rotated −5.76°, ring at (65.0, −17.1) rotated −13.46°. All Pollen parts share one assembly frame, so the finger frame of the index is the plate frame.
+- **Tendon lines.** At rest the tendons leave the capstan (radius 8.3 around the Link pivot at Y = 0, Z = −6) along −Y at Z = +2.3 (extensor) and Z = −14.3 (flexor), X = ±13.2.
+- **Socket positions.** Sockets at |X| = 10.5 (not 13.2) in the finger frame, tube stop at Y = −30. Reason: the fingers fan out, so lines of neighbouring fingers converge toward the wrist (6.4 mm apart at the capstans, 3.5 mm at Y = −30). At |X| = 10.5 the sockets of neighbours are at least 7.9 mm apart (3.7 mm of wall). Cost: the tendon leans atan(2.7 / 25.4) = 6° inward; the cone exit (22° half angle) absorbs the swing. The change in tendon length is small but not included in the earlier loop-conservation check (that assumed straight tendons 40 mm behind the pivot).
+- **Columns.** 8.2 × 12.6 mm, from the slab top face (Z = 15.5) down to Z = −18.4 mm, so they print slab-down without supports. Each fuses with the original plate over 265 to 555 mm³.
+- **Relief cuts in the original plate:** R9.6 cylinder around each Link capstan plate (the plates of the middle and ring fingers touched the plate walls, up to 32 mm³), Ø3.0 tendon corridors, Ø4.5 tube clearance holes through the cross beam behind the extensor sockets. About 830 mm³ removed in total.
+- **Palm shell.** The two outermost flexor columns (index left, ring right) touch the soft palm shell skin (about 270 mm³ in total), so `R-Palm_Shell_tendon` has 3 small notches (about 450 mm³ removed with a 0.6 mm margin).
+- **Strength.** The columns are only tube stops: the tendon tension is carried by the tube from the servo to the socket, not by the plate. Pull-out of a glued 4 mm tube from an 8 mm socket is not measured.
+- **Open points.** Everything was checked in CAD with the finger at rest only. Tubes passing the Wrist_Interface overlap its walls by 1 to 145 mm³ per tube (straight-line check, 10 of 12 tubes touch): to be solved by the wrist adapter, which must also take the thumb's tubes. The tendon-length effect of the 6° inward lean over the full flexion and abduction range is not recomputed.
 
 ## 4. Forearm servo bay
 - 2 rows × 4 STS3215, outputs facing up, part `servo_bay_8x_sts3215` (≈120 × 103 × 18 mm, fits the SV06 220 mm bed and the Kobra S1).
@@ -91,4 +104,5 @@ Option considered: flexor-only tendons + return springs/elastic. Cheaper (4 fewe
 
 ## Files
 - Starter parts (v0, untested, STL+STEP+PNG): `matebot-hand-tendon.zip` (not in git; no Git LFS yet). Source script `parts.py`.
+- Palm plate and palm shell: `../stl/R-Hand_Plate_tendon.stl`, `../stl/R-Palm_Shell_tendon.stl` (STEP in `../step/`).
 - BOM: [`bom/hand-tendon.csv`](../bom/hand-tendon.csv)

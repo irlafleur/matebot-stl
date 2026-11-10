@@ -17,7 +17,7 @@ A 4-finger robotic hand by [Pollen Robotics](https://github.com/pollen-robotics/
 
 Pollen recommends rigid parts in PLA with at least 80% infill, and shells in flexible filament (Filaflex 82A). MateBot prints them in PETG.
 
-With MateBot's tendon drive, the servo horn, the BallJoint_Rod Spacers and the in-palm servo mounts are not needed, and the original **Link is replaced** by [`matebot/stl/finger_link_tendon.stl`](../matebot/stl/finger_link_tendon.stl). Proximal, Distal and Gimbal are used unchanged.
+With MateBot's tendon drive, the servo horn, the BallJoint_Rod Spacers and the in-palm servo mounts are not needed, the original **Link is replaced** by [`matebot/stl/finger_link_tendon.stl`](../matebot/stl/finger_link_tendon.stl), the **R-Hand_Plate** by [`matebot/stl/R-Hand_Plate_tendon.stl`](../matebot/stl/R-Hand_Plate_tendon.stl) and the **R-Palm_Shell** by [`matebot/stl/R-Palm_Shell_tendon.stl`](../matebot/stl/R-Palm_Shell_tendon.stl). Proximal, Distal and Gimbal are used unchanged.
 
 ## License
 

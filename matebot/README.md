@@ -8,17 +8,48 @@ MateBot moves the Amazing Hand's 8 servos out of the palm and into the forearm. 
 
 - `stl/`: ready-to-print files
 - `step/`: editable CAD files
-- `source/`: Python (CadQuery) scripts that generate the parts: `parts.py` (spool, PTFE anchor, servo bay) and `finger_link_tendon.py` (the modified finger Link)
-- `docs/`: design notes, assembly guide (French), preview images (`finger_link_tendon_preview.png`, `finger_link_tendon_routing.png`) and an explainer animation
+- `source/`: Python (CadQuery) scripts that generate the parts: `parts.py` (spool, PTFE anchor, servo bay) `finger_link_tendon.py` (the modified finger Link) and `R-Hand_Plate_tendon.py` (the modified hand plate and palm shell), with `verify_R-Hand_Plate_tendon.py` and `render_plate_tendon.py`
+- `docs/`: design notes, assembly guide (French), preview images (`finger_link_tendon_preview.png`, `finger_link_tendon_routing.png`, `R-Hand_Plate_tendon_preview.png`, `R-Hand_Plate_tendon_routing.png`) and an explainer animation
 
 ## Parts to print
 
 | File | Quantity | Notes |
 |---|---|---|
 | `spool_r8.stl` | 8 (+2 spare) | One per servo. Two grooves: flexor and extensor. 100% infill or 6 walls. |
-| `ptfe_anchor_8x.stl` | 1 per tube end, still to be confirmed | Holds the PTFE tube ends. |
+| `ptfe_anchor_8x.stl` | 2 (servo side only) | Holds the 16 PTFE tube ends in the forearm. The palm ends now sit in `R-Hand_Plate_tendon`. |
 | `servo_bay_8x_sts3215.stl` | 1 | **Bench testing only.** It does not fit inside the forearm; it will be replaced by 4 pair mounts. |
 | `finger_link_tendon.stl` | 4 (+2 spares) | **Replaces Pollen's `Link`** (do not also print the original Link). Same pivot holes, plus a cross bar and two tendon plates. Print 1 first. Needs supports. |
+
+| `R-Hand_Plate_tendon.stl` | 1 | **Replaces Pollen's `R-Hand_Plate`.** Same outline and screw holes, plus 12 PTFE tube sockets for the index, middle and ring fingers. Needs no support (same as the original). |
+| `R-Palm_Shell_tendon.stl` | 1 | **Replaces Pollen's `R-Palm_Shell`.** Same shell with 3 small notches where the new sockets reach it. Print in the same material as the original. |
+
+## The palm plate: `R-Hand_Plate_tendon` (v0, untested)
+
+Pollen's plate holds 3 fingers (index, middle, ring) in 3 windows. The **thumb is not on this plate**: it screws into the Wrist_Interface. So the plate takes 3 fingers × 4 tendons = **12 tube ends** (not 8). The thumb's 4 tube ends still need a home on the wrist adapter (not designed yet).
+
+Each finger side gets one **anchor column** that hangs under the plate and holds two sockets, the extensor above the flexor (6 columns, 12 sockets):
+
+| Item | Value (finger frame: X sideways, Y along the finger, Z toward the back of the hand) |
+|---|---|
+| Tube socket | Ø4.2 mm bore, 8.0 mm deep, for 4 mm OD PTFE tube |
+| Stop shoulder | 1.6 mm thick, Ø2.2 mm through-hole for the tendon |
+| Tendon exit | cone from Ø2.2 to Ø5.0 mm over 3.0 mm, facing the finger (lets the tendon swing without rubbing) |
+| Tube end (stop face) | Y = −30.0 mm, i.e. 30 mm behind the finger pivot |
+| Socket axes | X = ±10.5 mm, extensor at Z = +2.3 mm, flexor at Z = −14.3 mm (tangents of the 8.3 mm capstan around the Link pivot at Z = −6) |
+| Column | 8.2 mm wide, 12.6 mm long (Y −38.0 to −25.4), from the slab top (Z = 15.5) down to Z = −18.4 mm |
+| Wall around every socket | 2.0 mm (bore), 1.6 mm (cone mouth) |
+
+The sockets sit at X = ±10.5, not at the capstan lines X = ±13.2: this keeps the sockets of neighbouring fingers at least 7.9 mm apart (the fingers fan out by 5.8° and 13.5°), and the tendon leans about 6° inward between the socket and the capstan.
+
+Other changes to the original plate: a Ø4.5 mm clearance hole behind each extensor socket where the tube crosses the plate's cross beam (the flexor tubes pass under the plate), a Ø3 mm tendon corridor, and a cylindrical relief (R9.6) around each Link capstan plate (about 830 mm³ removed in total). All original screw holes are kept.
+
+What was **checked in CAD** (script `source/verify_R-Hand_Plate_tendon.py`, 20 checks): single valid solid; finger positions fitted to the plate's own screw holes (worst error 0.19 mm); no original hole plugged; wall ≥ 1.6 mm around all 12 sockets; no tendon line (finger at rest) touches the plate, Finger_Frame-1/-2, Gimbal or Proximal; the swept Link capstan plates clear the plate; the new material clears the Finger_Frame, Gimbal, Proximal, Top_Shell and Wrist_Interface.
+
+What is **not** verified: nothing has been printed. The tendon lines were checked with the finger at rest only (not over the full flexion and abduction range). The thin walls left beside the extensor clearance holes where they cut through the original pockets can be as thin as 0.2 mm (they will not print, the hole simply opens into the pocket). The tubes were only checked straight from the sockets back to Y = −85 mm; they will overlap the Wrist_Interface walls a little, which is to be solved with the wrist adapter.
+
+Printing: PETG, plate slab-down exactly like the original (no supports needed: the columns reach the slab top face), 0.2 mm layers, 5+ walls and 40% or more infill (the columns carry the tube reaction, not the tendon tension). The bores are horizontal; they bridge over 4.2 mm, so check them with the tube before gluing and ream with a Ø4.2 drill if tight. Glue the tubes in with a drop of CA glue.
+
+Check with calipers: the PTFE tube OD (the sockets assume 4.0 mm: if yours is 4.1 or more, change `sock_d`), and that the tubes seat fully (8 mm).
 
 ## The finger part: `finger_link_tendon` (v0, untested)
 
@@ -44,8 +75,8 @@ Design numbers (CAD estimates from the original STL files, not measurements on a
 
 - The spool's horn screw pattern is not yet matched to the real Feetech horn.
 - The servo pocket clearance is tight (about 0.2 mm per side).
-- The 4 servo-pair mounts, the palm tube plate and the wrist adapter have not been designed yet.
-- `finger_link_tendon`: tube ends in the palm must sit about 30 mm or more behind the finger base, with the flexor tube end near Z = −14 mm and the extensor tube end near Z = +2 mm (finger frame), so the tendons leave the plate tangentially.
+- The 4 servo-pair mounts and the wrist adapter (with the thumb's 4 tube ends) have not been designed yet.
+- `R-Hand_Plate_tendon` is a v0 and is not printed yet. `Finger_Frame-2` only held the servos in the original hand and has no job in the tendon hand; it is still compatible with the new plate.
 - The cross bar fills the original M2 rod hole of the barrel. Nothing else of the original Link is removed.
 
 ## License

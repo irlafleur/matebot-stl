@@ -33,10 +33,10 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <td>100 % de remplissage ou 6 parois</td>
 </tr>
 <tr>
-<td>Bloc d'ancrage des gaines</td>
+<td>Bloc d'ancrage des gaines (côté servos)</td>
 <td><code>ptfe_anchor_8x.stl</code></td>
-<td>4 (2 côté servos, 2 côté paume)</td>
-<td>8 logements par bloc pour 16 gaines. Le README ne parle que d'un bloc par extrémité, à confirmer</td>
+<td>2</td>
+<td>8 logements par bloc pour 16 gaines. Côté paume, les gaines sont maintenant dans la plaque <code>R-Hand_Plate_tendon</code></td>
 </tr>
 <tr>
 <td>Support des servos</td>
@@ -63,10 +63,22 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <td><strong>Inutile</strong> avec les tendons (il ne sert qu'aux bielles à rotule d'origine)</td>
 </tr>
 <tr>
-<td>Paume, plaque, coque supérieure, interface poignet</td>
-<td><code>R-Palm_Shell</code>, <code>R-Hand_Plate</code>, <code>R-Top_Shell</code>, <code>R-Wrist_Interface</code></td>
+<td>Plaque de main à gaines (remplace <code>R-Hand_Plate</code>)</td>
+<td><code>R-Hand_Plate_tendon.stl</code></td>
+<td>1</td>
+<td>v0 non testé. 12 logements de gaine (index, majeur, annulaire). Même contour et mêmes trous de vis que l'original. Pas de supports (comme l'original)</td>
+</tr>
+<tr>
+<td>Coque de paume (remplace <code>R-Palm_Shell</code>)</td>
+<td><code>R-Palm_Shell_tendon.stl</code></td>
+<td>1</td>
+<td>3 petites encoches là où les nouveaux logements touchent la coque</td>
+</tr>
+<tr>
+<td>Coque supérieure, interface poignet</td>
+<td><code>R-Top_Shell</code>, <code>R-Wrist_Interface</code></td>
 <td>1 de chaque (main droite)</td>
-<td>Paume à modifier : poches de servos retirées, plaque d'ancrage PTFE ajoutée</td>
+<td>Inchangées. Le pouce se monte sur l'interface poignet : ses 4 gaines n'ont pas encore d'ancrage (adaptateur de poignet à concevoir)</td>
 </tr>
 </tbody>
 </table>
@@ -101,7 +113,8 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <h2>6. Gaines PTFE</h2>
 <ul>
 <li>16 gaines (8 boucles × 2), environ 30 à 40 cm chacune.</li>
-<li>Fixe <strong>les deux extrémités</strong> : côté servos dans un <code>ptfe_anchor_8x</code> (logement de 8 mm de profondeur), côté paume dans la plaque d'ancrage.</li>
+<li>Fixe <strong>les deux extrémités</strong> : côté servos dans un <code>ptfe_anchor_8x</code> (logement de 8 mm de profondeur), côté paume dans les logements de <code>R-Hand_Plate_tendon</code> (Ø4,2 × 8 mm de profondeur pour un tube de 4 mm ; 12 logements pour index, majeur et annulaire ; les 4 gaines du pouce attendent l'adaptateur de poignet). Mesure ton tube PTFE au pied à coulisse avant d'imprimer. Colle chaque gaine avec une goutte de colle cyanoacrylate.</li>
+<li>Dans la plaque : chaque côté de doigt a une colonne sous la plaque avec 2 logements, <strong>extenseur en haut, fléchisseur en bas</strong>. Le bout de gaine est à 30 mm derrière le pivot du doigt. Ne croise pas les gaines entre doigts.</li>
 <li><strong>Rayon de courbure d'au moins 30 mm</strong> partout. Fais passer le faisceau <strong>par le centre du poignet</strong>.</li>
 <li>Repère chaque gaine (doigt, A ou B, fléchisseur ou extenseur) avec du ruban de couleur.</li>
 </ul>
@@ -126,9 +139,9 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <h2>9. Premier test (un doigt, deux servos, gaines de 40 cm)</h2>
 <ol>
 <li><strong>Limite de couple à 10 %</strong> dans l'EEPROM avant le premier mouvement (30 % au maximum plus tard).</li>
-<li>Petits mouvements autour du centre :</li>
-<li><strong>A+B (même sens) : flexion et extension</strong></li>
-<li><strong>A−B (sens opposés) : abduction</strong></li>
+<li>Petits mouvements autour du centre :
+   - <strong>A+B (même sens) : flexion et extension</strong>
+   - <strong>A−B (sens opposés) : abduction</strong></li>
 <li>Note la course, le jeu, la friction (lecture de charge du servo) et la température.</li>
 <li>Ensuite : test au peson (force au bout du doigt), 4 doigts, test de préhension avec une bouteille d'eau, endurance de 30 min. Mets ce guide à jour avec les valeurs mesurées.</li>
 </ol>

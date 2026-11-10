@@ -39,7 +39,7 @@ Explainer animation: [tendon-explainer-en.mp4](matebot/docs/tendon-explainer-en.
 | Spools, PTFE anchor, tendon Link (`finger_link_tendon`) | v0, untested |
 | Servo bay (8 servos in one block) | Bench test only, does not fit in the forearm |
 | 4 servo-pair mounts | 🚧 Not designed yet |
-| Palm with PTFE anchor plate | 🚧 Not designed yet |
+| Palm with PTFE anchor plate (`R-Hand_Plate_tendon`, `R-Palm_Shell_tendon`) | v0, untested (index, middle, ring only) |
 | Wrist adapter (InMoov RotaWrist ↔ Amazing Hand Wrist_Interface) | 🚧 Not designed yet |
 | Arduino Yún test code (6 servos) | Written, not tested on hardware |
 
@@ -97,13 +97,16 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 | Gimbal | 4 | +2 |
 | Link | **0**: print `finger_link_tendon` instead (see MateBot table) | |
 | Proximal_Shell, Distal_Shell | 4 each | |
-| R-Palm_Shell, R-Hand_Plate, R-Top_Shell, R-Wrist_Interface | 1 each | |
+| R-Top_Shell, R-Wrist_Interface | 1 each | |
+| R-Palm_Shell, R-Hand_Plate | **0**: print `R-Palm_Shell_tendon` and `R-Hand_Plate_tendon` instead (see MateBot table) | |
 
 **MateBot** ([files](matebot/stl/))
 | Part | Qty | Note |
 |---|---|---|
 | `spool_r8.stl` | 8 | +2 spares |
-| `ptfe_anchor_8x.stl` | To be confirmed | Holds tube ends |
+| `ptfe_anchor_8x.stl` | 2 | Holds the 16 tube ends on the servo side |
+| `R-Hand_Plate_tendon.stl` | 1 | Replaces the R-Hand_Plate. 12 PTFE sockets for 3 fingers. |
+| `R-Palm_Shell_tendon.stl` | 1 | Replaces the R-Palm_Shell. 3 small notches. |
 | `servo_bay_8x_sts3215.stl` | 1 | Bench test only |
 | `finger_link_tendon.stl` | 4 | +2 spares. Replaces the Link. Print 1 first. Needs supports. |
 
@@ -198,8 +201,11 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 3. Fit the 2.5×8 screw with the large washer into the Gimbal. **Abduction must stay free.**
 
 ### 4.5 Palm
-1. 🚧 **NOT DESIGNED YET:** palm without servo pockets and with a PTFE anchor plate.
-2. Until then, mount fingers on the original R-Hand_Plate for bench tests, following Pollen's guide "Step 4: Hand assembly".
+1. Use `R-Hand_Plate_tendon` instead of the original R-Hand_Plate, and `R-Palm_Shell_tendon` instead of the R-Palm_Shell (v0, untested).
+2. The plate takes **3 fingers**: index on the left, middle in the middle, ring on the right (top view), exactly as in Pollen's guide "Step 4: Hand assembly". Fix each finger with 3 thermoplastic screws 2.5×8.
+3. The **thumb** goes on the Wrist_Interface as in Pollen's guide. Its 4 tube ends need an anchor on the wrist adapter, which is 🚧 not designed yet.
+4. Each finger side has an anchor column under the plate with 2 sockets: **extensor on top, flexor below**. Cut the PTFE tubes square and push each one in until it stops (8 mm), then add a drop of CA glue.
+5. Pass the tendon through the tube and through the cone-shaped exit toward the finger, then to the Link plate (see 4.6).
 
 ### 4.6 Tendon attachment on the finger
 1. The ball-joint rods are not used. The tendons attach to the two plates of `finger_link_tendon` (v0, untested).
@@ -207,7 +213,7 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 3. **Cross the loops.** Servo A: flexor on the +X plate, extensor on the −X plate. Servo B: flexor on the −X plate, extensor on the +X plate. Do not put both legs of one servo on the same plate: the finger could not abduct.
 4. For each leg: pass the tendon through the Ø1.2 channel from the groove into the pocket, tie a knot (or crimp a sleeve) in the pocket, then pull it back so the knot seats at the bottom. The knot or sleeve must be bigger than the 1.2 mm channel.
 5. Lay the tendon in the groove and run it straight back toward the palm: the flexor leaves the bottom of the plate, the extensor the top.
-6. 🚧 **NOT DESIGNED YET:** the tube ends in the palm. They should sit 30 mm or more behind the finger base, flexor near the palm side and extensor near the back, so the tendons leave the plate tangentially.
+6. The tube ends are in the sockets of `R-Hand_Plate_tendon`, 30 mm behind the finger base. The flexor tube is the lower socket (palm side), the extensor tube the upper socket (back). The tendon leans about 6° inward from the socket to the Link plate. Do not cross tubes between fingers.
 7. Check that the plates (up to X = ±14.4 mm) do not touch the next finger or the palm window, over the full flexion and abduction range.
 
 ---
@@ -224,7 +230,7 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 
 ### 5.2 PTFE tubes
 1. Cut 16 tubes (8 loops × 2), about 30 to 40 cm each. Exact length depends on the pair mount positions (🚧).
-2. Fix **both ends** of every tube: servo side in a `ptfe_anchor_8x` (8 mm deep pocket), palm side in the palm anchor plate (🚧).
+2. Fix **both ends** of every tube: servo side in a `ptfe_anchor_8x` (8 mm deep pocket), palm side in the sockets of `R-Hand_Plate_tendon` (12 sockets for index, middle, ring; the thumb's 4 tubes are 🚧 until the wrist adapter exists). Measure your PTFE tube with calipers first: the sockets are Ø4.2 for a 4.0 mm tube.
 3. Keep a **bend radius of at least 30 mm** everywhere.
 4. Route the bundle **through the center of the wrist**.
 5. Label every tube: finger, A or B, flexor or extensor (colored tape).
@@ -340,10 +346,11 @@ Code and details: [matebot/code/yun-6-servos](matebot/code/yun-6-servos/).
 ## TODO (coming soon)
 - [ ] Caliper measurements of servo, horn, ears, forearm → fix spool and clearance
 - [ ] 4 servo-pair mounts
-- [ ] Palm with PTFE anchor plate; fingers with tendon anchors
+- [ ] Print and test `R-Hand_Plate_tendon` and `R-Palm_Shell_tendon` (v0 designed, not printed)
+- [ ] Thumb tube anchors (on the wrist adapter)
 - [ ] RotaWrist ↔ Wrist_Interface adapter; PTFE routing through the wrist
 - [ ] MG996R wrist driver
-- [ ] Final ID scheme (1-8 or 21-28) and number of PTFE anchor blocks
+- [ ] Final ID scheme (1-8 or 21-28)
 - [ ] 8-servo code and hardware test results
 
 *Based on the Amazing Hand by Pollen Robotics (CC BY 4.0) and InMoov by Gael Langevin (CC BY-NC). See each folder's license.*
