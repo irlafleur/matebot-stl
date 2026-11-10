@@ -6,7 +6,7 @@ This repository holds every printable file used in the build. It mixes three pro
 
 | Folder | What it is | Author | License | Commercial use |
 |---|---|---|---|---|
-| [`matebot/`](matebot/) | MateBot's own parts: tendon-driven hand drive (spools, PTFE anchor, servo bay, finger adapter) | Ian-Remi Lafleur | [CC BY 4.0](matebot/LICENSE.md) | Yes, with credit |
+| [`matebot/`](matebot/) | MateBot's own parts: tendon-driven hand drive (spools, PTFE anchor, servo bay, tendon Link for the fingers) | Ian-Remi Lafleur | [CC BY 4.0](matebot/LICENSE.md) | Yes, with credit |
 | [`matebot/code/`](matebot/code/) | Test code: Arduino Yún + 6 STS3215 servos | MateBot | [MIT](matebot/code/LICENSE) | Yes |
 | [`amazing-hand/`](amazing-hand/) | Amazing Hand robotic hand (original and enhanced) | Pollen Robotics | [CC BY 4.0 for the mechanical design, Apache 2.0 for code](amazing-hand/LICENSE.md) | Yes, with credit |
 | [`inmoov/`](inmoov/) | InMoov forearm, right hand, wrist and servo bed | Gael Langevin | [CC BY-NC](inmoov/LICENSE.md) | **No** |

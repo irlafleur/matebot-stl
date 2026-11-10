@@ -8,7 +8,7 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <li>4 doigts Amazing Hand, 2 DDL par doigt, donc 8 DDL.</li>
 <li>Les servos de la paume sont retirés. <strong>8 × Feetech STS3215 12 V</strong> sont logés dans l'avant-bras, un spool à double gorge (r = 8 mm) sur chacun.</li>
 <li>Chaque servo forme <strong>une boucle antagoniste fermée</strong> : une gorge tire le tendon fléchisseur, l'autre le tendon extenseur.</li>
-<li>Le servo A s'attache au côté gauche de la base du doigt, le servo B au côté droit.</li>
+<li>Chaque doigt a <strong>deux plaques à tendons</strong> (côté +X et côté −X) sur la pièce <code>finger_link_tendon</code>, qui remplace le Link d'origine. Chaque servo a une boucle : fléchisseur sur une plaque, extenseur sur la plaque <strong>opposée</strong> (boucles croisées, sinon le doigt ne peut pas faire d'abduction). Servo A : fléchisseur côté +X, extenseur côté −X. Servo B : fléchisseur côté −X, extenseur côté +X.</li>
 <li><strong>A et B dans le même sens = flexion. En sens opposé = abduction.</strong></li>
 <li>Tendons : tresse PE (UHMWPE) classe ~100 lb, dans des gaines PTFE 2 × 4 mm (Bowden).</li>
 </ul>
@@ -45,13 +45,13 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <td>≈120 × 103 × 18 mm</td>
 </tr>
 <tr>
-<td>Adaptateur de tendon (test)</td>
-<td><code>finger_tendon_adapter_test.stl</code></td>
-<td>1 pour l'essai</td>
-<td>4 seulement s'il est validé</td>
+<td>Link à tendons (remplace le Link)</td>
+<td><code>finger_link_tendon.stl</code></td>
+<td>4 (+2 de rechange)</td>
+<td>v0 non testé. Imprime-en 1 d'abord. Supports nécessaires. Voir le README de <code>matebot/</code></td>
 </tr>
 <tr>
-<td>Doigt : Finger_Frame-1, Finger_Frame-2, Proximal, Distal, Gimbal, Link, Proximal_Shell, Distal_Shell</td>
+<td>Doigt : Finger_Frame-1, Finger_Frame-2, Proximal, Distal, Gimbal, Proximal_Shell, Distal_Shell (pas de Link, voir ci-dessus)</td>
 <td><code>Amazing Hand Parts - &lt;nom&gt;.stl</code></td>
 <td>4 de chaque</td>
 <td>Shells en TPU (le README garde les coques/coussinets TPU d'origine)</td>
@@ -59,8 +59,8 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <tr>
 <td>Spacer</td>
 <td><code>BallJoint_Rod - Spacer.stl</code></td>
-<td>8</td>
-<td>Seulement si on garde les bielles d'origine pour comparer</td>
+<td>0</td>
+<td><strong>Inutile</strong> avec les tendons (il ne sert qu'aux bielles à rotule d'origine)</td>
 </tr>
 <tr>
 <td>Paume, plaque, coque supérieure, interface poignet</td>
@@ -96,7 +96,7 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <li>Fixe le spool sur le palonnier rond d'origine avec 4 × M2.5. Le trou central de 6,5 mm laisse passer la vis centrale du palonnier.</li>
 <li>Servo au <strong>centre</strong>, passe le tendon fléchisseur dans le trou transversal d'une gorge, et l'extenseur dans l'autre.</li>
 <li><strong>Enroule au moins 1,5 tour</strong> dans chaque gorge avant l'ancrage, en sens opposés : quand le spool tourne, il tire l'un et relâche l'autre de la même longueur.</li>
-<li>Repère : ~90° de flexion demande ~12,6 mm de tendon, soit ~90° de rotation du spool.</li>
+<li>Repère (estimation CAO) : flexion complète (environ 70° de rotation du Link) ≈ 10 mm de tendon, abduction ±20° ≈ ±4,5 mm, jusqu'à 15 mm au total ≈ 105° de rotation du spool.</li>
 </ol>
 <h2>6. Gaines PTFE</h2>
 <ul>
@@ -107,12 +107,14 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 </ul>
 <h2>7. Assemblage des doigts (d'après le guide officiel)</h2>
 <ol>
-<li><strong>Reprise des trous Ø2 :</strong> sur Proximal, Distal, Gimbal et Link, les trous de pivot doivent être en partie <strong>glissants</strong> (plusieurs allers-retours de foret) et en partie <strong>serrés</strong> (un seul aller-retour). Nettoie les surfaces imprimées avec support.</li>
-<li><strong>Mécanisme :</strong> enfonce les axes D2×10 dans le Distal avec le Link entre les oreilles, puis fais de même avec le Gimbal. Enfonce ensuite les axes D2×16 dans le Proximal pour tenir le sous-ensemble. <strong>Vérifie que la flexion et l'extension sont fluides sur toute la course.</strong></li>
+<li><strong>Reprise des trous Ø2 :</strong> sur Proximal, Distal, Gimbal et <code>finger_link_tendon</code> (à la place du Link), les trous de pivot doivent être en partie <strong>glissants</strong> (plusieurs allers-retours de foret) et en partie <strong>serrés</strong> (un seul aller-retour). Nettoie les surfaces imprimées avec support.</li>
+<li><strong>Mécanisme :</strong> enfonce les axes D2×10 dans le Distal avec le <code>finger_link_tendon</code> entre les oreilles (plaques vers l'extérieur), puis fais de même avec le Gimbal. Enfonce ensuite les axes D2×16 dans le Proximal pour tenir le sous-ensemble. <strong>Vérifie que la flexion et l'extension sont fluides sur toute la course.</strong></li>
 <li><strong>Coques :</strong> Proximal_Shell puis Distal_Shell, avec des vis 2.5×6. <strong>Ne serre pas trop</strong>, sinon la vis traverse la coque mince.</li>
 <li><strong>Bagues :</strong> enfonce les 2 bagues Ø int. 6 de chaque côté du Finger_Frame-1. C'est le pivot d'abduction.</li>
 <li><strong>Montage final :</strong> insère le doigt dans les bagues, puis serre la vis 2.5×8 avec sa grande rondelle dans le Gimbal <strong>sans bloquer l'abduction</strong>.</li>
-<li><strong>Différence avec la version à tendons :</strong> à la place des bielles à rotule, attache les boucles A et B aux pattes d'ancrage (canal de 1,2 mm et logement de nœud ou de sertissage). Fais d'abord l'essai avec <code>finger_tendon_adapter_test</code>. La modification CAO des doigts <strong>n'est pas encore faite</strong>.</li>
+<li><strong>Différence avec la version à tendons :</strong> utilise <code>finger_link_tendon</code> à la place du Link (mêmes trous de pivot) et saute les bielles à rotule, les palonniers et les Spacers. Chaque plaque a une gorge sur son bord et deux poches pour le nœud ou le sertissage (Ø3,2 × 2 mm, canal de 1,2 mm). <strong>Poche du bas = fléchisseur</strong> (côté paume), <strong>poche du haut = extenseur</strong> (dos du doigt). Passe le tendon dans le canal, fais un nœud (ou sertis) dans la poche, puis remets-le au fond. Croise les boucles : fléchisseur du servo A sur la plaque +X et son extenseur sur la plaque −X, l'inverse pour le servo B.</li>
+<li>Vérifie que les plaques (jusqu'à X = ±14,4 mm) ne touchent ni le doigt voisin ni la fenêtre de la paume sur toute la course. Les extrémités de gaines dans la paume restent <strong>à concevoir</strong> (à 30 mm ou plus derrière la base du doigt).</li>
+<li><strong>Premiers essais avec la limite de couple des servos à 10 %</strong> (environ 35 N dans le tendon) : le Link à tendons est la pièce la plus faible du doigt. Tout ce qui précède est une estimation CAO, non testée.</li>
 </ol>
 <h2>8. Réglage de la tension</h2>
 <ol>
@@ -123,7 +125,7 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 </ol>
 <h2>9. Premier test (un doigt, deux servos, gaines de 40 cm)</h2>
 <ol>
-<li><strong>Limite de couple à 30 %</strong> dans l'EEPROM avant le premier mouvement.</li>
+<li><strong>Limite de couple à 10 %</strong> dans l'EEPROM avant le premier mouvement (30 % au maximum plus tard).</li>
 <li>Petits mouvements autour du centre :</li>
 <li><strong>A+B (même sens) : flexion et extension</strong></li>
 <li><strong>A−B (sens opposés) : abduction</strong></li>
@@ -133,7 +135,7 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <h2>10. Sécurité</h2>
 <ul>
 <li><strong>Arrêt d'urgence sur la ligne 12 V</strong>, à portée de main.</li>
-<li>Limite de couple basse au départ (30 %) et surveillance de la température. Ne maintiens jamais le servo au couple de blocage.</li>
+<li>Limite de couple basse au départ (10 % pour les essais du doigt) et surveillance de la température. Ne maintiens jamais le servo au couple de blocage.</li>
 <li>Garde les doigts et les cheveux loin des spools pendant les tests. Porte des lunettes, car un tendon peut casser sous tension.</li>
 <li>Un adaptateur de bus séparé pour la main au début, pour faciliter le débogage.</li>
 </ul>

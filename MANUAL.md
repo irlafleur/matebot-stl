@@ -36,10 +36,10 @@ Explainer animation: [tendon-explainer-en.mp4](matebot/docs/tendon-explainer-en.
 |---|---|
 | Finger and palm parts (Amazing Hand) | Ready to print |
 | Forearm shells (InMoov) | Ready to print |
-| Spools, PTFE anchor, finger tendon adapter | v0, untested |
+| Spools, PTFE anchor, tendon Link (`finger_link_tendon`) | v0, untested |
 | Servo bay (8 servos in one block) | Bench test only, does not fit in the forearm |
 | 4 servo-pair mounts | 🚧 Not designed yet |
-| Palm with PTFE anchor plate, fingers with tendon anchors | 🚧 Not designed yet |
+| Palm with PTFE anchor plate | 🚧 Not designed yet |
 | Wrist adapter (InMoov RotaWrist ↔ Amazing Hand Wrist_Interface) | 🚧 Not designed yet |
 | Arduino Yún test code (6 servos) | Written, not tested on hardware |
 
@@ -95,9 +95,8 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 | Proximal | 4 | |
 | Distal | 4 | +2 |
 | Gimbal | 4 | +2 |
-| Link | 4 | +2 |
+| Link | **0**: print `finger_link_tendon` instead (see MateBot table) | |
 | Proximal_Shell, Distal_Shell | 4 each | |
-| BallJoint_Rod - Spacer | 8 | |
 | R-Palm_Shell, R-Hand_Plate, R-Top_Shell, R-Wrist_Interface | 1 each | |
 
 **MateBot** ([files](matebot/stl/))
@@ -106,7 +105,9 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 | `spool_r8.stl` | 8 | +2 spares |
 | `ptfe_anchor_8x.stl` | To be confirmed | Holds tube ends |
 | `servo_bay_8x_sts3215.stl` | 1 | Bench test only |
-| `finger_tendon_adapter_test.stl` | 1 | Test one before printing 4 |
+| `finger_link_tendon.stl` | 4 | +2 spares. Replaces the Link. Print 1 first. Needs supports. |
+
+> The BallJoint_Rod Spacers and the original Link are **not needed** with the tendon drive. Proximal, Distal and Gimbal are printed unchanged.
 
 > ⚠️ **Before printing MateBot parts:** measure a real STS3215 and its horn with the caliper (see [3.1](#31-measure-first)). The spool's horn hole pattern is not verified yet.
 
@@ -165,7 +166,7 @@ The 6-servo test sketch uses IDs 1 to 6.
 1. With the servo alone on the bus, move it to the middle position (2048 out of 0-4095 on the STS3215).
 2. If your horn is not aligned at center, use FD's calibration / middle-position function, or see the [ArmDojo guide](https://armdojo.com/blogs/guides/how-to-set-feetech-sts3215-servo-ids-zero-offsets-waveshare).
 3. Check it turns smoothly and quietly.
-4. Set a **low torque limit (30 %)** in the EEPROM before the first loaded test.
+4. Set a **low torque limit (10 % for the first finger tests, 30 % at most later)** in the EEPROM before the first loaded test.
 
 - [ ] All servos measured, labelled, centered, and answering alone on the bus
 
@@ -176,13 +177,13 @@ The 6-servo test sketch uses IDs 1 to 6.
 Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-robotics/AmazingHand/tree/main/docs)). Repeat for each of the 4 fingers.
 
 ### 4.1 Prepare the parts
-1. Ream the Ø2 pivot holes in Proximal, Distal, Gimbal and Link with the Ø2 drill:
+1. Ream the Ø2 pivot holes in Proximal, Distal, Gimbal and `finger_link_tendon` (it has the same pivot holes as the Link) with the Ø2 drill:
    - **sliding** holes: several passes;
    - **tight** holes: one pass only.
 2. Clean faces that had supports.
 
 ### 4.2 Finger mechanism
-1. Place the Link between the Distal's ears and push in an axis D2×10.
+1. Place the `finger_link_tendon` (in the place of the Link) between the Distal's ears and push in an axis D2×10. The two plates must point outward, one on each side.
 2. Do the same with the Gimbal.
 3. Push the D2×16 axes into the Proximal to hold the sub-assembly.
 4. **Check:** flexion and extension are smooth over the full travel.
@@ -201,9 +202,13 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 2. Until then, mount fingers on the original R-Hand_Plate for bench tests, following Pollen's guide "Step 4: Hand assembly".
 
 ### 4.6 Tendon attachment on the finger
-1. MateBot replaces the ball-joint rods with tendon loops: servo A on the left side of the finger base, servo B on the right.
-2. Print and test `finger_tendon_adapter_test.stl` on one finger first.
-3. 🚧 **NOT DESIGNED YET:** fingers with built-in tendon anchors (1.2 mm channel + knot/crimp pocket).
+1. The ball-joint rods are not used. The tendons attach to the two plates of `finger_link_tendon` (v0, untested).
+2. Each plate has a groove on its rim and two pockets. **Lower pocket = flexor** (palm side), **upper pocket = extensor** (back of the finger).
+3. **Cross the loops.** Servo A: flexor on the +X plate, extensor on the −X plate. Servo B: flexor on the −X plate, extensor on the +X plate. Do not put both legs of one servo on the same plate: the finger could not abduct.
+4. For each leg: pass the tendon through the Ø1.2 channel from the groove into the pocket, tie a knot (or crimp a sleeve) in the pocket, then pull it back so the knot seats at the bottom. The knot or sleeve must be bigger than the 1.2 mm channel.
+5. Lay the tendon in the groove and run it straight back toward the palm: the flexor leaves the bottom of the plate, the extensor the top.
+6. 🚧 **NOT DESIGNED YET:** the tube ends in the palm. They should sit 30 mm or more behind the finger base, flexor near the palm side and extensor near the back, so the tendons leave the plate tangentially.
+7. Check that the plates (up to X = ±14.4 mm) do not touch the next finger or the palm window, over the full flexion and abduction range.
 
 ---
 
@@ -214,7 +219,8 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 2. Put the servo at **center**.
 3. Thread the flexor tendon through the cross hole of one groove, the extensor through the other.
 4. Wrap **at least 1.5 turns** in each groove, in **opposite directions**: when the spool turns, one tendon is pulled and the other is released by the same length.
-5. Reference: about 90° of finger flexion ≈ 12.6 mm of tendon ≈ 90° of spool rotation.
+5. Reference (CAD estimate): full flexion (about 70° of Link rotation) ≈ 10 mm of tendon; abduction ±20° ≈ ±4.5 mm. Up to about 15 mm in total ≈ 105° of spool rotation.
+6. **First tests at a servo torque limit of 10 %** (about 35 N of tendon tension): the Link is the weakest part.
 
 ### 5.2 PTFE tubes
 1. Cut 16 tubes (8 loops × 2), about 30 to 40 cm each. Exact length depends on the pair mount positions (🚧).
@@ -302,7 +308,7 @@ Code and details: [matebot/code/yun-6-servos](matebot/code/yun-6-servos/).
 8. `off` / `on` turns torque off / on. `r 3` reads servo 3.
 
 ### First finger test (one finger, two servos, 40 cm tubes)
-1. Torque limit 30 %.
+1. Torque limit 10 % (30 % at most once the finger is proven).
 2. Small moves around center: A+B same way = flex/extend, opposite = abduction.
 3. Note travel, backlash, friction (servo load reading) and temperature.
 4. Next: fingertip force with a spring scale, all 4 fingers, grip a water bottle, 30 min endurance. Report the numbers so this manual can be updated.
@@ -326,7 +332,7 @@ Code and details: [matebot/code/yun-6-servos](matebot/code/yun-6-servos/).
 
 ### Safety
 - Emergency stop on the 12 V line, within reach.
-- Start with a 30 % torque limit; watch temperature.
+- Start with a 10 % torque limit (the tendon Link is the weak part); watch temperature.
 - Keep fingers and hair away from spools. Wear glasses: a tendon can snap under tension.
 
 ---

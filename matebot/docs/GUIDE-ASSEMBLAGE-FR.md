@@ -7,7 +7,7 @@
 - 4 doigts Amazing Hand, 2 DDL par doigt, donc 8 DDL.
 - Les servos de la paume sont retirés. **8 × Feetech STS3215 12 V** sont logés dans l'avant-bras, un spool à double gorge (r = 8 mm) sur chacun.
 - Chaque servo forme **une boucle antagoniste fermée** : une gorge tire le tendon fléchisseur, l'autre le tendon extenseur.
-- Le servo A s'attache au côté gauche de la base du doigt, le servo B au côté droit.
+- Chaque doigt a **deux plaques à tendons** (côté +X et côté −X) sur la pièce `finger_link_tendon`, qui remplace le Link d'origine. Chaque servo a une boucle : fléchisseur sur une plaque, extenseur sur la plaque **opposée** (boucles croisées, sinon le doigt ne peut pas faire d'abduction). Servo A : fléchisseur côté +X, extenseur côté −X. Servo B : fléchisseur côté −X, extenseur côté +X.
 - **A et B dans le même sens = flexion. En sens opposé = abduction.**
 - Tendons : tresse PE (UHMWPE) classe ~100 lb, dans des gaines PTFE 2 × 4 mm (Bowden).
 
@@ -19,9 +19,9 @@
 | Spool double gorge r8 | `spool_r8.stl` | 8 (+2 de rechange) | 100 % de remplissage ou 6 parois |
 | Bloc d'ancrage des gaines | `ptfe_anchor_8x.stl` | 4 (2 côté servos, 2 côté paume) | 8 logements par bloc pour 16 gaines. Le README ne parle que d'un bloc par extrémité, à confirmer |
 | Support des servos | `servo_bay_8x_sts3215.stl` (v0), puis 4 supports de paire **à concevoir** | 1, puis 4 | ≈120 × 103 × 18 mm |
-| Adaptateur de tendon (test) | `finger_tendon_adapter_test.stl` | 1 pour l'essai | 4 seulement s'il est validé |
-| Doigt : Finger_Frame-1, Finger_Frame-2, Proximal, Distal, Gimbal, Link, Proximal_Shell, Distal_Shell | `Amazing Hand Parts - <nom>.stl` | 4 de chaque | Shells en TPU (le README garde les coques/coussinets TPU d'origine) |
-| Spacer | `BallJoint_Rod - Spacer.stl` | 8 | Seulement si on garde les bielles d'origine pour comparer |
+| Link à tendons (remplace le Link) | `finger_link_tendon.stl` | 4 (+2 de rechange) | v0 non testé. Imprime-en 1 d'abord. Supports nécessaires. Voir le README de `matebot/` |
+| Doigt : Finger_Frame-1, Finger_Frame-2, Proximal, Distal, Gimbal, Proximal_Shell, Distal_Shell (pas de Link, voir ci-dessus) | `Amazing Hand Parts - <nom>.stl` | 4 de chaque | Shells en TPU (le README garde les coques/coussinets TPU d'origine) |
+| Spacer | `BallJoint_Rod - Spacer.stl` | 0 | **Inutile** avec les tendons (il ne sert qu'aux bielles à rotule d'origine) |
 | Paume, plaque, coque supérieure, interface poignet | `R-Palm_Shell`, `R-Hand_Plate`, `R-Top_Shell`, `R-Wrist_Interface` | 1 de chaque (main droite) | Paume à modifier : poches de servos retirées, plaque d'ancrage PTFE ajoutée |
 
 ## 2. Quincaillerie et matériel
@@ -46,7 +46,7 @@
 1. Fixe le spool sur le palonnier rond d'origine avec 4 × M2.5. Le trou central de 6,5 mm laisse passer la vis centrale du palonnier.
 2. Servo au **centre**, passe le tendon fléchisseur dans le trou transversal d'une gorge, et l'extenseur dans l'autre.
 3. **Enroule au moins 1,5 tour** dans chaque gorge avant l'ancrage, en sens opposés : quand le spool tourne, il tire l'un et relâche l'autre de la même longueur.
-4. Repère : ~90° de flexion demande ~12,6 mm de tendon, soit ~90° de rotation du spool.
+4. Repère (estimation CAO) : flexion complète (environ 70° de rotation du Link) ≈ 10 mm de tendon, abduction ±20° ≈ ±4,5 mm, jusqu'à 15 mm au total ≈ 105° de rotation du spool.
 
 ## 6. Gaines PTFE
 - 16 gaines (8 boucles × 2), environ 30 à 40 cm chacune.
@@ -55,12 +55,14 @@
 - Repère chaque gaine (doigt, A ou B, fléchisseur ou extenseur) avec du ruban de couleur.
 
 ## 7. Assemblage des doigts (d'après le guide officiel)
-1. **Reprise des trous Ø2 :** sur Proximal, Distal, Gimbal et Link, les trous de pivot doivent être en partie **glissants** (plusieurs allers-retours de foret) et en partie **serrés** (un seul aller-retour). Nettoie les surfaces imprimées avec support.
-2. **Mécanisme :** enfonce les axes D2×10 dans le Distal avec le Link entre les oreilles, puis fais de même avec le Gimbal. Enfonce ensuite les axes D2×16 dans le Proximal pour tenir le sous-ensemble. **Vérifie que la flexion et l'extension sont fluides sur toute la course.**
+1. **Reprise des trous Ø2 :** sur Proximal, Distal, Gimbal et `finger_link_tendon` (à la place du Link), les trous de pivot doivent être en partie **glissants** (plusieurs allers-retours de foret) et en partie **serrés** (un seul aller-retour). Nettoie les surfaces imprimées avec support.
+2. **Mécanisme :** enfonce les axes D2×10 dans le Distal avec le `finger_link_tendon` entre les oreilles (plaques vers l'extérieur), puis fais de même avec le Gimbal. Enfonce ensuite les axes D2×16 dans le Proximal pour tenir le sous-ensemble. **Vérifie que la flexion et l'extension sont fluides sur toute la course.**
 3. **Coques :** Proximal_Shell puis Distal_Shell, avec des vis 2.5×6. **Ne serre pas trop**, sinon la vis traverse la coque mince.
 4. **Bagues :** enfonce les 2 bagues Ø int. 6 de chaque côté du Finger_Frame-1. C'est le pivot d'abduction.
 5. **Montage final :** insère le doigt dans les bagues, puis serre la vis 2.5×8 avec sa grande rondelle dans le Gimbal **sans bloquer l'abduction**.
-6. **Différence avec la version à tendons :** à la place des bielles à rotule, attache les boucles A et B aux pattes d'ancrage (canal de 1,2 mm et logement de nœud ou de sertissage). Fais d'abord l'essai avec `finger_tendon_adapter_test`. La modification CAO des doigts **n'est pas encore faite**.
+6. **Différence avec la version à tendons :** utilise `finger_link_tendon` à la place du Link (mêmes trous de pivot) et saute les bielles à rotule, les palonniers et les Spacers. Chaque plaque a une gorge sur son bord et deux poches pour le nœud ou le sertissage (Ø3,2 × 2 mm, canal de 1,2 mm). **Poche du bas = fléchisseur** (côté paume), **poche du haut = extenseur** (dos du doigt). Passe le tendon dans le canal, fais un nœud (ou sertis) dans la poche, puis remets-le au fond. Croise les boucles : fléchisseur du servo A sur la plaque +X et son extenseur sur la plaque −X, l'inverse pour le servo B.
+7. Vérifie que les plaques (jusqu'à X = ±14,4 mm) ne touchent ni le doigt voisin ni la fenêtre de la paume sur toute la course. Les extrémités de gaines dans la paume restent **à concevoir** (à 30 mm ou plus derrière la base du doigt).
+8. **Premiers essais avec la limite de couple des servos à 10 %** (environ 35 N dans le tendon) : le Link à tendons est la pièce la plus faible du doigt. Tout ce qui précède est une estimation CAO, non testée.
 
 ## 8. Réglage de la tension
 1. Mets les deux servos du doigt au **centre**.
@@ -69,7 +71,7 @@
 4. Après 30 min de cycles, vérifie le fluage de la tresse et retends si besoin.
 
 ## 9. Premier test (un doigt, deux servos, gaines de 40 cm)
-1. **Limite de couple à 30 %** dans l'EEPROM avant le premier mouvement.
+1. **Limite de couple à 10 %** dans l'EEPROM avant le premier mouvement (30 % au maximum plus tard).
 2. Petits mouvements autour du centre :
    - **A+B (même sens) : flexion et extension**
    - **A−B (sens opposés) : abduction**
@@ -78,7 +80,7 @@
 
 ## 10. Sécurité
 - **Arrêt d'urgence sur la ligne 12 V**, à portée de main.
-- Limite de couple basse au départ (30 %) et surveillance de la température. Ne maintiens jamais le servo au couple de blocage.
+- Limite de couple basse au départ (10 % pour les essais du doigt) et surveillance de la température. Ne maintiens jamais le servo au couple de blocage.
 - Garde les doigts et les cheveux loin des spools pendant les tests. Porte des lunettes, car un tendon peut casser sous tension.
 - Un adaptateur de bus séparé pour la main au début, pour faciliter le débogage.
 

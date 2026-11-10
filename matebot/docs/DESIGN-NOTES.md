@@ -16,16 +16,17 @@ In the Amazing Hand, each finger is driven by **two servos working as a parallel
 
 Tendon mapping (keeps the same control logic):
 - Each servo becomes **one closed antagonist loop**: one groove of the spool pulls a flexor tendon, the other groove pulls an extensor tendon. Turning the spool pulls one and releases the other by the same length, so no slack and no return spring is needed.
-- Servo A loop attaches to the left side of the finger base (where the left ball-joint rod attached); servo B loop to the right side.
-- Same-direction rotation of A and B → flexion. Opposite → abduction. The firmware mixing stays identical to Pollen's code (only the sign/gain changes).
+- In Pollen's finger the two ball-joint rods attach to the two ends of the cross bar of the **Link** (left rod and right rod). The Link is the crank that drives Proximal and Distal through a 4-bar linkage, so the tendons attach to the Link, not to Proximal or Distal.
+- **Crossed loops.** A tendon pulling at lateral offset ±L shortens by L·θ when the finger abducts by θ. If both legs of one loop sat on the same side they would both shorten, which a closed loop cannot allow (the abduction would be locked). So each servo's flexor goes to one side and its extensor to the **opposite** side: leg lengths then change by +Lθ and −Lθ and the loop is conserved. Servo A: flexor on +X, extensor on −X. Servo B: flexor on −X, extensor on +X. Then A+B same direction = flexion, opposite = abduction, as in Pollen's code (sign of abduction to be set at first test).
 - The distal joint keeps the original coupling of the Amazing Hand finger (it is not separately actuated).
 
 Option considered: flexor-only tendons + return springs/elastic. Cheaper (4 fewer tube runs) but weaker extension and the springs eat grip force. **Default is antagonist loops**; springs are the fallback.
 
 ## 3. Finger modifications (CAD work still to do on the STEP files)
-1. Replace the two ball-joint sockets at the finger base with **tendon anchor lugs** (1.2 mm channel + knot/crimp pocket), see `finger_tendon_adapter_test` part.
-2. Add **tendon channels** on the palm side (flexor) and back side (extensor), radius ≈ 1 mm, with smooth 3 mm minimum bend radius.
-3. Moment arm at the base joint: target **8 mm** (same as spool radius → 1:1 angle mapping).
+1. **`finger_link_tendon`** (done in v0, untested): the original Link plus a cross bar and two capstan plates (groove on the rim, two Ø3.2 × 2 mm knot pockets, Ø1.2 mm channels with a 3 mm bend radius). See `finger_link_tendon_preview.png` and `finger_link_tendon_routing.png`. Generator: `source/finger_link_tendon.py`.
+2. Flexor on the palm side (−Z, lower pocket and lower tangent), extensor on the back (+Z, upper pocket and upper tangent). The rim radius is 9.0 mm and the tendon centre radius 8.3 mm, so the tendon never bends tighter than about 3 mm (channel) and 8.3 mm (groove).
+3. Moment arm at the base joint: **8.3 mm** (about the spool radius → about 1:1 angle mapping). Loop conservation was checked numerically (flexor stroke minus extensor stroke ≤ 0.2 mm over 0 to −70°, tube ends assumed 40 mm behind the pivot).
+4. Proximal, Distal, Gimbal: **unchanged**. Nothing in the 4-bar needs to change.
 4. Palm: remove servo pockets, add a **PTFE tube termination plate** (`ptfe_anchor_8x`) at the wrist side of the palm.
 5. Keep TPU pads/shells from the original.
 
@@ -38,7 +39,7 @@ Option considered: flexor-only tendons + return springs/elastic. Cheaper (4 fewe
 ## 5. Pulley / spool
 - `spool_r8`: two grooves (flexor + extensor) at r = 8 mm, flanges r = 11 mm, cross-hole to anchor each tendon end.
 - Bolts to the stock STS3215 round horn with 4 × M2.5. **Horn bolt-circle assumed 14 mm diameter — verify**; edit `parts.py`.
-- Travel: finger flexion ~90° at an 8 mm moment arm needs ~12.6 mm of tendon = ~90° of spool rotation. Large margin vs. servo 360° range.
+- Travel (CAD estimate with the tendon Link): full flexion (~70° of Link rotation) ≈ 10 mm of tendon, abduction ±20° ≈ ±4.5 mm, up to ~15 mm in total ≈ 105° of spool rotation. Large margin vs. servo 360° range.
 - Print in PETG, 100% infill or 6 walls; wrap tendons ≥1.5 turns before the anchor.
 
 ## 6. Tendon routing through the wrist
@@ -62,10 +63,10 @@ Option considered: flexor-only tendons + return springs/elastic. Cheaper (4 fewe
 ## 9. Control
 - Bus: Feetech SCS/STS serial at 1 Mbps via Waveshare Bus Servo Adapter, shared or separate from the arm bus (recommend a **separate bus/adapter for the hand** at first for debugging). IDs 21–28 for hand servos.
 - Software: Feetech SDK / LeRobot `feetech` motor bus; ROS 2 later. Port Pollen's finger mixing (A+B = flex, A−B = abduction).
-- Safety: torque limit in servo EEPROM (start at 30%), temperature monitoring, e-stop in 12 V line.
+- Safety: torque limit in servo EEPROM (start at 10% for the finger tests (tendon Link is the weak part), 30% at most later), temperature monitoring, e-stop in 12 V line.
 
 ## 10. Assembly and test plan
-1. Measure STS3215 and horn; adjust `parts.py`; print spool + anchor + 1 finger + adapter.
+1. Measure STS3215 and horn; adjust `parts.py`; print spool + anchor + 1 finger with `finger_link_tendon`.
 2. **Single-finger bench test**: 1 finger, 2 servos, 40 cm PTFE runs. Check range, backlash, friction (measure servo load reading).
 3. Luggage-scale test: hook the fingertip, ramp torque limit, record N at fingertip. Film it for the channel.
 4. Build all 4 fingers + palm, full bay.
@@ -78,6 +79,8 @@ Option considered: flexor-only tendons + return springs/elastic. Cheaper (4 fewe
 - Line cutting into PETG channels → add PTFE sleeve or metal eyelets at sharp turns.
 - Servo overheating if holding near stall → torque limits.
 - Finger mechanism coupling may not map cleanly to tendons; may need finger redesign.
+- The Link plate and the Ø6 cross bar carry the full tendon tension. They are the weakest part of the finger: start at a 10% servo torque limit.
+- The tendon plates reach X = ±14.4 mm; with a finger pitch of about 30 mm neighbours would be only about 1.2 mm apart (not verified on a real palm).
 - Unverified dimensions (servo body, horn bolt circle).
 
 ## 12. Open questions
