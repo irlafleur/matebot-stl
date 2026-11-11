@@ -36,7 +36,7 @@ Explainer animation: [tendon-explainer-en.mp4](matebot/docs/tendon-explainer-en.
 |---|---|
 | Finger and palm parts (Amazing Hand) | Ready to print |
 | Forearm shells (InMoov) | Ready to print |
-| Spools, PTFE anchor, tendon Link (`finger_link_tendon`) | v0, untested |
+| Spools, PTFE anchor, tendon Link (`finger_link_tendon`, v1 with dowel pass-through) | v0/v1, untested |
 | Servo bay (8 servos in one block) | Bench test only, does not fit in the forearm |
 | 4 servo-pair mounts | 🚧 Not designed yet |
 | Palm with PTFE anchor plate (`R-Hand_Plate_tendon`, `R-Palm_Shell_tendon`) | v0, untested (index, middle, ring only) |
@@ -108,7 +108,7 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 | `R-Hand_Plate_tendon.stl` | 1 | Replaces the R-Hand_Plate. 12 PTFE sockets for 3 fingers. |
 | `R-Palm_Shell_tendon.stl` | 1 | Replaces the R-Palm_Shell. 3 small notches. |
 | `servo_bay_8x_sts3215.stl` | 1 | Bench test only |
-| `finger_link_tendon.stl` | 4 | +2 spares. Replaces the Link. Print 1 first. Needs supports. |
+| `finger_link_tendon.stl` | 4 | +2 spares. Replaces the Link. v1: dowel holes added. Print 1 first. Needs supports. |
 
 > The BallJoint_Rod Spacers and the original Link are **not needed** with the tendon drive. Proximal, Distal and Gimbal are printed unchanged.
 
@@ -187,8 +187,8 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 
 ### 4.2 Finger mechanism
 1. Place the `finger_link_tendon` (in the place of the Link) between the Distal's ears and push in an axis D2×10. The two plates must point outward, one on each side.
-2. Do the same with the Gimbal.
-3. Push the D2×16 axes into the Proximal to hold the sub-assembly.
+2. Do the same with the Gimbal: the D2×10 pin goes through the **round Ø2.5 hole in the middle of the plate** (the Link pivot), through the Gimbal and the Link, and stops flush with the Gimbal (X = ±5). Push it from either side.
+3. Push the D2×16 axes into the Proximal to hold the sub-assembly. The Gimbal ↔ Proximal pin goes through the **Ø2.5 arc slot above the pivot** in the plate: turn the Link slightly (extension to a little flexion, about +10° to −30°) until the slot lines up with the pin, then push. Once the pins are in, the holes and slot are free and not used.
 4. **Check:** flexion and extension are smooth over the full travel.
 
 ### 4.3 Shells
@@ -211,7 +211,7 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 1. The ball-joint rods are not used. The tendons attach to the two plates of `finger_link_tendon` (v0, untested).
 2. Each plate has a groove on its rim and two pockets. **Lower pocket = flexor** (palm side), **upper pocket = extensor** (back of the finger).
 3. **Cross the loops.** Servo A: flexor on the +X plate, extensor on the −X plate. Servo B: flexor on the −X plate, extensor on the +X plate. Do not put both legs of one servo on the same plate: the finger could not abduct.
-4. For each leg: pass the tendon through the Ø1.2 channel from the groove into the pocket, tie a knot (or crimp a sleeve) in the pocket, then pull it back so the knot seats at the bottom. The knot or sleeve must be bigger than the 1.2 mm channel.
+4. For each leg: pass the tendon through the Ø1.2 channel from the groove into the pocket, tie a **double overhand (stopper) knot** (or crimp a sleeve) in the pocket, leave a 10 mm tail, add one drop of CA glue, then pull it back so the knot seats at the bottom. The knot or sleeve must be bigger than the 1.2 mm channel. **Do not tie the tendon in the Ø2.5 dowel hole or slot**: their lever arm (6 mm or 0 mm) does not match the 9 mm groove, so the loop would not stay closed.
 5. Lay the tendon in the groove and run it straight back toward the palm: the flexor leaves the bottom of the plate, the extensor the top.
 6. The tube ends are in the sockets of `R-Hand_Plate_tendon`, 30 mm behind the finger base. The flexor tube is the lower socket (palm side), the extensor tube the upper socket (back). The tendon leans about 6° inward from the socket to the Link plate. Do not cross tubes between fingers.
 7. Check that the plates (up to X = ±14.4 mm) do not touch the next finger or the palm window, over the full flexion and abduction range.
@@ -225,7 +225,7 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 2. Put the servo at **center**.
 3. Thread the flexor tendon through the cross hole of one groove, the extensor through the other.
 4. Wrap **at least 1.5 turns** in each groove, in **opposite directions**: when the spool turns, one tendon is pulled and the other is released by the same length.
-5. Reference (CAD estimate): full flexion (about 70° of Link rotation) ≈ 10 mm of tendon; abduction ±20° ≈ ±4.5 mm. Up to about 15 mm in total ≈ 105° of spool rotation.
+5. Reference (CAD estimate, Link v1 with 9.0 mm lever arm): full flexion (about 70° of Link rotation) ≈ 11 mm of tendon; abduction ±20° ≈ ±4.5 mm. Up to about 15.5 mm in total ≈ 111° of spool rotation.
 6. **First tests at a servo torque limit of 10 %** (about 35 N of tendon tension): the Link is the weakest part.
 
 ### 5.2 PTFE tubes

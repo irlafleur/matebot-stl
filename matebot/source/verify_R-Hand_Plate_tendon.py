@@ -95,8 +95,8 @@ bad=[];
 for ln in info['lines']:
     f=[x for x in FING if x['name']==ln['finger']][0]
     (x0,y0,z0),(x1,y1,z1)=ln['p_exit'],ln['p_cap']
-    n=math.hypot(x1-x0,y1-y0)
-    tend=cq.Solid.makeCylinder(0.6,n+0.0,cq.Vector(x0,y0,z0),cq.Vector(x1-x0,y1-y0,0)).moved(M.fT(f))   # D1.2 mm tendon incl. margin
+    n=math.sqrt((x1-x0)**2+(y1-y0)**2+(z1-z0)**2)
+    tend=cq.Solid.makeCylinder(0.6,n,cq.Vector(x0,y0,z0),cq.Vector(x1-x0,y1-y0,z1-z0)).moved(M.fT(f))   # D1.2 mm tendon incl. margin
     v=vol(W(tend).intersect(new))
     if v>0.01: bad.append((ln['finger'],ln['side'],ln['kind'],round(v,2)))
 chk("no tendon line (D1.2, mouth of cone to capstan tangent, finger at rest) touches plate material",not bad,f"{len(info['lines'])} lines, collisions: {bad}")
@@ -104,8 +104,8 @@ chk("no tendon line (D1.2, mouth of cone to capstan tangent, finger at rest) tou
 bad=[]
 for ln in info['lines']:
     f=[x for x in FING if x['name']==ln['finger']][0]
-    (x0,y0,z0),(x1,y1,z1)=ln['p_exit'],ln['p_cap']; n=math.hypot(x1-x0,y1-y0)
-    tend=cq.Solid.makeCylinder(P['corridor_d']/2,n,cq.Vector(x0,y0,z0),cq.Vector(x1-x0,y1-y0,0)).moved(M.fT(f))
+    (x0,y0,z0),(x1,y1,z1)=ln['p_exit'],ln['p_cap']; n=math.sqrt((x1-x0)**2+(y1-y0)**2+(z1-z0)**2)
+    tend=cq.Solid.makeCylinder(P['corridor_d']/2,n,cq.Vector(x0,y0,z0),cq.Vector(x1-x0,y1-y0,z1-z0)).moved(M.fT(f))
     v=vol(W(tend).intersect(new))
     if v>0.5: bad.append((ln['finger'],ln['side'],ln['kind'],round(v,2)))
 chk("tendon corridor D3.0 free of plate material",not bad,f"collisions: {bad}")
@@ -114,10 +114,10 @@ tot=0; badl=[]
 for f in FING:
     for s in (-1,1):
         x0=P['plate_x'][0] if s>0 else -P['plate_x'][1]
-        cyl=cq.Workplane("YZ").workplane(offset=x0).center(*P['link_pivot']).circle(9.0).extrude(P['plate_x'][1]-P['plate_x'][0]).val().moved(M.fT(f))
+        cyl=cq.Workplane("YZ").workplane(offset=x0).center(*P['link_pivot']).circle(9.7).extrude(P['plate_x'][1]-P['plate_x'][0]).val().moved(M.fT(f))
         v=vol(W(cyl).intersect(new)); tot+=v
         if v>0.05: badl.append((f['name'],s,round(v,2)))
-chk("swept Link capstan plate (R9.0) clears the new plate",tot<0.05,f"overlap {tot:.2f} mm3 {badl}")
+chk("swept Link capstan plate (R9.7) clears the new plate",tot<0.05,f"overlap {tot:.2f} mm3 {badl}")
 # 7 assembly interference: finger parts at rest vs ADDED material only (new - orig)
 added=new.cut(orig)
 def placed(path,f):
@@ -137,8 +137,8 @@ chk("finger parts (Frame-1, Frame-2, Gimbal, Proximal, tendon Link) clear the ad
 bad=[]
 for ln in info['lines']:
     f=[x for x in FING if x['name']==ln['finger']][0]
-    (x0,y0,z0),(x1,y1,z1)=ln['p_exit'],ln['p_cap']; n=math.hypot(x1-x0,y1-y0)
-    tend=cq.Solid.makeCylinder(0.6,n,cq.Vector(x0,y0,z0),cq.Vector(x1-x0,y1-y0,0)).moved(M.fT(f))
+    (x0,y0,z0),(x1,y1,z1)=ln['p_exit'],ln['p_cap']; n=math.sqrt((x1-x0)**2+(y1-y0)**2+(z1-z0)**2)
+    tend=cq.Solid.makeCylinder(0.6,n,cq.Vector(x0,y0,z0),cq.Vector(x1-x0,y1-y0,z1-z0)).moved(M.fT(f))
     for nme in ("Finger_Frame-1","Finger_Frame-2","Gimbal","Proximal"):
         sh=placed(os.path.join(STEPDIR,f"Amazing Hand Parts - {nme}.step"),f)
         v=vol(W(tend).intersect(W(sh)))

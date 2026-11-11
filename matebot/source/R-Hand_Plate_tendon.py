@@ -9,7 +9,7 @@
 #   * socket = D4.2 x 8 deep bore for a 4 mm OD PTFE tube, stop shoulder with a D2.2 through-hole for the tendon,
 #     then a conical exit (D2.2 -> D5.0 over 3 mm) that faces the finger so the tendon can swing without rubbing.
 #   * tube clearance holes (D5.0) through the cross beam behind the columns, along each tube line.
-#   * tendon corridors (D3.0) and relief cuts so the Link capstan plates (swept R=9.6) and the tendons clear the plate walls.
+#   * tendon corridors (D3.0) and relief cuts so the Link capstan plates (swept R=9.7 + margin 0.6) and the tendons clear the plate walls.
 # Frames: plate frame = Pollen assembly frame (X right, Y toward fingertips, Z toward the back of the hand).
 # Finger frame = plate frame rotated about Z and moved to the finger gimbal (index 0 deg, middle -5.76, ring -13.46).
 import cadquery as cq, math, os, sys, json
@@ -31,9 +31,10 @@ P=dict(
   col_top=15.5, col_bot_margin=4.1, # column goes up to the top face of the slab (Z=15.5): the plate still prints slab-down with no new supports. 4.1 below the flexor axis
   pass_d=4.5,                       # clearance hole for the tube through the cross beam
   corridor_d=3.0,                   # tendon corridor
-  relief_r=9.6,                     # swept radius of the Link capstan plates (rim R=9.0) + 0.6
+  relief_r=10.3,                    # swept radius of the Link capstan plates (rim R=9.7 since finger_link_tendon v1) + 0.6
   link_pivot=(0.0,-6.0), plate_x=(12.0,14.4),
-  capstan_x=13.2, capstan_r=8.3,
+  capstan_x=13.2, capstan_r=9.0,    # tendon centre radius on the Link plate (v1: 9.0, was 8.3)
+  z_cap_ext=3.0, z_cap_flex=-15.0,  # capstan tangent heights = pivot Z (-6) +- capstan_r. The sockets stay at +2.3 / -14.3 (v0 plate geometry unchanged): the tendon only leans 0.7 mm over 25 mm
 )
 def fT(f): return cq.Location(cq.Vector(f['c'][0],f['c'][1],0), cq.Vector(0,0,1), f['th'])
 def cylY(x,z,y_hi,y_lo,d):
@@ -74,11 +75,12 @@ def build(p=P):
                 thru=cylY(xs,z,g['y_back'],-90.0,p['pass_d'])
                 # tendon corridor from the cone mouth to the capstan (leaning toward X=+-13.2)
                 xc=s*p['capstan_x']; ang_y=g['y_front']
-                dx,dy=xc-xs,0.0-ang_y; n=math.hypot(dx,dy)
-                cor=cq.Solid.makeCylinder(p['corridor_d']/2,n+3.0,cq.Vector(xs,ang_y,z),cq.Vector(dx,dy,0)/1.0)
+                zc=p['z_cap_ext'] if nm=="ext" else p['z_cap_flex']
+                dx,dy,dz=xc-xs,0.0-ang_y,zc-z; n=math.sqrt(dx*dx+dy*dy+dz*dz)
+                cor=cq.Solid.makeCylinder(p['corridor_d']/2,n+3.0,cq.Vector(xs,ang_y,z),cq.Vector(dx,dy,dz))
                 cuts += [x.moved(L) for x in (sock,hole,cone,thru,cor)]
                 lines.append(dict(finger=f['name'],side=s,kind=nm,
-                                  p_exit=(xs,g['y_front'],z), p_cap=(xc,0.0,z), axis=(xs,z)))
+                                  p_exit=(xs,g['y_front'],z), p_cap=(xc,0.0,zc), axis=(xs,z)))
             # relief for the swept Link capstan plate on this side
             x0=p['plate_x'][0] if s>0 else -p['plate_x'][1]
             rel=cq.Workplane("YZ").workplane(offset=x0-0.6).center(*p['link_pivot']).circle(p['relief_r']).extrude(p['plate_x'][1]-p['plate_x'][0]+1.2).val()

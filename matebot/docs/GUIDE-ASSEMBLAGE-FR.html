@@ -48,7 +48,7 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <td>Link à tendons (remplace le Link)</td>
 <td><code>finger_link_tendon.stl</code></td>
 <td>4 (+2 de rechange)</td>
-<td>v0 non testé. Imprime-en 1 d'abord. Supports nécessaires. Voir le README de <code>matebot/</code></td>
+<td>v1 non testé (trous pour les axes ajoutés). Imprime-en 1 d'abord. Supports nécessaires. Voir le README de <code>matebot/</code></td>
 </tr>
 <tr>
 <td>Doigt : Finger_Frame-1, Finger_Frame-2, Proximal, Distal, Gimbal, Proximal_Shell, Distal_Shell (pas de Link, voir ci-dessus)</td>
@@ -108,7 +108,7 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <li>Fixe le spool sur le palonnier rond d'origine avec 4 × M2.5. Le trou central de 6,5 mm laisse passer la vis centrale du palonnier.</li>
 <li>Servo au <strong>centre</strong>, passe le tendon fléchisseur dans le trou transversal d'une gorge, et l'extenseur dans l'autre.</li>
 <li><strong>Enroule au moins 1,5 tour</strong> dans chaque gorge avant l'ancrage, en sens opposés : quand le spool tourne, il tire l'un et relâche l'autre de la même longueur.</li>
-<li>Repère (estimation CAO) : flexion complète (environ 70° de rotation du Link) ≈ 10 mm de tendon, abduction ±20° ≈ ±4,5 mm, jusqu'à 15 mm au total ≈ 105° de rotation du spool.</li>
+<li>Repère (estimation CAO) : flexion complète (environ 70° de rotation du Link) ≈ 11 mm de tendon (bras de levier de 9 mm, Link v1), abduction ±20° ≈ ±4,5 mm, jusqu'à 15,5 mm au total ≈ 111° de rotation du spool.</li>
 </ol>
 <h2>6. Gaines PTFE</h2>
 <ul>
@@ -121,11 +121,11 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <h2>7. Assemblage des doigts (d'après le guide officiel)</h2>
 <ol>
 <li><strong>Reprise des trous Ø2 :</strong> sur Proximal, Distal, Gimbal et <code>finger_link_tendon</code> (à la place du Link), les trous de pivot doivent être en partie <strong>glissants</strong> (plusieurs allers-retours de foret) et en partie <strong>serrés</strong> (un seul aller-retour). Nettoie les surfaces imprimées avec support.</li>
-<li><strong>Mécanisme :</strong> enfonce les axes D2×10 dans le Distal avec le <code>finger_link_tendon</code> entre les oreilles (plaques vers l'extérieur), puis fais de même avec le Gimbal. Enfonce ensuite les axes D2×16 dans le Proximal pour tenir le sous-ensemble. <strong>Vérifie que la flexion et l'extension sont fluides sur toute la course.</strong></li>
+<li><strong>Mécanisme :</strong> enfonce les axes D2×10 dans le Distal avec le <code>finger_link_tendon</code> entre les oreilles (plaques vers l'extérieur), puis fais de même avec le Gimbal. Les axes passent dans les trous de Ø2,5 des plaques : l'axe D2×10 du Gimbal dans le <strong>trou rond au centre de la plaque</strong> (le pivot du Link), l'axe D2×16 Gimbal ↔ Proximal dans la <strong>fente en arc</strong> au-dessus du pivot (incline un peu le Link, de +10° en extension à −30° en flexion, pour aligner la fente avec l'axe). Enfonce ensuite les axes D2×16 dans le Proximal pour tenir le sous-ensemble ; une fois les axes en place, les trous sont libres. <strong>Vérifie que la flexion et l'extension sont fluides sur toute la course.</strong></li>
 <li><strong>Coques :</strong> Proximal_Shell puis Distal_Shell, avec des vis 2.5×6. <strong>Ne serre pas trop</strong>, sinon la vis traverse la coque mince.</li>
 <li><strong>Bagues :</strong> enfonce les 2 bagues Ø int. 6 de chaque côté du Finger_Frame-1. C'est le pivot d'abduction.</li>
 <li><strong>Montage final :</strong> insère le doigt dans les bagues, puis serre la vis 2.5×8 avec sa grande rondelle dans le Gimbal <strong>sans bloquer l'abduction</strong>.</li>
-<li><strong>Différence avec la version à tendons :</strong> utilise <code>finger_link_tendon</code> à la place du Link (mêmes trous de pivot) et saute les bielles à rotule, les palonniers et les Spacers. Chaque plaque a une gorge sur son bord et deux poches pour le nœud ou le sertissage (Ø3,2 × 2 mm, canal de 1,2 mm). <strong>Poche du bas = fléchisseur</strong> (côté paume), <strong>poche du haut = extenseur</strong> (dos du doigt). Passe le tendon dans le canal, fais un nœud (ou sertis) dans la poche, puis remets-le au fond. Croise les boucles : fléchisseur du servo A sur la plaque +X et son extenseur sur la plaque −X, l'inverse pour le servo B.</li>
+<li><strong>Différence avec la version à tendons :</strong> utilise <code>finger_link_tendon</code> à la place du Link (mêmes trous de pivot) et saute les bielles à rotule, les palonniers et les Spacers. Chaque plaque a une gorge sur son bord et deux poches pour le nœud ou le sertissage (Ø3,2 × 2 mm, canal de 1,2 mm). <strong>Poche du bas = fléchisseur</strong> (côté paume), <strong>poche du haut = extenseur</strong> (dos du doigt). Passe le tendon dans le canal, fais un <strong>double nœud d'arrêt</strong> (ou sertis) dans la poche, laisse 10 mm de queue, mets une goutte de colle cyano, puis remets le nœud au fond. <strong>N'attache pas le tendon dans le trou ou la fente de Ø2,5</strong> : leur bras de levier (6 mm ou 0) ne correspond pas aux 9 mm de la gorge, la boucle ne resterait pas fermée. Croise les boucles : fléchisseur du servo A sur la plaque +X et son extenseur sur la plaque −X, l'inverse pour le servo B.</li>
 <li>Vérifie que les plaques (jusqu'à X = ±14,4 mm) ne touchent ni le doigt voisin ni la fenêtre de la paume sur toute la course. Les extrémités de gaines dans la paume restent <strong>à concevoir</strong> (à 30 mm ou plus derrière la base du doigt).</li>
 <li><strong>Premiers essais avec la limite de couple des servos à 10 %</strong> (environ 35 N dans le tendon) : le Link à tendons est la pièce la plus faible du doigt. Tout ce qui précède est une estimation CAO, non testée.</li>
 </ol>

@@ -11,15 +11,41 @@ G2=(0.0,-6.0)             # Link pivot (Y,Z)
 BAR_C=(3.6,-11.1)         # original cross barrel centre (Y,Z)
 P=dict(
   x_in=12.0, t=2.4,       # plate x range: 12.0 .. 14.4 (Proximal_Shell is +-11.9 wide)
-  R_out=9.0,              # rim radius
+  R_out=9.7,              # rim radius (v1: 9.0 -> 9.7 so the dowel slot keeps a 1.2 mm wall under the groove; tendon centre radius 8.3 -> 9.0)
   groove_w=1.4, groove_d=1.2,   # U groove, tendon centre radius ~8.3
   bar_r=3.0,
   pocket_d=3.2, pocket_depth=2.0, pocket_r=5.2,  # knot / crimp pocket
   psi_flex=-15.0, psi_ext=35.0,      # pocket angles on plate (deg, 0 = +Y, 90 = +Z)
   cut_from=175.0, cut_to=250.0,      # removed wedge (lower back) - tendons never wrap there
+  wedge_apex_r=4.2,                  # v1: apex of the wedge moved 4.2 mm away from the pivot so the pivot dowel hole keeps a closed wall
   chan_d=1.2, bend_r=3.0,
+  # v1: dowel pass-through in both capstan plates (the pins only pass through during assembly, they do not stay in the plates)
+  dowel_d=2.5,
+  dowel_pivot=(0.0,-6.0),             # D2x10 Gimbal<->Link pin: axis = Link pivot, round hole
+  dowel_prox=(0.0,0.0),               # D2x16 Gimbal<->Proximal pin: axis at (Y,Z)=(0,0); slot around the pivot so the Link may be tilted at assembly
+  dowel_slot_deg=(80.0,120.0),        # slot range, angle on the plate about the pivot (90 deg = pin axis with the Link at its CAD rest angle; >90 = Link flexed)
+  wall_min=1.2,
 )
 def pol(r,psi): a=math.radians(psi); return (G2[0]+r*math.cos(a), G2[1]+r*math.sin(a))  # (Y,Z)
+def slot_solid(p,x_a,x_b,grow=0.0):
+    """arc slot (width dowel_d+2*grow) around the Link pivot at radius |dowel_prox - pivot|, from x_a to x_b along X"""
+    cy,cz=G2; r=math.hypot(p['dowel_prox'][0]-cy,p['dowel_prox'][1]-cz); w=p['dowel_d']/2+grow
+    a0,a1=[math.radians(a) for a in p['dowel_slot_deg']]; am=(a0+a1)/2
+    pt=lambda rr,a:(cy+rr*math.cos(a),cz+rr*math.sin(a))
+    wp=cq.Workplane("YZ").workplane(offset=x_a)
+    sect=(wp.moveTo(*pt(r-w,a0)).threePointArc(pt(r-w,am),pt(r-w,a1)).lineTo(*pt(r+w,a1))
+            .threePointArc(pt(r+w,am),pt(r+w,a0)).close().extrude(x_b-x_a))
+    for a in (a0,a1):
+        c=cq.Workplane("YZ").workplane(offset=x_a).center(*pt(r,a)).circle(w).extrude(x_b-x_a); sect=sect.union(c)
+    return sect
+def dowel_cutters(p,grow=0.0):
+    out=[]
+    for sign in (1,-1):
+        xa=sign*(p['x_in']-0.5) if sign>0 else -(p['x_in']+p['t']+0.5)
+        xb=(p['x_in']+p['t']+0.5) if sign>0 else -(p['x_in']-0.5)
+        out.append(cq.Workplane("YZ").workplane(offset=xa).center(*p['dowel_pivot']).circle(p['dowel_d']/2+grow).extrude(xb-xa))
+        out.append(slot_solid(p,xa,xb,grow))
+    return out
 def build(p=P, bar_r=None):
     bar_r=bar_r or p['bar_r']
     link=cq.importers.importStep(SRC)
@@ -27,7 +53,7 @@ def build(p=P, bar_r=None):
     def plate_side(sign):
         disc=cq.Workplane("YZ").workplane(offset=x0).center(*G2).circle(p['R_out']).extrude(p['t'])
         # remove wedge
-        pts=[G2]+[pol(30,a) for a in (p['cut_from'],212,p['cut_to'])]
+        pts=[pol(p['wedge_apex_r'],0.5*(p['cut_from']+p['cut_to']))]+[pol(30,a) for a in (p['cut_from'],212,p['cut_to'])]
         wedge=cq.Workplane("YZ").workplane(offset=x0-1).polyline(pts).close().extrude(p['t']+2)
         disc=disc.cut(wedge)
         # groove
@@ -72,6 +98,8 @@ def build(p=P, bar_r=None):
         return disc
     bar=cq.Workplane("YZ").workplane(offset=-(x0+0.3)).center(*BAR_C).circle(bar_r).extrude(2*(x0+0.3))
     out=link.union(bar).union(plate_side(+1)).union(plate_side(-1))
+    if p.get('dowel',True):
+        for c in dowel_cutters(p): out=out.cut(c)
     return out,link
 if __name__=="__main__":
     new,orig=build()
