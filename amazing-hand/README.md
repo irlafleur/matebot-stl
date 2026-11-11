@@ -12,6 +12,7 @@ A 4-finger robotic hand by [Pollen Robotics](https://github.com/pollen-robotics/
 | Finger_Frame-1, Finger_Frame-2, Proximal, Distal, Gimbal | 4 each (one per finger). **Link: not printed with MateBot's tendon drive** (see below) |
 | Proximal_Shell, Distal_Shell | 4 each |
 | BallJoint_Rod - Spacer | 8 (2 per finger), **not needed with MateBot's tendon drive** |
+| Bushing D interior 6 (igus GFM-0608-04) | 8 (2 per finger), a **bought** part in Pollen's BOM, not in these files. MateBot prints it: [`matebot/stl/bushing_d6_flanged.stl`](../matebot/stl/bushing_d6_flanged.stl) |
 | Palm_Shell, Hand_Plate, Top_Shell, Wrist_Interface | 1 each, L or R for the hand you build |
 | Spares worth printing | 2 Gimbal, 2 Distal (and 2 Link if you build the original servo-in-palm hand) |
 

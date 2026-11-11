@@ -8,8 +8,8 @@ MateBot moves the Amazing Hand's 8 servos out of the palm and into the forearm. 
 
 - `stl/`: ready-to-print files
 - `step/`: editable CAD files
-- `source/`: Python (CadQuery) scripts that generate the parts: `parts.py` (spool, PTFE anchor, servo bay) `finger_link_tendon.py` (the modified finger Link) and `R-Hand_Plate_tendon.py` (the modified hand plate and palm shell), with `verify_R-Hand_Plate_tendon.py` and `render_plate_tendon.py`
-- `docs/`: design notes, assembly guide (French), preview images (`finger_link_tendon_preview.png`, `finger_link_tendon_routing.png`, `R-Hand_Plate_tendon_preview.png`, `R-Hand_Plate_tendon_routing.png`) and an explainer animation
+- `source/`: Python (CadQuery) scripts that generate the parts: `parts.py` (spool, PTFE anchor, servo bay) `finger_link_tendon.py` (the modified finger Link), `bushing_d6.py` (the printable finger bushing, with `verify_bushing_d6.py` and `render_bushing_d6.py`) and `R-Hand_Plate_tendon.py` (the modified hand plate and palm shell), with `verify_R-Hand_Plate_tendon.py` and `render_plate_tendon.py`
+- `docs/`: design notes, assembly guide (French), preview images (`finger_link_tendon_preview.png`, `finger_link_tendon_routing.png`, `R-Hand_Plate_tendon_preview.png`, `R-Hand_Plate_tendon_routing.png`, `bushing_d6_preview.png`) and an explainer animation
 
 ## Parts to print
 
@@ -20,8 +20,32 @@ MateBot moves the Amazing Hand's 8 servos out of the palm and into the forearm. 
 | `servo_bay_8x_sts3215.stl` | 1 | **Bench testing only.** It does not fit inside the forearm; it will be replaced by 4 pair mounts. |
 | `finger_link_tendon.stl` | 4 (+2 spares) | **Replaces Pollen's `Link`** (do not also print the original Link). Same pivot holes, plus a cross bar and two tendon plates, now with **dowel pass-through holes** (v1). Print 1 first. Needs supports. |
 
+| `bushing_d6_flanged.stl` | 8 (+2 spares) | **Printable version of Pollen's "Bushing D interior 6 mm"** (GFM-0608-04): 2 per finger, pressed into Finger_Frame-1. Small part: print all 10 at once. See [the bushing section](#the-finger-bushing-bushing_d6_flanged-v0-untested). |
 | `R-Hand_Plate_tendon.stl` | 1 | **Replaces Pollen's `R-Hand_Plate`.** Same outline and screw holes, plus 12 PTFE tube sockets for the index, middle and ring fingers. Needs no support (same as the original). |
 | `R-Palm_Shell_tendon.stl` | 1 | **Replaces Pollen's `R-Palm_Shell`.** Same shell with 3 small notches where the new sockets reach it. Print in the same material as the original. |
+
+## The finger bushing: `bushing_d6_flanged` (v0, untested)
+
+**What Pollen calls it.** In the Amazing Hand bill of materials and assembly guide (Step 2, "Bushings") it is **"Bushing D interior 6 mm / D exterior 8 mm", part number GFM-0608-04**: an igus iglidur GFM flanged plastic bush, 6 mm bore, 8 mm OD, 4 mm long including the flange, flange D12 × 1 mm. It is a *bought* part, 2 per finger (8 per hand with the thumb), so it was never in the STL set. It is the only bushing in the hand: the D2×10 and D2×16 axes turn directly in the printed holes of the Gimbal, Proximal, Distal and Link, and the BallJoint_Rod Spacers (not needed with tendons) are not bushings.
+
+**Where it goes.** The finger's abduction / adduction pivot. The Gimbal has a D6.0 boss (Z 3.5 to 13.5 in the finger frame); `Finger_Frame-1` has a D8.15 through bore (8.0 mm long). One bushing is pushed in from each side, flange outside, until the flange touches the frame. The boss sticks out of the frame by exactly 1.0 mm on each side, which is the flange thickness, so the M2.5 large washer and the 2.5×8 screw end up resting on the outer flange.
+
+| | Printed `bushing_d6_flanged` | Pollen / igus GFM-0608-04 |
+|---|---|---|
+| Bore | **D6.20** (the Gimbal boss is D6.0) | D6.0 (+0.02 to +0.07) |
+| Body OD | **D8.10** (frame bore D8.15 in the CAD) | D8.0 |
+| Flange | D12.0 × 1.0 | D12 × 1 |
+| Total length | 4.0 (body 3.0 under the flange) | 4.0 |
+| Wall | 0.95 mm (body), 1.0 mm (flange) | |
+| Chamfers | 0.25 on the outer body tip (lead-in), 0.2 on the bore both ends | 0.5 |
+| Quantity | **8 (+2 spares = 10)** | 8 |
+
+- **Print:** upright (flange on the bed, body up, no support), PETG, 0.12 mm layers, 3 or more walls (the 0.95 mm wall is all perimeters), 100% infill, about 40 mm/s. Put all 10 on one plate with 3 mm spacing.
+- **Fit:** the printed Finger_Frame-1 bore usually comes out slightly under the drawn D8.15, so the body is a light press fit. Push the bushing in against a flat surface. If it will not go, sand the body; if it is loose, a drop of CA glue on the body. Pass a D6.2 drill or reamer by hand through the bore if the Gimbal boss does not turn freely (D6.3 if it is still tight). One drop of PTFE or silicone grease on the boss; PETG running on PETG can squeak.
+- **Measure before printing all 10:** the real bore of your printed Finger_Frame-1 and the real boss of your printed Gimbal (caliper). Print 2 test bushings first. To re-size, edit `od` and `bore` in `source/bushing_d6.py` and run it.
+- **Verified in CAD** (`source/verify_bushing_d6.py`, 12 of 12 pass): the pair fits the Frame-1 bore and the Gimbal boss with no interference, with the Gimbal turned ±30°; no contact with Finger_Frame-2, Proximal, shells, Distal, the hand plate, `finger_link_tendon`, `R-Hand_Plate_tendon` or `R-Palm_Shell_tendon` (they sit at |X| ≥ 12 mm, far from the D12 flanges), and none while Proximal, shells, Distal and Link are swept through −80° to 0° of flexion. The flange only touches the Proximal if the finger is pushed more than +5° past straight; the frame itself stops the Proximal at +7°.
+- **Not verified:** real printed tolerances, wear and friction of PETG on PETG, and the thumb (its frame is assumed identical to the fingers' Finger_Frame-1).
+- Original part, if you ever prefer to buy it: igus iglidur GFM-0608-04 (Pollen's BOM lists 8 per hand at about 1.60 EUR each). Nothing was bought.
 
 ## The palm plate: `R-Hand_Plate_tendon` (v0, untested)
 

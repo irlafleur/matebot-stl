@@ -19,6 +19,7 @@
 | Spool double gorge r8 | `spool_r8.stl` | 8 (+2 de rechange) | 100 % de remplissage ou 6 parois |
 | Bloc d'ancrage des gaines (côté servos) | `ptfe_anchor_8x.stl` | 2 | 8 logements par bloc pour 16 gaines. Côté paume, les gaines sont maintenant dans la plaque `R-Hand_Plate_tendon` |
 | Support des servos | `servo_bay_8x_sts3215.stl` (v0), puis 4 supports de paire **à concevoir** | 1, puis 4 | ≈120 × 103 × 18 mm |
+| Bague de pivot d'abduction (remplace la bague achetée Ø int. 6, igus GFM-0608-04) | `bushing_d6_flanged.stl` | 8 (+2 de rechange) | 2 par doigt. Imprime-les debout (collerette sur le plateau), 0,12 mm, toutes ensemble. Voir le README de `matebot/` |
 | Link à tendons (remplace le Link) | `finger_link_tendon.stl` | 4 (+2 de rechange) | v1 non testé (trous pour les axes ajoutés). Imprime-en 1 d'abord. Supports nécessaires. Voir le README de `matebot/` |
 | Doigt : Finger_Frame-1, Finger_Frame-2, Proximal, Distal, Gimbal, Proximal_Shell, Distal_Shell (pas de Link, voir ci-dessus) | `Amazing Hand Parts - <nom>.stl` | 4 de chaque | Shells en TPU (le README garde les coques/coussinets TPU d'origine) |
 | Spacer | `BallJoint_Rod - Spacer.stl` | 0 | **Inutile** avec les tendons (il ne sert qu'aux bielles à rotule d'origine) |
@@ -30,7 +31,7 @@
 - 8 × STS3215 12 V, 1 adaptateur Waveshare Bus Servo Adapter (A) dédié à la main, une alimentation 12 V 10 A.
 - Tresse PE ~100 lb, ~7 m de tube PTFE 2 × 4 mm, sertissages ~1 mm (pas encore achetés ni chiffrés).
 - Vis M2.5 (spool sur palonnier, 4 par spool, soit 32), vis M3 (4 pour le support, 2 par bloc d'ancrage).
-- Doigts (guide officiel, par doigt) : 2 bagues Ø int. 6, 1 grande rondelle M2.5, 2 axes D2×10, 2 axes D2×16, 4 vis thermoplastique 2.5×6, 1 vis 2.5×8.
+- Doigts (guide officiel, par doigt) : 2 bagues Ø int. 6 (**imprimées** : `bushing_d6_flanged.stl`), 1 grande rondelle M2.5, 2 axes D2×10, 2 axes D2×16, 4 vis thermoplastique 2.5×6, 1 vis 2.5×8.
 - Outils (guide officiel) : forets Ø1.5 et Ø2, taraud M2, tournevis PH0, pince plate, scalpel, Dremel, perceuse.
 
 ## 3. Préparer et tester les servos (avant tout montage)
@@ -61,7 +62,7 @@
 1. **Reprise des trous Ø2 :** sur Proximal, Distal, Gimbal et `finger_link_tendon` (à la place du Link), les trous de pivot doivent être en partie **glissants** (plusieurs allers-retours de foret) et en partie **serrés** (un seul aller-retour). Nettoie les surfaces imprimées avec support.
 2. **Mécanisme :** enfonce les axes D2×10 dans le Distal avec le `finger_link_tendon` entre les oreilles (plaques vers l'extérieur), puis fais de même avec le Gimbal. Les axes passent dans les trous de Ø2,5 des plaques : l'axe D2×10 du Gimbal dans le **trou rond au centre de la plaque** (le pivot du Link), l'axe D2×16 Gimbal ↔ Proximal dans la **fente en arc** au-dessus du pivot (incline un peu le Link, de +10° en extension à −30° en flexion, pour aligner la fente avec l'axe). Enfonce ensuite les axes D2×16 dans le Proximal pour tenir le sous-ensemble ; une fois les axes en place, les trous sont libres. **Vérifie que la flexion et l'extension sont fluides sur toute la course.**
 3. **Coques :** Proximal_Shell puis Distal_Shell, avec des vis 2.5×6. **Ne serre pas trop**, sinon la vis traverse la coque mince.
-4. **Bagues :** enfonce les 2 bagues Ø int. 6 de chaque côté du Finger_Frame-1. C'est le pivot d'abduction.
+4. **Bagues :** enfonce les 2 bagues imprimées `bushing_d6_flanged` de chaque côté du Finger_Frame-1, collerette à l'extérieur, en appuyant sur une surface plane jusqu'à ce que la collerette touche le cadre. C'est le pivot d'abduction. Si une bague est lâche, une goutte de colle cyano sur son corps ; si le pivot du Gimbal ne tourne pas librement, repasse un foret Ø6,2 à la main dans l'alésage et mets une goutte de graisse PTFE ou silicone. Mesure d'abord l'alésage réel de ton Finger_Frame-1 et le pivot réel de ton Gimbal : imprime 2 bagues d'essai avant les 10.
 5. **Montage final :** insère le doigt dans les bagues, puis serre la vis 2.5×8 avec sa grande rondelle dans le Gimbal **sans bloquer l'abduction**.
 6. **Différence avec la version à tendons :** utilise `finger_link_tendon` à la place du Link (mêmes trous de pivot) et saute les bielles à rotule, les palonniers et les Spacers. Chaque plaque a une gorge sur son bord et deux poches pour le nœud ou le sertissage (Ø3,2 × 2 mm, canal de 1,2 mm). **Poche du bas = fléchisseur** (côté paume), **poche du haut = extenseur** (dos du doigt). Passe le tendon dans le canal, fais un **double nœud d'arrêt** (ou sertis) dans la poche, laisse 10 mm de queue, mets une goutte de colle cyano, puis remets le nœud au fond. **N'attache pas le tendon dans le trou ou la fente de Ø2,5** : leur bras de levier (6 mm ou 0) ne correspond pas aux 9 mm de la gorge, la boucle ne resterait pas fermée. Croise les boucles : fléchisseur du servo A sur la plaque +X et son extenseur sur la plaque −X, l'inverse pour le servo B.
 7. Vérifie que les plaques (jusqu'à X = ±14,4 mm) ne touchent ni le doigt voisin ni la fenêtre de la paume sur toute la course. Les extrémités de gaines dans la paume restent **à concevoir** (à 30 mm ou plus derrière la base du doigt).

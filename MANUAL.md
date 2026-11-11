@@ -73,7 +73,7 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 - [ ] Crimp sleeves, about 1 mm
 - [ ] M2.5 screws: 4 per spool (32)
 - [ ] M3 screws: 4 for the servo bay, 2 per PTFE anchor block
-- [ ] Per finger (×4): 2 bushings Ø6 inner, 1 large M2.5 washer, 2 axes D2×10, 2 axes D2×16, 4 thermoplastic screws 2.5×6, 1 thermoplastic screw 2.5×8
+- [ ] Per finger (×4): 2 bushings Ø6 inner (**printed**, `bushing_d6_flanged.stl`, 8 + 2 spares; the original is a bought igus GFM-0608-04), 1 large M2.5 washer, 2 axes D2×10, 2 axes D2×16, 4 thermoplastic screws 2.5×6, 1 thermoplastic screw 2.5×8
 
 ---
 
@@ -108,6 +108,7 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 | `R-Hand_Plate_tendon.stl` | 1 | Replaces the R-Hand_Plate. 12 PTFE sockets for 3 fingers. |
 | `R-Palm_Shell_tendon.stl` | 1 | Replaces the R-Palm_Shell. 3 small notches. |
 | `servo_bay_8x_sts3215.stl` | 1 | Bench test only |
+| `bushing_d6_flanged.stl` | 8 | +2 spares. Replaces Pollen's bought D6 bushing (2 per finger). Print upright, flange down, 0.12 mm layers, all at once. |
 | `finger_link_tendon.stl` | 4 | +2 spares. Replaces the Link. v1: dowel holes added. Print 1 first. Needs supports. |
 
 > The BallJoint_Rod Spacers and the original Link are **not needed** with the tendon drive. Proximal, Distal and Gimbal are printed unchanged.
@@ -128,7 +129,7 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 **InMoov wrist:** RotaWrist1V4, RotaWrist2V3, RotaWrist3V3, WristGearsV5, CableHolderWristV5, 1 each. Not in this repo yet: get them from the [InMoov gallery](https://inmoov.fr/inmoov-stl-parts-viewer/?bodyparts=Rotation-Wrist).
 
 ### Checklist
-- [ ] All finger parts ×4 + spares
+- [ ] All finger parts ×4 + spares (incl. 10 bushings)
 - [ ] Palm parts ×1
 - [ ] 10 spools
 - [ ] Forearm shells
@@ -196,7 +197,7 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 2. **Do not over-tighten**: the screw can go through the thin shell.
 
 ### 4.4 Bushings and final finger
-1. Press the 2 Ø6 bushings into each side of Finger_Frame-1 (abduction pivot).
+1. Press the 2 printed `bushing_d6_flanged` into each side of Finger_Frame-1 (abduction pivot), flange outside, against a flat surface until the flange touches the frame. If a bushing is loose, add a drop of CA glue on its body; if the Gimbal boss does not turn freely, pass a Ø6.2 drill through the bore by hand and add a drop of PTFE or silicone grease.
 2. Insert the finger into the bushings.
 3. Fit the 2.5×8 screw with the large washer into the Gimbal. **Abduction must stay free.**
 

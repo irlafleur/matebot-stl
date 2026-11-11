@@ -40,6 +40,14 @@ The two capstan plates sit at X = 12 to 14.4 mm, on the axes of the assembly pin
 - **Using the hole as the tendon anchor was evaluated and rejected** (the dowel does not stay in it, so it is free after assembly): an extensor tied in the slot has a 6 mm lever arm against 9 mm for the flexor, which breaks loop conservation (mismatch 1.7 mm at −30°, 4.7 mm at −70°, 2D model); entry from the groove would be a 90° turn at the exit tangent; the pivot hole has no lever arm at all. Knots stay in the pockets.
 - Checks: `source/verify_finger_link_tendon.py` (wall ≥ 1.2 mm around both holes, pin paths clear for the whole insertion length with the Link tilted +10° to −30°).
 
+## 3c. Finger bushing (printed equivalent of Pollen's GFM-0608-04)
+- **Upstream:** the Amazing Hand BOM and assembly guide list "Bushing D interior 6 mm / D exterior 8 mm" (igus iglidur GFM-0608-04, flanged, bore 6, OD 8, length 4 including the flange, flange D12 × 1), 2 per finger, pressed into both sides of `Finger_Frame-1` as the abduction / adduction pivot. The guide's last step tightens the M2.5 large washer + 2.5×8 screw "until the washer is in contact with the bushing". All other pivots (D2×10, D2×16 axes) run directly in printed holes.
+- **CAD facts read from the STEP files:** `Finger_Frame-1` has a D8.15 through bore, Z 4.5 to 12.5; the Gimbal boss is D6.0, Z 3.5 to 13.5, i.e. it protrudes exactly 1.0 mm on each side, the flange thickness; the Gimbal shoulder (D11.9) and the frame's R6.0 outer arc both match the D12 flange.
+- **Printed bushing** `bushing_d6.py`: bore D6.20 (+0.20 over the boss, as printed bores run small), OD D8.10 (+0.05 under the CAD bore: light press once printed), flange D12.0 × 1.0, length 4.0, 0.95 mm wall, 0.25 lead-in chamfer. Quantity 8 + 2 spares.
+- **Checks** (`verify_bushing_d6.py`, 12 of 12): no interference with Frame-1, Gimbal (turned ±30°), Frame-2, Proximal, shells, Distal, hand plate, tendon Link, tendon plate and palm shell (rest pose and swept −80° to 0° flexion). Hyper-extension: the flange first touches the Proximal at +5° past straight, the TPU Proximal_Shell at +9°, and the original frame stops the Proximal at +7°, so the flange does not shorten the real range. The new Link plates (|X| ≥ 12) and the dowel slot are nowhere near the flanges (R6).
+- **Friction:** PETG on PETG is rough. Grease the boss, or print the bushings in a harder or slicker filament if you have one (PA, PETG-CF). This is untested.
+- **Open:** real printed bore and boss sizes (measure), thumb frame (assumed identical).
+
 ## 3b. Palm plate with tube anchors (`R-Hand_Plate_tendon`, v0 untested)
 Source: `source/R-Hand_Plate_tendon.py`; checks: `source/verify_R-Hand_Plate_tendon.py`; images `R-Hand_Plate_tendon_preview.png` and `R-Hand_Plate_tendon_routing.png`.
 
