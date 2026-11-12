@@ -11,17 +11,17 @@
 - **A et B dans le même sens = flexion. En sens opposé = abduction.**
 - Tendons : tresse PE (UHMWPE) classe ~100 lb, dans des gaines PTFE 2 × 4 mm (Bowden).
 
-> 🔄 **v9 (2026-11-12, non testé) :** le bloc unique `servo_bay_8x_sts3215` est remplacé par le **châssis 3-3-2** (`forearm_wrist_yoke`, `forearm_rail_3x_L`, `forearm_rail_3x_R`, `forearm_brace`) : paire du pouce au poignet, puis index, majeur et annulaire sur deux rails de 3, tous sur la même face dorsale. Un rang littéral de 3+3+2 de front a été écarté (une rangée de 3 coupe une paire et fait ~90 mm de large au poignet). Le fichier `servo_bay_8x_sts3215.stl` reste utilisable pour le banc d'essai. Dessin du tracé : [`forearm_tubes_FR.png`](forearm_tubes_FR.png). Aperçus : [`forearm_chassis_preview.png`](forearm_chassis_preview.png), [`forearm_parts_preview.png`](forearm_parts_preview.png).
+> 🔄 **v10 (2026-11-12, non testé) :** le bloc unique `servo_bay_8x_sts3215` est remplacé par le **châssis 3-3-2 à rack ouvert** (`forearm_wrist_yoke`, `forearm_rail_3x_L`, `forearm_rail_3x_R`, `forearm_brace`) : paire du pouce au poignet, puis index, majeur et annulaire sur deux rails de 3, **faces alternées (TL, TR, BL, BR)** — pouce et majeur en haut, index et annulaire en bas. Le rack est une plaque médiane ouverte des deux côtés, avec logements et voies sur les deux faces, sans croisement 3D. Un rang littéral de 3+3+2 de front a été écarté (une rangée de 3 coupe une paire et fait ~90 mm de large au poignet). Le fichier `servo_bay_8x_sts3215.stl` reste utilisable pour le banc d'essai. Dessin du tracé (traits pleins = haut, pointillés = bas) : [`forearm_tubes_FR.png`](forearm_tubes_FR.png). Aperçus : [`forearm_chassis_preview.png`](forearm_chassis_preview.png), [`forearm_parts_preview.png`](forearm_parts_preview.png).
 
 ## 1. Pièces imprimées (PETG noir sauf mention)
 | Pièce | Fichier | Qté (1 main) | Note |
 |---|---|---|---|
 | Spool double gorge r8 | `spool_r8.stl` | 8 (+2 de rechange) | Cercle de vis officiel 14 mm, 4 × M3×6 (pas plus longues). 100 % de remplissage ou 6 parois, bride sur le plateau |
-| Joug de poignet | `forearm_wrist_yoke.stl` | 1 | **Nouveau (v9).** Se visse sur `R-Wrist_Interface` (poignet fixe), porte la paire du pouce et ses 4 logements de gaine. Bossage de centrage (Y = −2) sur le plateau |
-| Rail radial (3 servos, côté A) | `forearm_rail_3x_L.stl` | 1 | **Nouveau (v9).** Index, majeur, annulaire, côté radial. Plancher sur le plateau |
-| Rail cubital (3 servos, côté B) | `forearm_rail_3x_R.stl` | 1 | **Nouveau (v9).** Index, majeur, annulaire, côté cubital. Plancher sur le plateau |
-| Entretoise palmaire | `forearm_brace.stl` | 3 | **Nouveau (v9).** Sous les deux rails, 4 × M3. À plat, sans support |
-| Bloc d'ancrage des gaines (côté servos) | `ptfe_anchor_8x.stl` | 0 (banc seulement) | **Inutile avec le châssis v9** (les 16 logements sont sur les rails et le joug). Conservé pour le banc avec le bloc 8 servos |
+| Joug de poignet | `forearm_wrist_yoke.stl` | 1 | **Nouveau (v10).** Rack ouvert, paire du pouce sur la face haute. Se visse sur `R-Wrist_Interface` (poignet fixe), 4 logements du pouce en haut. Bossage de centrage (Y = −2) sur le plateau |
+| Rail radial (3 servos, côté A) | `forearm_rail_3x_L.stl` | 1 | **Nouveau (v10).** Index en bas, majeur en haut, annulaire en bas, côté radial. Plaque médiane à plat, supports sous les nervures palmaires |
+| Rail cubital (3 servos, côté B) | `forearm_rail_3x_R.stl` | 1 | **Nouveau (v10).** Même alternance, côté cubital. Plaque médiane à plat, supports sous les nervures palmaires |
+| Entretoise palmaire | `forearm_brace.stl` | 3 | **Nouveau (v10).** 8 mm, dans les intervalles entre servos, côté palmaire de la plaque. À plat, sans support |
+| Bloc d'ancrage des gaines (côté servos) | `ptfe_anchor_8x.stl` | 0 (banc seulement) | **Inutile avec le châssis v10** (16 logements sur les rails et le joug, 8 en haut et 8 en bas). Conservé pour le banc avec le bloc 8 servos |
 | Support des servos (banc) | `servo_bay_8x_sts3215.stl` | 1 (banc seulement) | 2 rangées de 4, ≈120 × 103 × 18 mm. Ne rentre pas dans l'avant-bras |
 | Bague de pivot d'abduction (remplace la bague achetée Ø int. 6, igus GFM-0608-04) | `bushing_d6_flanged.stl` | Option 1 : 4 (+2 de rechange) ; option 2 : 8 (+2) | Option 1 : seulement la bague du **bas** (celle du haut est remplacée par la bague-rondelle ci-dessous). Option 2 : 2 par doigt. Imprime-les debout (collerette sur le plateau), 0,12 mm, toutes ensemble. Voir le README de `matebot/` |
 | **Bague-rondelle** (remplace la grande rondelle M2.5 **et** la bague du haut ; option 1, Gimbal d'origine, vis par le dessus) | `bushing_washer_d6.stl` | 4 (+2 de rechange) | **Nouveau (v8).** Pièce en chapeau : disque Ø10 × 0,9 + manchon Ø ext. 7,95 / Ø int. 6,2 × 3,5, trou de vis Ø2,7. 3 doigts + pouce. Imprime-la disque sur le plateau, manchon vers le haut, sans support, PETG, 0,12 mm, 100 % de remplissage. CAO vérifiée, non testée à l'impression |
@@ -33,13 +33,13 @@
 | Spacer | `BallJoint_Rod - Spacer.stl` | 0 | **Inutile** avec les tendons (il ne sert qu'aux bielles à rotule d'origine) |
 | Plaque de main à gaines (remplace `R-Hand_Plate`) | `R-Hand_Plate_tendon.stl` | 1 | v1 non testé. **Remplace aussi les Finger_Frame-1 et -2** des 3 doigts : bloc de pivot Ø8,15 sous chaque fenêtre + poteau de vissage du Gimbal. 12 logements de gaine (colonnes **1,5 mm plus courtes** : logements 1,5 mm plus proches). Même contour et mêmes trous de vis que l'original. Pas de supports (comme l'original) |
 | Coque de paume (remplace `R-Palm_Shell`) | `R-Palm_Shell_tendon.stl` | 1 | Encoches pour les logements, les poteaux et les vis, et **ouverture du pouce agrandie** (1,5 mm de jeu sur toute la course estimée) |
-| Coque supérieure, interface poignet | `R-Top_Shell`, `R-Wrist_Interface` | 1 de chaque (main droite) | Inchangées. Le pouce se monte sur l'interface poignet ; ses 4 gaines côté servos sont maintenant dans le joug v9. L'adaptateur RotaWrist (poignet rotatif) reste à concevoir ; le joug tient un poignet fixe |
+| Coque supérieure, interface poignet | `R-Top_Shell`, `R-Wrist_Interface` | 1 de chaque (main droite) | Inchangées. Le pouce se monte sur l'interface poignet ; ses 4 gaines côté servos sont maintenant dans le joug v10 (face haute). L'adaptateur RotaWrist (poignet rotatif) reste à concevoir ; le joug tient un poignet fixe |
 
 ## 2. Quincaillerie et matériel
 - 8 × STS3215 12 V, 1 adaptateur Waveshare Bus Servo Adapter (A) dédié à la main, une alimentation 12 V 10 A.
 - Tresse PE ~100 lb, ~7 m de tube PTFE 2 × 4 mm, sertissages ~1 mm (pas encore achetés ni chiffrés).
 - Vis **M3×6** : 4 par spool (32), **pas plus longues** (4 mm dans le palonnier de 4,5 mm). Les 8 vis centrales M3×6 sont fournies avec les servos.
-- Vis **M2×6** : 4 par servo dans les oreilles du côté fouet (32). Ne pas utiliser de M2×8 : elles entreraient dans le boîtier.
+- Vis **M2×6** : 4 par servo dans les oreilles du côté fouet (32), **par la face libre** (haut : par en dessous ; bas : par au-dessus). Ne pas utiliser de M2×8 : elles entreraient dans le boîtier.
 - Vis **M2×12** (ou M2×10) : 6, à travers la bride du joug (6 mm) dans les trous D2,4 de l'interface poignet.
 - Vis **M3×12 + écrous** : 24 (12 recouvrements rail–joug et 12 trous d'entretoises).
 - Vis M3 : 4 pour le bloc de banc seulement, 2 par `ptfe_anchor_8x` si tu l'utilises encore au banc.
@@ -53,10 +53,10 @@
 4. **Centrage :** mets chaque servo en position milieu (511 en brut dans la méthode Arduino du guide officiel ; 1 pas ≈ 0,293°). Note la valeur.
 5. Vérifie que chaque servo tourne sans bruit et que l'ID répond seul sur le bus.
 
-## 4. Monter le châssis 3-3-2 (v9, non testé)
-- **Disposition retenue :** deux rails de 3 (index, majeur, annulaire ; A au radial, B au cubital) et la paire du pouce au poignet, tous sur la face dorsale. Les paires restent intactes (A et B au même Y). Longueur du paquet ≈ 239 mm, largeur ≈ 80 mm (joug 88,6 mm), épaisseur ≈ 55 mm aux rails (le joug fait 82 mm en Z à cause du couloir palmaire-radial). Chaque pièce tient sur un plateau de 250 mm.
-- **Pourquoi pas 3, 3 et 2 de front, ni 4 paires en file :** un rang de 3 coupe une paire et fait ~90 mm de large au poignet. Quatre stations en file allongent l'avant-bras d'un pas (~53 mm) sans gain de routage. Faces opposées (4+4) : trop épais (~100 mm). Colonne de 8 : ~400 mm, mauvais accès. Voir le tableau de [`forearm_tubes_FR.png`](forearm_tubes_FR.png).
-- **Montage :** visse le joug sur `R-Wrist_Interface` avec 6 × M2×12 (poignet fixe, bossage Ø33,6 dans la fenêtre Ø34). Pose chaque servo, palonnier et spool côté dos, câble vers le coude, oreilles du fouet sur le plancher, 4 × M2×6 par en dessous. Boulonne les rails L et R sur les pattes du joug (3 × M3×12 + écrous par rail), puis les 3 entretoises sous les planchers (4 × M3×12 + écrous chacune). Les câbles en guirlande passent dans l'écart central, vers l'adaptateur Waveshare.
+## 4. Monter le châssis 3-3-2 à rack ouvert (v10, non testé)
+- **Disposition retenue :** deux rails de 3 (index, majeur, annulaire ; A au radial, B au cubital) et la paire du pouce au poignet, **faces alternées (TL, TR, BL, BR)** : pouce et majeur en haut, index et annulaire en bas. Les paires restent intactes (A et B au même Y). Le rack est une plaque médiane de 4 mm, ouverte des deux côtés. Longueur du paquet ≈ 241 mm, largeur ≈ 80 mm (joug 88,6 mm), épaisseur ≈ 97 mm (servo+spool) à 110 mm avec les logements. Chaque pièce tient sur un plateau de 250 mm.
+- **Pourquoi pas 3, 3 et 2 de front, ni 4 paires en file :** un rang de 3 coupe une paire et fait ~90 mm de large au poignet. Quatre stations en file allongent l'avant-bras d'un pas (~53 mm) sans gain de routage. Faces opposées (4+4 au même Y) : ~100 mm d'épais ; le rack alterné a une épaisseur du même ordre, parce que les spools sont des deux côtés, comme demandé. Colonne de 8 : ~400 mm, mauvais accès. Voir le tableau de [`forearm_tubes_FR.png`](forearm_tubes_FR.png).
+- **Montage :** visse le joug sur `R-Wrist_Interface` avec 6 × M2×12 (poignet fixe, bossage Ø33,6 dans la fenêtre Ø34). Pose chaque servo sur sa face (pouce et majeur **en haut**, index et annulaire **en bas**), câble vers le coude, oreilles du fouet sur la plaque médiane, 4 × M2×6 **par la face libre** (servos du haut par en dessous, servos du bas par au-dessus). Boulonne les rails L et R sur les demi-recouvrements du joug (3 × M3×12 + écrous par rail), puis les 3 entretoises sous la plaque, dans les intervalles entre servos (4 × M3×12 + écrous chacune). Les câbles en guirlande passent dans l'écart central, vers l'adaptateur Waveshare.
 - **Banc :** 2 rangées de 4, sorties vers le haut, dans `servo_bay_8x_sts3215`, fixé par 4 × M3. Ce bloc ne rentre pas dans l'avant-bras.
 
 ## 5. Spools et enroulement des tendons
@@ -67,9 +67,9 @@
 
 ## 6. Gaines PTFE
 - 16 gaines (8 boucles × 2), environ 30 à 40 cm chacune.
-- Fixe **les deux extrémités** : côté servos dans les logements du châssis v9 (rails pour index, majeur, annulaire ; joug pour le pouce ; Ø4,2 × 8 mm, comme la plaque), côté paume dans les 12 logements de `R-Hand_Plate_tendon`. Les 4 gaines du pouce sont ancrées sur le joug, puis rejoignent le pouce sur l'interface poignet. Mesure ton tube PTFE au pied à coulisse avant d'imprimer (OD supposé 4,0 mm). Colle chaque gaine avec une goutte de colle cyanoacrylate.
+- Fixe **les deux extrémités** : côté servos dans les logements du châssis v10 (face haute pour pouce et majeur, face basse pour index et annulaire ; Ø4,2 × 8 mm, comme la plaque), côté paume dans les 12 logements de `R-Hand_Plate_tendon`. Les 4 gaines du pouce sont ancrées sur le joug, puis rejoignent le pouce sur l'interface poignet. Mesure ton tube PTFE au pied à coulisse avant d'imprimer (OD supposé 4,0 mm). Colle chaque gaine avec une goutte de colle cyanoacrylate.
 - Dans la plaque : chaque côté de doigt a une colonne sous la plaque avec 2 logements, **extenseur en haut, fléchisseur en bas**. Le bout de gaine est à 30 mm derrière le pivot du doigt. Ne croise pas les gaines entre doigts.
-- **Rayon de courbure d'au moins 30 mm** partout. Chaque doigt a sa voie (index : couloir radial, majeur : fenêtre Ø34, annulaire : couloir cubital, pouce : couloir palmaire-radial) pour que les faisceaux ne se croisent pas. Voir [`forearm_tubes_FR.png`](forearm_tubes_FR.png). Le joug tient un poignet **fixe** ; le passage dans un poignet rotatif reste à concevoir.
+- **Rayon de courbure d'au moins 30 mm** partout. Chaque doigt a sa voie **sur sa face** (index : couloir palmaire-radial, majeur : dorsal / fenêtre Ø34, annulaire : couloir palmaire-cubital, pouce : sockets dorsaux puis descente palmaire-radiale) pour que les faisceaux ne se croisent pas en 3D. Voir [`forearm_tubes_FR.png`](forearm_tubes_FR.png) (traits pleins = haut, pointillés = bas). Le joug tient un poignet **fixe** ; le passage dans un poignet rotatif reste à concevoir.
 - Repère chaque gaine (doigt, A ou B, fléchisseur ou extenseur) avec du ruban de couleur.
 
 ## 7. Assemblage des doigts (d'après le guide officiel)
@@ -89,7 +89,7 @@
 > ![Fixation de la ligne sur les plaques du Link](noeud_tendon_etapes_FR.png)
 
 6. **Différence avec la version à tendons :** utilise `finger_link_tendon` à la place du Link (mêmes trous de pivot) et saute les bielles à rotule, les palonniers et les Spacers. Chaque plaque a une gorge sur son bord et deux poches pour le nœud ou le sertissage (Ø3,2 × 2 mm, canal de 1,2 mm). **Poche du bas = fléchisseur** (côté paume), **poche du haut = extenseur** (dos du doigt). Passe le tendon dans le canal, fais un **double nœud d'arrêt** (ou sertis) dans la poche, laisse 10 mm de queue, tire la ligne pour ramener le nœud au fond de la poche, puis mets une goutte de colle cyano. **N'attache pas le tendon dans le trou ou la fente de Ø2,5** : leur bras de levier (6 mm ou 0) ne correspond pas aux 9 mm de la gorge, la boucle ne resterait pas fermée. Croise les boucles : fléchisseur du servo A sur la plaque +X et son extenseur sur la plaque −X, l'inverse pour le servo B.
-7. Vérifie que les plaques (jusqu'à X = ±14,4 mm) ne touchent ni le doigt voisin ni la fenêtre de la paume sur toute la course. Les extrémités de gaines dans la paume sont déjà dans `R-Hand_Plate_tendon` (12 logements, 30 mm derrière le pivot) ; celles du pouce sont sur le joug v9.
+7. Vérifie que les plaques (jusqu'à X = ±14,4 mm) ne touchent ni le doigt voisin ni la fenêtre de la paume sur toute la course. Les extrémités de gaines dans la paume sont déjà dans `R-Hand_Plate_tendon` (12 logements, 30 mm derrière le pivot) ; celles du pouce sont sur le joug v10 (face haute).
 8. **Premiers essais avec la limite de couple des servos à 10 %** (environ 35 N dans le tendon) : le Link à tendons est la pièce la plus faible du doigt. Tout ce qui précède est une estimation CAO, non testée.
 
 ## 8. Réglage de la tension

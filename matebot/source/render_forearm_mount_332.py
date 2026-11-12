@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Previews of the v9 3-3-2 forearm chassis and a French tube-routing drawing.
+# Previews of the v10 open-rack 3-3-2 forearm chassis (spools above and below) and a French tube-routing drawing.
 # Usage: python render_forearm_mount_332.py
 import os, sys, tempfile, math
 import numpy as np, cadquery as cq
@@ -53,7 +53,7 @@ def frame3(ax, Vs, pad=6, equal_cube=False):
 
 # ---------- 0. spool preview (holes now official 14 mm BCD, M3) ----------
 fig = plt.figure(figsize=(8.2, 4.4))
-fig.suptitle("MateBot  —  spool_r8  (v9, non testé)\nCercle de vis 14 mm (dessin Waveshare ST3215), 4 × M3 Ø3,4, vis M3×6",
+fig.suptitle("MateBot  —  spool_r8  (v10, non testé)\nCercle de vis 14 mm (dessin Waveshare ST3215), 4 × M3 Ø3,4, vis M3×6",
              fontsize=12, fontweight="bold")
 for i, (el, az, title) in enumerate(((28, -40, "trois quarts"), (90, -90, "dessus (trous M3)"))):
     ax = fig.add_subplot(1, 2, i + 1, projection="3d")
@@ -69,7 +69,7 @@ print("wrote spool_r8_preview.png")
 # ---------- 1. printed parts ----------
 fig = plt.figure(figsize=(14.5, 10.2))
 fig.subplots_adjust(left=0.03, right=0.98, top=0.88, bottom=0.04, wspace=0.08, hspace=0.22)
-fig.suptitle("MateBot v9  —  pièces du châssis d'avant-bras  (non testé)", fontsize=15, fontweight="bold", y=0.97)
+fig.suptitle("MateBot v10  —  pièces du châssis d'avant-bras  (non testé)", fontsize=15, fontweight="bold", y=0.97)
 items = [
     (parts["yoke"], "forearm_wrist_yoke  (×1)\njoug au poignet, 4 sockets du pouce", "#4c6ef5", 22, -55, True),
     (parts["rail_L"], "forearm_rail_3x_L  (×1)\ncôté radial, index / majeur / annulaire A", "#20c997", 18, -40, False),
@@ -88,19 +88,20 @@ ax.set_axis_off()
 ax.set_xlim(0, 10); ax.set_ylim(0, 10)
 ax.text(0.2, 9.5, "Impression  (PETG noir)", fontsize=12, fontweight="bold")
 ax.text(0.2, 8.9,
-        "• Rails : plancher sur le plateau, poches\n"
-        "  ouvertes vers le haut.  4 à 6 parois, 40 %,\n"
-        "  0,20 mm.  Supports seulement si le toit\n"
-        "  des logements de tube s'affaisse.\n\n"
+        "• Rails : plaque médiane à plat, face dorsale\n"
+        "  vers le haut.  4 à 6 parois, 40 %, 0,20 mm.\n"
+        "  Supports sous les nervures et logements\n"
+        "  de la face palmaire (index et annulaire).\n\n"
         "• Joug : bossage de centrage (Y = −2 mm)\n"
         "  sur le plateau, trous M2 verticaux.\n"
-        "  Supports sous le plancher du pouce.\n\n"
-        "• Entretoises : à plat, sans support.\n"
+        "  Supports sous les nervures palmaires s'il\n"
+        "  y en a ; le pouce est sur la face dorsale.\n\n"
+        "• Entretoises : à plat, sans support (8 mm).\n"
         "• Spool : bride sur le plateau, 100 %\n"
         "  ou 6 parois, 0,12 à 0,20 mm.\n\n"
         "Lit max. 250 mm : rail 165 mm, joug 120 mm.\n"
-        "Le châssis assemblé fait ~239 mm de long ;\n"
-        "il est fendu pour tenir sur le plateau.",
+        "Paquet ~241 mm de long, ~97 mm d'épaisseur\n"
+        "servo+spool (rails 110 mm avec logements).",
         fontsize=8.5, va="top", family="DejaVu Sans")
 fig.savefig(os.path.join(DOCS, "forearm_parts_preview.png"), dpi=130, bbox_inches="tight", facecolor="white")
 plt.close()
@@ -110,25 +111,23 @@ print("wrote forearm_parts_preview.png")
 assy = [("yoke", parts["yoke"], "#4c6ef5"),
         ("rail_L", parts["rail_L"], "#20c997"),
         ("rail_R", parts["rail_R"], "#20c997")]
-brace_ys = (0.5 * (p["y_index"] + p["y_middle"]),
-            0.5 * (p["y_middle"] + p["y_ring"]),
-            p["y_end"] - 10)
-for yb in brace_ys:
-    assy.append(("brace", parts["brace"].translate((0, yb, p["z_floor"] - p["floor_t"] - 4.0)), "#fab005"))
+for yb in F._gap_ys(p):
+    assy.append(("brace", parts["brace"].translate((0, yb, p["z_bot_face"] - 4.0)), "#fab005"))
 for finger in ("thumb", "index", "middle", "ring"):
     for ab in ("A", "B"):
         xf, ysh = F.servo_xf(finger, ab), F._ys()[finger]
-        env = F.place_S(envelope(cl=0, with_horns=True, with_cables=False), xf, ysh, p["z_shaft"])
-        sp = F.place_S(parts["spool_r8"], xf, ysh, p["z_shaft"])
+        face = F.servo_face(finger)
+        env = F.place_S(envelope(cl=0, with_horns=True, with_cables=False), xf, ysh, F.z_shaft_of(finger), face)
+        sp = F.place_S(parts["spool_r8"], xf, ysh, F.z_shaft_of(finger), face)
         assy.append((f"s_{finger}_{ab}", env, "#868e96"))
         assy.append((f"p_{finger}_{ab}", sp, "#e8590c"))
 
 fig = plt.figure(figsize=(14.5, 8.2))
 fig.subplots_adjust(left=0.01, right=0.99, top=0.88, bottom=0.02, wspace=0.02)
-fig.suptitle("MateBot v9  —  châssis 3-3-2 + 8 × STS3215  (non testé)", fontsize=15, fontweight="bold", y=0.97)
+fig.suptitle("MateBot v10  —  châssis 3-3-2 ouvert, spools dessus et dessous + 8 × STS3215  (non testé)", fontsize=15, fontweight="bold", y=0.97)
 for i, (el, az, title, cube) in enumerate((
-        (18, -55, "vue de trois quarts, côté pouce / radial", False),
-        (90, -90, "vue de dessus (dos de l'avant-bras, spools visibles)", False))):
+        (18, -55, "vue de trois quarts : spools en haut (pouce, majeur) et en bas (index, annulaire)", False),
+        (90, -90, "vue de dessus (face dorsale : pouce et majeur ; index et annulaire dessous)", False))):
     ax = fig.add_subplot(1, 2, i + 1, projection="3d")
     Vs = []
     for name, w, col in assy:
@@ -167,12 +166,19 @@ def lane_x(finger, ab):
         return F.WI_XF[1] + p["lane_w"] / 2 + 0.5
     return 0.0
 
+def lane_z(finger):
+    if finger == "thumb":
+        return F.WI_ZF[0] - p["lane_w"] / 2 - 0.5
+    if F.servo_face(finger) == "top":
+        return 12.0
+    return -16.0
+
 def path_for(rec, which_z):
     x, yb, ys, zg1, zg2 = rec["sock"]
     z = zg1 if which_z == 0 else zg2
     finger, ab = rec["finger"], rec["ab"]
     lx = lane_x(finger, ab)
-    zc = (F.WI_ZF[0] - p["lane_w"] / 2 - 0.5) if finger == "thumb" else 0.0
+    zc = lane_z(finger)
     if finger == "thumb":
         x_out = x - 40.0
         return [(x, yb, z), (x_out, yb, z), (x_out, yb, zc), (x_out, -25.0, zc), (lx, -25.0, zc)]
@@ -197,7 +203,7 @@ gs = fig.add_gridspec(2, 2, height_ratios=[1.55, 1.0], hspace=0.22, wspace=0.16,
                       left=0.05, right=0.98, top=0.90, bottom=0.05)
 ax = fig.add_subplot(gs[0, :])
 ax.set_aspect("equal")
-ax.set_title("Tracé des 16 gaines PTFE  —  vue de dessus (Z dorsal).  Courbure min. 30 mm, sans croisement entre doigts.",
+ax.set_title("Tracé des 16 gaines PTFE  —  vue de dessus.  Traits pleins = face dorsale (haut), pointillés = face palmaire (bas).  R ≥ 30 mm, sans croisement 3D.",
              fontsize=12.5, pad=10)
 
 # Wrist interface (top view)
@@ -230,11 +236,14 @@ for finger in ("thumb", "index", "middle", "ring"):
         xf, ysh = F.servo_xf(finger, ab), F._ys()[finger]
         ax.add_patch(Rectangle((xf - BODY_W / 2, ysh - 10.11), BODY_W, BODY_L,
                                facecolor=colors_f[finger], edgecolor="k", lw=0.4, alpha=0.45, zorder=3))
-        ax.add_patch(Circle((xf, ysh), 11, facecolor="#fd7e14", edgecolor="#d9480f", lw=0.5, alpha=0.9, zorder=4))
-        ax.text(xf, ysh + 22, f"{names_f[finger]} {ab}", ha="center", fontsize=7, color="#212529", zorder=5)
+        face = F.servo_face(finger)
+        ax.add_patch(Circle((xf, ysh), 11, facecolor="#fd7e14" if face=="top" else "#ffd8a8",
+                            edgecolor="#d9480f", lw=0.5, alpha=0.95, zorder=4, linestyle="-" if face=="top" else "--"))
+        tag = "HAUT" if face == "top" else "BAS"
+        ax.text(xf, ysh + 22, f"{names_f[finger]} {ab}  {tag}", ha="center", fontsize=6.5, color="#212529", zorder=5)
 
 # lane bands
-for f, lab in (("index", "voie index"), ("middle", "voie majeur"), ("ring", "voie annulaire")):
+for f, lab in (("index", "voie index (bas)"), ("middle", "voie majeur (haut)"), ("ring", "voie annulaire (bas)")):
     lx = lane_x(f, "A")
     ax.plot([lx, lx], [-22, F._ys()[f] - 12], color=colors_f[f], lw=7, alpha=0.22,
             solid_capstyle="round", zorder=1)
@@ -242,13 +251,14 @@ for f, lab in (("index", "voie index"), ("middle", "voie majeur"), ("ring", "voi
             F._ys()[f] - 18, lab, ha="left" if f != "index" else "right",
             fontsize=7.5, color=colors_f[f], fontweight="bold", zorder=6)
 
-# all 16 verified paths (xy)
+# all 16 verified paths (xy): solid = top face, dashed = bottom face
 for rec in parts["recs"]:
     c = colors_f[rec["finger"]]
+    ls = "-" if rec["face"] == "top" else "--"
     for k in (0, 1):
         pts = path_for(rec, k)
-        xs = [t[0] for t in pts]; ys = [t[1] for t in pts]
-        ax.plot(xs, ys, color=c, lw=1.15, alpha=0.85, zorder=6)
+        xs = [q[0] for q in pts]; ys = [q[1] for q in pts]
+        ax.plot(xs, ys, color=c, lw=1.2, alpha=0.9, zorder=6, linestyle=ls)
         ax.plot(xs[0], ys[0], "o", color=c, ms=3.2, zorder=7)
         ax.plot(xs[-1], ys[-1], "s", color=c, ms=3.4, zorder=7)
 
@@ -257,7 +267,7 @@ ax.annotate("12 sockets de la plaque\n(index, majeur, annulaire)",
             xy=(16, -72), xytext=(58, -78),
             fontsize=8, color="#1c7ed6", ha="left",
             arrowprops=dict(arrowstyle="->", color="#1c7ed6", lw=0.9))
-ax.annotate("4 sockets du pouce\nsur le joug  (nouveau)",
+ax.annotate("4 sockets du pouce\nsur le joug, face HAUT",
             xy=(-21, 8.5), xytext=(-78, 40),
             fontsize=8, color="#9c36b5", ha="center",
             arrowprops=dict(arrowstyle="->", color="#9c36b5", lw=0.9))
@@ -335,8 +345,8 @@ mini(ax1, 1.7, 3.3, ["AB", "AB", "AB", "AB"], "4 paires en file",
      "paires intactes\n~250+ mm, largeur constante\naccès arrière un peu moins bon", False)
 mini(ax1, 5.15, 3.3, ["ABC", "ABC", "AB"], "3 + 3 + 2 de front",
      "une paire est coupée (3 impair)\n~90 mm de large au poignet\nplus court (~180 mm)", False)
-mini(ax1, 9.0, 3.3, ["AB", "AB", "AB", "AB"], "Choisi : 2 rails de 3\n+ paire du pouce au poignet",
-     "paires intactes, 3 voies + pouce\n~239 mm, 65 puis 80 mm de large\nvis dessous, spools dessus", True,
+mini(ax1, 9.0, 3.3, ["AB", "AB", "AB", "AB"], "Choisi : 2 rails de 3 + pouce,\nfaces alternées (haut/bas)",
+     "paires intactes, faces alternées\nTL TR / BL BR, voies haut et bas\n~241 mm, épaisseur ~97–110 mm", True,
      shifts=[-0.45, 0, 0, 0])
 ax1.text(8.55, 6.55, "pouce", ha="center", fontsize=6.5, color="#2b8a3e")
 ax1.text(0.2, 1.15,
@@ -355,7 +365,7 @@ cell = [
     ["3+3+2 de front (3, 3 et 2)", "~180 mm", "90 puis 60", "53 mm", "1 coupée", "risque de croisement / bon"],
     ["4+4 faces opposées (palmaire + dorsal)", "~150 mm", "70 mm", "~100 mm", "intactes", "OK / bon, trop épais"],
     ["Colonne unique de 8", "~400 mm", "40 mm", "53 mm", "séparées", "OK / mauvais accès"],
-    ["Choisi : 2 rails de 3 + 2 au poignet", "~239 mm", "65 puis 80", "53 mm", "intactes", "3 voies + pouce / vis dessous"],
+    ["Choisi : 2 rails de 3 + 2, faces alternées", "~241 mm", "65 puis 80", "~97–110 mm", "intactes", "voies haut et bas / vis face libre"],
 ]
 tbl = ax2.table(cellText=cell, colLabels=col_labels, loc="upper center", cellLoc="left")
 tbl.auto_set_font_size(False)
@@ -376,10 +386,12 @@ tbl.auto_set_column_width(list(range(len(col_labels))))
 ax2.text(0.0, 0.12,
          "Sources des cotes servo : dessin 2D Waveshare ST3215-2D.zip (intitulé SCS215, 8 juin 2022)\n"
          "et STEP ST3215-3D.zip.  Le tracé est un plan de routage, pas un solide balayé dans le châssis.\n"
-         "Rayon min. PTFE 30 mm : déjà une limite de frottement du MANUEL.  OD du tube supposé 4,0 mm.",
+         "Rayon min. PTFE 30 mm : déjà une limite de frottement du MANUEL.  OD du tube supposé 4,0 mm.\n"
+         "Les paires alternent de face (pouce et majeur en haut, index et annulaire en bas) : le rack est ouvert des deux côtés.\n"
+         "L'épaisseur d'ensemble (~97 mm servo+spool, 110 mm avec les logements) est celle d'un montage deux faces, demandé explicitement.",
          fontsize=7.2, color="#495057", style="italic", va="bottom", transform=ax2.transAxes)
 
-fig.suptitle("MateBot  —  Support des 8 servos STS3215 et tracé des gaines  (v9, non testé)",
+fig.suptitle("MateBot  —  Support des 8 servos STS3215 et tracé des gaines  (v10, non testé)",
              fontsize=15, fontweight="bold", y=0.985)
 fig.savefig(os.path.join(DOCS, "forearm_tubes_FR.png"), dpi=140, bbox_inches="tight", facecolor="white")
 plt.close()

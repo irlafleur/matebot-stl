@@ -2,7 +2,7 @@
 
 Step-by-step guide to building MateBot's right forearm and tendon-driven hand.
 
-> **Status: v0/v9, untested.** Nothing here has been checked on a finished build yet. The v9 forearm chassis is designed (CAD verified) but not printed. Steps marked **🚧 NOT DESIGNED YET** cannot be done yet (the rotating-wrist adapter is one of them). Do not improvise them.
+> **Status: v0/v10, untested.** Nothing here has been checked on a finished build yet. The v10 forearm chassis is designed (CAD verified, both faces) but not printed. Steps marked **🚧 NOT DESIGNED YET** cannot be done yet (the rotating-wrist adapter is one of them). Do not improvise them.
 
 ## Contents
 0. [Overview and status](#0-overview-and-status)
@@ -25,7 +25,7 @@ MateBot is a human-size household robot. Every part is 3D-printed, in black PETG
 
 Current scope: the **right forearm and hand**.
 - **Hand:** [Amazing Hand](amazing-hand/) by Pollen Robotics, 4 fingers, 2 degrees of freedom per finger.
-- **Drive:** the servos are moved out of the palm. **8 × Feetech STS3215 12 V** sit in the forearm, in **4 pairs (one pair per finger)**. The v9 chassis is a **3-3-2 frame**: the thumb pair at the wrist, then index, middle and ring on two side rails of 3, all on the same dorsal face.
+- **Drive:** the servos are moved out of the palm. **8 × Feetech STS3215 12 V** sit in the forearm, in **4 pairs (one pair per finger)**. The v10 chassis is a **3-3-2 open rack**: the thumb pair at the wrist, then index, middle and ring on two side rails of 3, with pairs alternating faces (TL, TR, BL, BR, repeat): thumb and middle on top, index and ring on the bottom.
 - **Tendons:** each servo turns a double-groove spool. One groove pulls the flexor tendon, the other the extensor. Tendons run through PTFE tubes (Bowden style).
 - **Motion:** both servos of a pair turning the same way = flex/extend. Opposite ways = side-to-side (abduction).
 - **Forearm:** the [InMoov](inmoov/) right forearm shells, used as a temporary base.
@@ -38,7 +38,7 @@ Explainer animation: [tendon-explainer-en.mp4](matebot/docs/tendon-explainer-en.
 | Forearm shells (InMoov) | Ready to print |
 | Spools, PTFE anchor, tendon Link (`finger_link_tendon`, v1 with dowel pass-through) | v0/v1, untested |
 | Servo bay (8 servos in one block) | Bench test only, does not fit in the forearm |
-| 3-3-2 forearm chassis (`forearm_wrist_yoke`, `forearm_rail_3x_L`/`_R`, `forearm_brace`, `spool_r8`) | v9, untested (CAD 20/20). Fixed wrist. |
+| 3-3-2 forearm chassis (`forearm_wrist_yoke`, `forearm_rail_3x_L`/`_R`, `forearm_brace`, `spool_r8`) | v10, untested (CAD 21/21). Open rack, faces alternating, fixed wrist. |
 | Palm with PTFE anchor plate (`R-Hand_Plate_tendon`, `R-Palm_Shell_tendon`) | v0, untested (index, middle, ring only) |
 | Wrist adapter (InMoov RotaWrist ↔ Amazing Hand Wrist_Interface) | 🚧 Not designed yet |
 | Arduino Yún test code (6 servos) | Written, not tested on hardware |
@@ -108,11 +108,11 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 | Part | Qty | Note |
 |---|---|---|
 | `spool_r8.stl` | 8 | +2 spares. Official 14 mm BCD, 4 × M3×6. Flange down, 100 % or 6 walls. |
-| `forearm_wrist_yoke.stl` | 1 | Wrist yoke, thumb pair and 4 thumb sockets. Register (Y = −2) on the bed. |
-| `forearm_rail_3x_L.stl` | 1 | Radial rail (index / middle / ring A). Floor down. |
-| `forearm_rail_3x_R.stl` | 1 | Ulnar rail (index / middle / ring B). Floor down. |
-| `forearm_brace.stl` | 3 | Palmar braces. Print flat, no support. |
-| `ptfe_anchor_8x.stl` | 0 | Not used with the v9 chassis (sockets are on the rails and the yoke). Bench only. |
+| `forearm_wrist_yoke.stl` | 1 | Wrist yoke, thumb pair and 4 thumb sockets. Open mid-plane rack, thumb pair on the top face. Register (Y = −2) on the bed. |
+| `forearm_rail_3x_L.stl` | 1 | Radial rail (index bottom, middle top, ring bottom, side A). Mid-plane flat, supports under palmar ribs/sockets. |
+| `forearm_rail_3x_R.stl` | 1 | Ulnar rail (same faces, side B). Mid-plane flat, supports under palmar ribs/sockets. |
+| `forearm_brace.stl` | 3 | 8 mm braces in the body gaps, palmar side of the plate. Print flat, no support. |
+| `ptfe_anchor_8x.stl` | 0 | Not used with the v10 chassis (sockets are on the rails and the yoke). Bench only. |
 | `R-Hand_Plate_tendon.stl` | 1 | Replaces the R-Hand_Plate **and the Finger_Frame-1 / -2 of the 3 fingers** (pivot blocks and Gimbal posts built in). 12 PTFE sockets for 3 fingers. |
 | `R-Palm_Shell_tendon.stl` | 1 | Replaces the R-Palm_Shell. Notches for the sockets and screws, bigger thumb aperture. |
 | `Gimbal_tendon.stl` | 3 | +1 spare. Replaces the Gimbal of the index, middle and ring fingers (rear tab so it can be screwed from underneath). Print 1 first, tree supports under the tab. |
@@ -143,9 +143,9 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 - [ ] All finger parts ×4 + spares (incl. the bushings, `bushing_washer_d6` ×4 + 2 for Option 1 or `washer_d8_printed` ×3 + 1 for Option 2); `Gimbal_tendon` ×3 + 1 (Option 2 only); for the thumb only: 1 Finger_Frame-1 and 1 stock Gimbal
 - [ ] Palm parts ×1
 - [ ] 10 spools
-- [ ] v9 chassis: 1 yoke, 1 rail L, 1 rail R, 3 braces
-- [ ] Forearm shells (optional temporary cover; fit around the v9 frame is not checked)
-- [ ] Wrist parts (RotaWrist adapter still not designed; the v9 yoke holds a fixed wrist)
+- [ ] v10 chassis: 1 yoke, 1 rail L, 1 rail R, 3 braces (open rack, faces alternating)
+- [ ] Forearm shells (optional temporary cover; fit around the v10 pack is not checked)
+- [ ] Wrist parts (RotaWrist adapter still not designed; the v10 yoke holds a fixed wrist)
 
 ---
 
@@ -218,7 +218,7 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 ### 4.5 Palm
 1. Use `R-Hand_Plate_tendon` instead of the original R-Hand_Plate, and `R-Palm_Shell_tendon` instead of the R-Palm_Shell (untested). **Fit the palm shell last**, after every Gimbal screw is in (the screw heads are underneath).
 2. The plate takes **3 fingers**: index on the left, middle in the middle, ring on the right (top view), as in Pollen's guide "Step 4: Hand assembly". There are **no Finger_Frames** for these 3 fingers any more: each finger is held by its Gimbal screw (4.4), nothing else to fix.
-3. The **thumb** goes on the Wrist_Interface as in Pollen's guide, with its own Finger_Frame-1 and stock Gimbal (printed, 1 each) and its own 2 bushings. The palm shell has a bigger thumb aperture; **check by hand that the thumb moves through its whole range without touching the shell** (the aperture was designed with an estimated thumb position). Its 4 tube ends now sit in sockets on `forearm_wrist_yoke` (v9). The rotating-wrist adapter (RotaWrist ↔ Wrist_Interface) is still 🚧 not designed; the yoke holds a fixed wrist.
+3. The **thumb** goes on the Wrist_Interface as in Pollen's guide, with its own Finger_Frame-1 and stock Gimbal (printed, 1 each) and its own 2 bushings. The palm shell has a bigger thumb aperture; **check by hand that the thumb moves through its whole range without touching the shell** (the aperture was designed with an estimated thumb position). Its 4 tube ends now sit in sockets on `forearm_wrist_yoke` (v10, top face). The rotating-wrist adapter (RotaWrist ↔ Wrist_Interface) is still 🚧 not designed; the yoke holds a fixed wrist.
 4. Each finger side has an anchor column under the plate with 2 sockets: **extensor on top, flexor below**. Cut the PTFE tubes square and push each one in until it stops (8 mm), then add a drop of CA glue.
 5. Pass the tendon through the tube and through the cone-shaped exit toward the finger, then to the Link plate (see 4.6).
 
@@ -249,7 +249,7 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 
 ### 5.2 PTFE tubes
 1. Cut 16 tubes (8 loops × 2), about 30 to 40 cm each. Exact length depends on the station (thumb shortest, ring longest).
-2. Fix **both ends** of every tube: servo side in the sockets of the v9 chassis (on the rails for index / middle / ring, on the yoke for the thumb; Ø4.2 × 8 mm, same as the plate), palm side in the sockets of `R-Hand_Plate_tendon` (12 sockets for index, middle and ring). The thumb's 4 palm-side ends are on the yoke; the tubes then go on to the thumb on the Wrist_Interface. Measure your PTFE tube with calipers first: the sockets assume a 4.0 mm OD. Keep a bend radius of at least 30 mm and use the three finger lanes plus the thumb's palmar-radial corridor so the bundles do not cross ([drawing](matebot/docs/forearm_tubes_FR.png)).
+2. Fix **both ends** of every tube: servo side in the sockets of the v10 chassis (top face for thumb and middle, bottom face for index and ring; Ø4.2 × 8 mm, same as the plate), palm side in the sockets of `R-Hand_Plate_tendon` (12 sockets for index, middle and ring). The thumb's 4 palm-side ends are on the yoke; the tubes then go on to the thumb on the Wrist_Interface. Measure your PTFE tube with calipers first: the sockets assume a 4.0 mm OD. Keep a bend radius of at least 30 mm and use the face-specific lanes (index palmar-radial, middle dorsal / window, ring palmar-ulnar, thumb dorsal then palmar-radial drop) so the bundles do not cross in 3D ([drawing](matebot/docs/forearm_tubes_FR.png)).
 3. Keep a **bend radius of at least 30 mm** everywhere.
 4. Route the bundle **through the center of the wrist**.
 5. Label every tube: finger, A or B, flexor or extensor (colored tape).
@@ -266,10 +266,10 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 ## 6. Forearm and servo pairs
 
 ### 6.1 Forearm shells
-1. The v9 chassis is a **simple printed frame**, not a shell. The arm will be redesigned later. The InMoov right-forearm shells can still be printed as a temporary cover, but **fitting the 239 × 80 × 55 mm pack (yoke 88.6 × 82 mm at the wrist) inside those shells has not been checked**.
+1. The v10 chassis is a **simple printed open rack**, not a shell. The arm will be redesigned later. The InMoov right-forearm shells can still be printed as a temporary cover, but **fitting the 241 × 80 × 110 mm pack (yoke 88.6 × 90.8 mm at the wrist) inside those shells has not been checked** — the two-face spool layout is about twice as thick as the single-face v9 frame.
 2. If you print the InMoov shells anyway: glue robpart2V4 to robpart5V4 (lower shell) and robpart3V4 to robpart4V4 (top cover).
 
-### 6.2 The 3-3-2 chassis (v9, untested)
+### 6.2 The 3-3-2 open rack (v10, untested)
 Previews: [chassis](matebot/docs/forearm_chassis_preview.png), [parts](matebot/docs/forearm_parts_preview.png), [tube routing (FR)](matebot/docs/forearm_tubes_FR.png).
 
 **Why this layout.** Four options were compared (same official servo envelope, min. PTFE bend 30 mm):
@@ -280,15 +280,15 @@ Previews: [chassis](matebot/docs/forearm_chassis_preview.png), [parts](matebot/d
 | Literal 3+3+2 abreast (3, 3 and 2) | ~180 mm | 90 then 60 mm | 53 mm | one pair split | risk of crossings / good |
 | Palmar + dorsal 4+4 | ~150 mm | 70 mm | ~100 mm | intact | OK / too thick |
 | Single column of 8 | ~400 mm | 40 mm | 53 mm | split along the length | OK / poor access |
-| **Chosen: 2 rails of 3 + thumb pair at the wrist** | **~239 mm** | **65 then 80 mm (yoke 88.6 mm)** | **~55 mm (yoke 82 mm in Z)** | **intact** | **3 lanes + thumb corridor / screws from below, spools on top** |
+| **Chosen: 2 rails of 3 + thumb pair, faces alternating (TL, TR, BL, BR)** | **~241 mm** | **65 then 80 mm (yoke 88.6 mm)** | **~97–110 mm** | **intact** | **lanes on both faces / screws from the clear face, spools above and below** |
 
-A row of 3 cannot hold a complete pair (A and B must sit at the same Y, facing each other) and is too wide at the wrist. The chosen pack keeps every pair together, gathers each finger's tubes at that finger's station so rear bundles never cross a more distal one, and splits into parts that fit a 250 mm bed.
+A row of 3 cannot hold a complete pair (A and B must sit at the same Y, facing each other) and is too wide at the wrist. The chosen pack keeps every pair together and alternates faces along the arm so the rack can be a thin mid-plane plate, open on both sides. Each finger's tubes stay on that finger's face and gather at that station so rear bundles never cross a more distal one. Parts fit a 250 mm bed. Overall thickness is that of a two-face mount (~97 mm servo+spool, ~110 mm with socket blocks).
 
 **Assembly (all untested):**
 1. Bolt `forearm_wrist_yoke` to `R-Wrist_Interface` with 6 × M2×12 (or M2×10) through the 6 mm flange into the D2.4 holes on the r = 21 mm circle. The Ø33.6 mm register sits in the Ø34 window. The wrist stays fixed.
-2. Sit each STS3215 in its pocket, **output horn and spool on the dorsal side**, cable end toward the elbow, **idler ears on the floor**. Fix each servo with 4 × M2×6 from below. Do not use M2×8.
-3. Bolt `forearm_rail_3x_L` (radial, side A) and `forearm_rail_3x_R` (ulnar, side B) onto the yoke tabs: 3 M3×12 + nuts on each inner shelf (6 holes per rail). Order along the forearm, wrist to elbow: thumb (on the yoke), then index, middle, ring.
-4. Fit the 3 `forearm_brace` under the rail floors (4 × M3×12 + nuts each).
+2. Sit each STS3215 in its pocket on the assigned face (thumb and middle **on top**, index and ring **underneath**), cable end toward the elbow, **idler ears on the mid-plane plate**. Fix each servo with 4 × M2×6 **from the opposite (clear) face**: top servos from below, bottom servos from above. Do not use M2×8.
+3. Bolt `forearm_rail_3x_L` (radial, side A) and `forearm_rail_3x_R` (ulnar, side B) onto the yoke half-laps: 3 M3×12 + nuts on each inner shelf (6 holes per rail). Order along the forearm, wrist to elbow: thumb (top, on the yoke), index (bottom), middle (top), ring (bottom).
+4. Fit the 3 `forearm_brace` on the palmar side of the plate, in the 8 mm body gaps (4 × M3×12 + nuts each).
 5. Fit each `spool_r8` on the output horn with 4 × M3×6, then the centre M3×6 horn screw.
 6. Daisy-chain the bus cables in the centre gap, toward the elbow, to the Waveshare adapter.
 7. For bench tests without the chassis, `servo_bay_8x_sts3215.stl` (2 rows of 4, 4 × M3) is still available. It does **not** fit inside the forearm.
@@ -370,7 +370,7 @@ Code and details: [matebot/code/yun-6-servos](matebot/code/yun-6-servos/).
 | Finger does not flex fully | Slack in the loop, too much tube friction (bend radius < 30 mm), spool slipping |
 | Abduction stuck | 2.5×8 screw too tight in the Gimbal |
 | Spool doesn't fit the horn | Pattern is the official 14 mm BCD / M3 from the Waveshare drawing: measure your horn and compare with `sts3215.py` |
-| Servo too tight in its pocket | Clearance is 0.4 mm per side on the v9 chassis: sand lightly or reprint with more clearance |
+| Servo too tight in its pocket | Clearance is 0.4 mm per side on the v10 chassis: sand lightly or reprint with more clearance |
 
 ### Safety
 - Emergency stop on the 12 V line, within reach.
@@ -381,9 +381,9 @@ Code and details: [matebot/code/yun-6-servos](matebot/code/yun-6-servos/).
 
 ## TODO (coming soon)
 - [ ] Caliper measurements of a real STS3215 and horn, compared with `sts3215.py`; first-article fit of one pocket and one spool
-- [ ] Print and test the v9 3-3-2 chassis (designed, not printed)
+- [ ] Print and test the v10 3-3-2 open rack (designed, both faces verified in CAD, not printed)
 - [ ] Print and test `R-Hand_Plate_tendon` and `R-Palm_Shell_tendon` (v1 designed, not printed)
-- [ ] RotaWrist ↔ Wrist_Interface adapter; PTFE routing through a *rotating* wrist (the v9 yoke is a fixed wrist; thumb sockets are on the yoke)
+- [ ] RotaWrist ↔ Wrist_Interface adapter; PTFE routing through a *rotating* wrist (the v10 yoke is a fixed wrist; thumb sockets are on the yoke)
 - [ ] MG996R wrist driver
 - [ ] Final ID scheme (1-8 or 21-28)
 - [ ] 8-servo code and hardware test results

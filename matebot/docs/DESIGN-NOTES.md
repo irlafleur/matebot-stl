@@ -7,7 +7,7 @@
 ## 1. Architecture
 - 4 Amazing Hand fingers, 2 DoF each (8 DoF total), kept as close to the original as possible.
 - The 8 in-hand STS3032 servos are removed. The palm becomes a thin printed shell with tendon guides.
-- 8 × Feetech STS3215 12V (30 kg·cm) in the v9 3-3-2 forearm chassis (two rails of 3 + thumb pair at the wrist), each with an 8 mm radius double-groove spool. The 8-servo bay remains a bench-only part.
+- 8 × Feetech STS3215 12V (30 kg·cm) in the v10 3-3-2 open-rack chassis (two rails of 3 + thumb pair at the wrist, pairs alternating top/bottom), each with an 8 mm radius double-groove spool. The 8-servo bay remains a bench-only part.
 - Tendons: braided PE (UHMWPE) fishing line, ~100 lb class, running inside 2×4 mm PTFE tubes (Bowden) from the forearm to the palm.
 - Same Feetech serial bus as the arm (Waveshare Bus Servo Adapter, 12 V supply). Control via LeRobot / ROS 2.
 
@@ -51,7 +51,7 @@ The two capstan plates sit at X = 12 to 14.4 mm, on the axes of the assembly pin
 ## 3b. Palm plate with tube anchors, pivot blocks and Gimbal retention (`R-Hand_Plate_tendon`, v1 untested)
 Source: `source/R-Hand_Plate_tendon.py`; checks: `source/verify_R-Hand_Plate_tendon.py`; images `R-Hand_Plate_tendon_preview.png` and `R-Hand_Plate_tendon_routing.png`.
 
-- **Count.** The plate carries 3 fingers. Each finger has 4 tendon ends (2 servos × flexor + extensor), so 12 sockets, not 8. The thumb is mounted on the Wrist_Interface; its 4 servo-side ends are on `forearm_wrist_yoke` (v9).
+- **Count.** The plate carries 3 fingers. Each finger has 4 tendon ends (2 servos × flexor + extensor), so 12 sockets, not 8. The thumb is mounted on the Wrist_Interface; its 4 servo-side ends are on `forearm_wrist_yoke` (v10, top face).
 - **Finger poses on the plate** (fitted to the plate's own M2.8 holes at (±6, −7) in the finger frame, worst error 0.19 mm): index at (0, 0) rotated 0°, middle at (32.8, −6.0) rotated −5.76°, ring at (65.0, −17.1) rotated −13.46°. All Pollen parts share one assembly frame, so the finger frame of the index is the plate frame.
 - **Tendon lines.** At rest the tendons leave the capstan (radius 9.0 since Link v1, around the Link pivot at Y = 0, Z = −6) along −Y at Z = +3.0 (extensor) and Z = −15.0 (flexor), X = ±13.2. v1: sockets at Z = +2.3 / −12.8 (flexor moved up 1.5 mm), so the extensor leans 0.7 mm and the flexor 2.2 mm over 25 mm; the Ø3 corridors are aimed at the real tangent points (computed from the cone mouth).
 - **Socket positions.** Sockets at |X| = 10.5 (not 13.2) in the finger frame, tube stop at Y = −30. Reason: the fingers fan out, so lines of neighbouring fingers converge toward the wrist (6.4 mm apart at the capstans, 3.5 mm at Y = −30). At |X| = 10.5 the sockets of neighbours are at least 7.9 mm apart (3.7 mm of wall). Cost: the tendon leans atan(2.7 / 25.4) = 6° inward; the cone exit (22° half angle) absorbs the swing. The change in tendon length is small but not included in the earlier loop-conservation check (that assumed straight tendons 40 mm behind the pivot).
@@ -66,11 +66,11 @@ Source: `source/R-Hand_Plate_tendon.py`; checks: `source/verify_R-Hand_Plate_ten
 - **Strength.** The columns are only tube stops: the tendon tension is carried by the tube from the servo to the socket, not by the plate. Pull-out of a glued 4 mm tube from an 8 mm socket is not measured.
 - **Open points.** The thumb pose (estimated), the real abduction range, printed bore and pilot tolerances. Tendon lines are checked at rest and ±25° abduction. Tubes passing the Wrist_Interface overlap its walls by 1 to 145 mm³ per tube (straight-line check, 10 of 12 tubes touch): to be solved by the wrist adapter, which must also take the thumb's tubes. The tendon-length effect of the 6° inward lean over the full flexion and abduction range is not recomputed.
 
-## 4. Forearm chassis (v9, 3-3-2) and the bench bay
-- **Chosen layout, v9 (untested, CAD 20/20):** two side rails of 3 STS3215 (index, middle, ring; A radial / −X, B ulnar / +X) plus the thumb pair of 2 at the wrist, all on the same dorsal face, no Y-overlap of the thumb and the index. Pairs stay together at the same Y. Assembled pack ≈ 239 mm long, 80 mm wide at the rails, 88.6 mm over the yoke, ≈ 55 mm deep at the rails (the yoke is 82 mm in Z because of the palmar-radial corridor). Split for a 250 mm bed: yoke 120.1 mm, each rail 165.1 mm. Frame only — the arm shell will be redesigned later. Source: `forearm_mount_332.py`, official envelope in `sts3215.py`.
-- **Why not the other options.** A literal 3+3+2 abreast is shorter (~180 mm) but a row of 3 splits a pair and is ~90 mm wide at the wrist. Four pair-stations in a line keep pairs intact and the same lanes, but add a fourth pitch (~53 mm) with slightly worse rear access. Palmar + dorsal 4+4 is short and crossing-free but ~100 mm thick (not human-like). A single column of 8 is ~400 mm long, with poor screw access and pairs split along the length. Comparison drawing: `forearm_tubes_FR.png`.
+## 4. Forearm chassis (v10, 3-3-2 open rack) and the bench bay
+- **Chosen layout, v10 (untested, CAD 21/21):** two side rails of 3 STS3215 (index, middle, ring; A radial / −X, B ulnar / +X) plus the thumb pair of 2 at the wrist, **pairs alternating faces (TL, TR, BL, BR, repeat)**: thumb and middle on top (dorsal), index and ring on the bottom (palmar). The rack is a 4 mm mid-plane plate, open on both faces, with short locating ribs and sockets only on the active face at each station. Pairs stay together at the same Y, no Y-overlap of thumb and index. Assembled pack ≈ 241 mm long, 80 mm wide at the rails, 88.6 mm over the yoke, ≈ 97 mm from the top of the dorsal spools to the bottom of the palmar spools (rails 109.5 mm in Z with the palmar socket blocks). Split for a 250 mm bed: yoke 120.1 mm, each rail 165.1 mm. Frame only — the arm shell will be redesigned later. Source: `forearm_mount_332.py`, official envelope in `sts3215.py`.
+- **Why not the other options.** A literal 3+3+2 abreast is shorter (~180 mm) but a row of 3 splits a pair and is ~90 mm wide at the wrist. Four pair-stations in a line keep pairs intact but add a fourth pitch (~53 mm). Palmar + dorsal 4+4 at the same Y is short and crossing-free but ~100 mm thick. The staggered two-face rack has a similar overall depth because spools sit on both sides, as requested. A single column of 8 is ~400 mm long, with poor screw access and pairs split along the length. Comparison drawing: `forearm_tubes_FR.png`.
 - **Official STS3215 numbers** (Waveshare [ST3215-2D.zip](https://files.waveshare.com/upload/0/08/ST3215-2D.zip), PDF titled SCS215, 8 June 2022; [ST3215-3D.zip](https://files.waveshare.com/upload/5/59/ST3215-3D.zip); Feetech [ST-3215-C018](https://www.feetechrc.com/525603.html)): body 45.22 × 24.72 mm, 35 mm to the output-horn outer face, shaft 10.11 mm from the output end, horn Ø19.2 / 4.5 mm thick / 14 mm BCD / four Ø2.5 M3 holes 2.5 mm deep, idler-ear pattern 24.45 × 20.50 mm (Ø1.6 in the case), output-ear pattern 20.70 × 20.50 mm (do not use the same pattern on both faces). Mount through the idler ears with M2×6 only. `CL = 0.4 mm` is a print allowance, not a drawing dimension. **Still measure a real servo before printing a full set.**
-- **Access:** M2 from the palmar floor, spools on the dorsal horn face, bus cables daisy-chained toward the elbow in the centre gap. 16 tube sockets (Ø4.2 × 8) on the rails and the yoke, facing the wrist. Finger tubes gather into dedicated lanes at their own station so rear bundles have already left; no bundle crossings. Thumb uses a palmar-radial corridor. Crossed loops still split only near the plate.
+- **Access:** M2 through the mid-plane from the opposite (clear) face — top servos from below, bottom servos from above. Spools face outward on both sides. Bus cables daisy-chained toward the elbow in the centre gap. 16 tube sockets (Ø4.2 × 8), 8 on top and 8 on the bottom, facing the wrist. Finger tubes stay on their face and gather into dedicated lanes at their own station; no 3D crossings (closest 10.1 mm). Thumb sockets are dorsal, then drop to a palmar-radial corridor. The palmar side under the thumb bed is left open for the index and ring lanes. Crossed loops still split only near the plate.
 - **Bench-only:** `servo_bay_8x_sts3215` (2 rows × 4, outputs up, ≈120 × 103 × 18 mm, 4 × M3) still exists for a table test. It does not fit in the forearm.
 
 ## 5. Pulley / spool
@@ -81,7 +81,7 @@ Source: `source/R-Hand_Plate_tendon.py`; checks: `source/verify_R-Hand_Plate_ten
 
 ## 6. Tendon routing through the wrist
 - 16 tendons (8 loops × 2) in 16 PTFE tubes, about 30–40 cm each.
-- Tubes are fixed at both ends (servo-side sockets on the v9 rails and yoke; 12 palm sockets on `R-Hand_Plate_tendon`; the thumb's 4 wrist-side sockets are on the yoke). Because the tube length is fixed (Bowden), **wrist motion barely changes tendon length** once a rotating wrist exists; the v9 yoke is a **fixed** wrist. Keep tube bend radius ≥ 30 mm (already a friction limit in the MANUAL).
+- Tubes are fixed at both ends (servo-side sockets on the v10 rails and yoke (both faces); 12 palm sockets on `R-Hand_Plate_tendon`; the thumb's 4 wrist-side sockets are on the yoke). Because the tube length is fixed (Bowden), **wrist motion barely changes tendon length** once a rotating wrist exists; the v10 yoke is a **fixed** wrist. Keep tube bend radius ≥ 30 mm (already a friction limit in the MANUAL).
 - Route each finger in its own lane (index radial corridor, middle through the Ø34 window, ring ulnar corridor, thumb palmar-radial). Do not gather later distal tubes into a lane that a more proximal bundle already occupies.
 - Pre-tension each loop with the servo (set mid-position, then tie off).
 
@@ -106,7 +106,7 @@ Source: `source/R-Hand_Plate_tendon.py`; checks: `source/verify_R-Hand_Plate_ten
 1. Measure a real STS3215 and horn; compare with `sts3215.py`; print one spool and one rail pocket + 1 finger with `finger_link_tendon`.
 2. **Single-finger bench test**: 1 finger, 2 servos, 40 cm PTFE runs. Check range, backlash, friction (measure servo load reading).
 3. Luggage-scale test: hook the fingertip, ramp torque limit, record N at fingertip. Film it for the channel.
-4. Build all 4 fingers + palm, then the v9 3-3-2 chassis.
+4. Build all 4 fingers + palm, then the v10 3-3-2 open rack.
 5. **Grip test**: grasp a bottle filled progressively with water, hung from a luggage scale; record max hold before slipping. Update this doc with measured numbers.
 6. Endurance: 30 min cycling, check tendon creep and re-tension.
 
@@ -118,7 +118,7 @@ Source: `source/R-Hand_Plate_tendon.py`; checks: `source/verify_R-Hand_Plate_ten
 - Finger mechanism coupling may not map cleanly to tendons; may need finger redesign.
 - The Link plate and the Ø6 cross bar carry the full tendon tension. They are the weakest part of the finger: start at a 10% servo torque limit.
 - The tendon plates reach X = ±14.4 mm; with a finger pitch of about 30 mm neighbours would be only about 1.2 mm apart (not verified on a real palm).
-- Official servo body and horn numbers are now taken from the Waveshare 2D/STEP drawings; a real servo has not been measured against them yet. Pocket `CL = 0.4 mm` and PTFE OD 4.0 mm are assumptions. The v9 chassis has not been printed.
+- Official servo body and horn numbers are now taken from the Waveshare 2D/STEP drawings; a real servo has not been measured against them yet. Pocket `CL = 0.4 mm` and PTFE OD 4.0 mm are assumptions. The v10 chassis has not been printed.
 
 ## 12. Open questions
 - Antagonist loops vs. flexor + springs?
@@ -129,6 +129,6 @@ Source: `source/R-Hand_Plate_tendon.py`; checks: `source/verify_R-Hand_Plate_ten
 ## Files
 - Starter parts (v0, untested, STL+STEP+PNG): `matebot-hand-tendon.zip` (not in git; no Git LFS yet). Source script `parts.py`.
 - Official STS3215 envelope: `../source/sts3215.py`.
-- v9 forearm chassis: `../source/forearm_mount_332.py`, `../source/verify_forearm_mount_332.py`, `../source/render_forearm_mount_332.py`. STL/STEP: `forearm_wrist_yoke`, `forearm_rail_3x_L`, `forearm_rail_3x_R`, `forearm_brace`, updated `spool_r8`. Previews: `forearm_chassis_preview.png`, `forearm_parts_preview.png`, `forearm_tubes_FR.png`.
+- v10 forearm chassis (open rack, both faces): `../source/forearm_mount_332.py`, `../source/verify_forearm_mount_332.py`, `../source/render_forearm_mount_332.py`. STL/STEP: `forearm_wrist_yoke`, `forearm_rail_3x_L`, `forearm_rail_3x_R`, `forearm_brace`, updated `spool_r8`. Previews: `forearm_chassis_preview.png`, `forearm_parts_preview.png`, `forearm_tubes_FR.png`.
 - Palm plate and palm shell: `../stl/R-Hand_Plate_tendon.stl`, `../stl/R-Palm_Shell_tendon.stl`, `../stl/Gimbal_tendon.stl` (STEP in `../step/`).
 - BOM: [`bom/hand-tendon.csv`](../bom/hand-tendon.csv)
