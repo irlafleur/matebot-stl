@@ -74,12 +74,18 @@
 5. **Montage final (vissage par en dessous) :** présente le doigt par en dessous : le pivot du `Gimbal_tendon` (côté haut) passe dans la première bague, et le **poteau de la plaque passe dans la fente en arc de la languette**. Enfonce la deuxième bague par le haut (collerette dans l'encoche de la dalle). Puis, **par en dessous** (option 2) : rondelle imprimée `washer_d8_printed`, puis **vis thermoplastique 2.5×8 dans le trou Ø1,9 du poteau** (7,1 mm de filet engagés) ; serre jusqu'à ce que la tête touche le poteau (la rondelle reste alors à 0,4 mm de la languette et ne la serre pas). Vérifie à la main que l'abduction (±25°) reste libre. **Pose la coque de paume en dernier**, une fois toutes les vis posées. Pour le **pouce** : Finger_Frame-1 et Gimbal d'origine, vis 2.5×8 sur le dessus du pivot à travers la bague-rondelle `bushing_washer_d6` (à la place de la rondelle), comme l'option 1.
 
    **Option 1, montage de la bague-rondelle :** bague du bas pressée dans l'alésage ; présente le Gimbal d'origine par en dessous ; pose `bushing_washer_d6` par le haut (manchon vers le bas, dans l'alésage, autour du pivot ; le disque repose sur le bout du pivot) ; visse la 2.5×8 par le trou Ø2,7 jusqu'à serrer le disque sur le pivot. Le Gimbal doit tourner librement en abduction. Si le manchon est trop juste dans l'alésage, ponce-le légèrement.
+> 🖼️ **Dessin pas à pas (fixation de la ligne sur les plaques du Link, nœud d'arrêt double, croisement des 4 bouts, mise en tension) :** `noeud_tendon_etapes_FR.png`.
+>
+> ![Fixation de la ligne sur les plaques du Link](noeud_tendon_etapes_FR.png)
+
 6. **Différence avec la version à tendons :** utilise `finger_link_tendon` à la place du Link (mêmes trous de pivot) et saute les bielles à rotule, les palonniers et les Spacers. Chaque plaque a une gorge sur son bord et deux poches pour le nœud ou le sertissage (Ø3,2 × 2 mm, canal de 1,2 mm). **Poche du bas = fléchisseur** (côté paume), **poche du haut = extenseur** (dos du doigt). Passe le tendon dans le canal, fais un **double nœud d'arrêt** (ou sertis) dans la poche, laisse 10 mm de queue, mets une goutte de colle cyano, puis remets le nœud au fond. **N'attache pas le tendon dans le trou ou la fente de Ø2,5** : leur bras de levier (6 mm ou 0) ne correspond pas aux 9 mm de la gorge, la boucle ne resterait pas fermée. Croise les boucles : fléchisseur du servo A sur la plaque +X et son extenseur sur la plaque −X, l'inverse pour le servo B.
 7. Vérifie que les plaques (jusqu'à X = ±14,4 mm) ne touchent ni le doigt voisin ni la fenêtre de la paume sur toute la course. Les extrémités de gaines dans la paume restent **à concevoir** (à 30 mm ou plus derrière la base du doigt).
 8. **Premiers essais avec la limite de couple des servos à 10 %** (environ 35 N dans le tendon) : le Link à tendons est la pièce la plus faible du doigt. Tout ce qui précède est une estimation CAO, non testée.
 
 ## 8. Réglage de la tension
-1. Mets les deux servos du doigt au **centre**.
+> 🖼️ Voir l'étape 7 du dessin `noeud_tendon_etapes_FR.png` (servos A et B à 2048, doigt droit).
+
+1. Mets les deux servos du doigt au **centre** (position **2048**).
 2. Tends chaque boucle à la main, doigt droit, puis fais le nœud ou le sertissage.
 3. Pas de mou, mais ne force pas : la tension se règle avec le servo, pas en sur-serrant.
 4. Après 30 min de cycles, vérifie le fluage de la tresse et retends si besoin.

@@ -215,6 +215,10 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 5. Pass the tendon through the tube and through the cone-shaped exit toward the finger, then to the Link plate (see 4.6).
 
 ### 4.6 Tendon attachment on the finger
+*Step-by-step drawing with French labels (socket, groove, channel, pocket, double stopper knot, crossing of the 4 line ends, tensioning at servo position 2048): [`matebot/docs/noeud_tendon_etapes_FR.png`](matebot/docs/noeud_tendon_etapes_FR.png).*
+
+![Fixation de la ligne sur les plaques du Link](matebot/docs/noeud_tendon_etapes_FR.png)
+
 1. The ball-joint rods are not used. The tendons attach to the two plates of `finger_link_tendon` (v0, untested).
 2. Each plate has a groove on its rim and two pockets. **Lower pocket = flexor** (palm side), **upper pocket = extensor** (back of the finger).
 3. **Cross the loops.** Servo A: flexor on the +X plate, extensor on the −X plate. Servo B: flexor on the −X plate, extensor on the +X plate. Do not put both legs of one servo on the same plate: the finger could not abduct.
