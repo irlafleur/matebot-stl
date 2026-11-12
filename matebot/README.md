@@ -193,7 +193,7 @@ Step-by-step drawing with French labels: [`docs/noeud_tendon_etapes_FR.png`](doc
 ![Tendon attachment](docs/noeud_tendon_etapes_FR.png)
 
 1. Thread the tendon from the groove through the Ø1.2 channel into the pocket on the outer face (the channel leaves the groove 3 mm from the rim edge, on the side facing the fingertip).
-2. In the pocket (Ø3.2 × 2.0 mm) tie a **double overhand (stopper) knot**, leave a 10 mm tail, add one drop of CA glue, and pull the tendon back so the knot sits at the bottom of the pocket. A crimp sleeve of about 1 mm works too. The knot must be larger than the 1.2 mm channel.
+2. In the pocket (Ø3.2 × 2.0 mm) tie a **double overhand (stopper) knot**, leave a 10 mm tail, pull the tendon back so the knot sits at the bottom of the pocket, then add one drop of CA glue. A crimp sleeve of about 1 mm works too. The knot must be larger than the 1.2 mm channel.
 3. Lay the tendon in the groove and send it back to the tube along the tangent (flexor from the bottom of the plate, extensor from the top). Tension it with the servo at its centre position.
 4. **Do not use the dowel hole or slot as the anchor.** They were evaluated for this: the slot is at a 6 mm radius and the round hole at the pivot, so a tendon tied there would have a 6 mm (or 0 mm) lever arm while the other leg of the loop has 9 mm. A 2D model gives a loop length mismatch of 1.7 mm at −30° and 4.7 mm at −70° (the loop would go slack or overtight). The slot also sits right under the tendon's exit tangent, so the tendon would have to turn 90° into it, and a knot in the hole would sit between the plate and the shell (gap 0.1 mm). Keep the pockets for the knots.
 
