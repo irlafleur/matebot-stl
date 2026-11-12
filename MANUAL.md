@@ -202,6 +202,7 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 1. Press the first printed `bushing_d6_flanged` into the **lower** end of the pivot bore of the plate (`R-Hand_Plate_tendon`, Ø8.15, replaces Finger_Frame-1), flange outside, against a flat surface until the flange touches the block. If a bushing is loose, add a drop of CA glue on its body; if the Gimbal boss does not turn freely, pass a Ø6.2 drill through the bore by hand and add a drop of PTFE or silicone grease.
 2. Offer the finger (its `Gimbal_tendon`, boss up) from below: the boss goes up through that bushing and the **post of the plate goes through the arc slot of the tab**.
 3. Press the second bushing into the upper end of the bore from above (flange in the slab notch).
+*Drawings: `matebot/docs/assemblage_doigt_eclate_FR.png` and `assemblage_coupes_vis_FR.png`. **Option without `Gimbal_tendon`:** use the stock Gimbal and Pollen's 2.5×8 screw + washer from the top, in the Gimbal's end hole (Ø1.9, blind, on the back-of-hand side); R-Top_Shell must be off to tighten it.*
 4. **Screw the Gimbal from underneath:** large M2.5 washer, then the **2.5×8 thermoplastic screw** into the post's Ø1.9 pilot hole (from below, 7.2 mm of thread in the post). Tighten until the head sits on the post: the washer then stays 0.4 mm below the tab and does not clamp it. **Abduction (±25°) must stay free.** (The thumb keeps the original: stock Gimbal, 2.5×8 screw and washer on top of the boss.)
 
 ### 4.5 Palm

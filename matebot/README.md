@@ -8,8 +8,8 @@ MateBot moves the Amazing Hand's 8 servos out of the palm and into the forearm. 
 
 - `stl/`: ready-to-print files
 - `step/`: editable CAD files
-- `source/`: Python (CadQuery) scripts that generate the parts: `parts.py` (spool, PTFE anchor, servo bay) `finger_link_tendon.py` (the modified finger Link), `bushing_d6.py` (the printable finger bushing, with `verify_bushing_d6.py` and `render_bushing_d6.py`) and `R-Hand_Plate_tendon.py` (the modified hand plate and palm shell, now with the Gimbal pivot blocks), `Gimbal_tendon.py` (the Gimbal with a retention tab), with `verify_R-Hand_Plate_tendon.py`, `render_plate_tendon.py` and `render_gimbal_thumb.py`
-- `docs/`: design notes, assembly guide (French), preview images (`finger_link_tendon_preview.png`, `finger_link_tendon_routing.png`, `R-Hand_Plate_tendon_preview.png`, `R-Hand_Plate_tendon_routing.png`, `Gimbal_tendon_preview.png`, `thumb_aperture_preview.png`, `bushing_d6_preview.png`) and an explainer animation
+- `source/`: Python (CadQuery) scripts that generate the parts: `parts.py` (spool, PTFE anchor, servo bay) `finger_link_tendon.py` (the modified finger Link), `bushing_d6.py` (the printable finger bushing, with `verify_bushing_d6.py` and `render_bushing_d6.py`) and `R-Hand_Plate_tendon.py` (the modified hand plate and palm shell, now with the Gimbal pivot blocks), `Gimbal_tendon.py` (the Gimbal with a retention tab), with `verify_R-Hand_Plate_tendon.py`, `render_plate_tendon.py` and `render_gimbal_thumb.py`, `render_assembly_fr.py` (the French assembly drawings)
+- `docs/`: design notes, assembly guide (French), preview images (`finger_link_tendon_preview.png`, `finger_link_tendon_routing.png`, `R-Hand_Plate_tendon_preview.png`, `R-Hand_Plate_tendon_routing.png`, `Gimbal_tendon_preview.png`, `thumb_aperture_preview.png`, `assemblage_doigt_eclate_FR.png`, `assemblage_coupes_vis_FR.png`, `bushing_d6_preview.png`) and an explainer animation
 
 ## Parts to print
 
@@ -115,7 +115,17 @@ Check with calipers: the PTFE tube OD (the sockets assume 4.0 mm: if yours is 4.
 
 Printing: like the original Gimbal (boss up, fork on the bed) with **tree supports under the new tab** (3 mm thick, it overhangs the shoulder by about 6 mm); print 1 first and check that the post slides in the slot with a little play (ream the slot with a Ø5 drill if tight). PETG, 4+ walls, 100% infill on the tab.
 
+See the drawings `docs/assemblage_doigt_eclate_FR.png` (exploded view, French) and `docs/assemblage_coupes_vis_FR.png` (sections of the screw paths).
+
 Run `python source/Gimbal_tendon.py "<Amazing Hand Parts - Gimbal.step>"` to regenerate it. Preview: `docs/Gimbal_tendon_preview.png`.
+
+## Gimbal retention: alternatives checked (v7 review)
+
+### Option without any reprint: stock Gimbal + Pollen's top screw (checked)
+The stock Gimbal has one end hole, and it is on the **top** of the boss (the back of the hand side, Z = 13.5), not at the bottom: **Ø1.9 mm, about 8.5 mm deep from the top (Ø1.9 from Z 12.9 to 5.5, then a drill-point cone to about Z 4.9), with a Ø2.8 countersink 0.6 mm deep, blind** (measured in the STEP file). Pollen's 2.5×8 screw and large washer go in there from above. This works with the v6 plate unchanged: the washer (Ø8) and head sit in the slab notch with 0 mm³ overlap with the plate and the palm shell. The cost: **R-Top_Shell covers the screw** (70 mm³ of overlap with a Ø7 access column), so it has to come off to tighten it. If you can live with that, **no `Gimbal_tendon` is needed**; the stock Gimbals you already printed (6 in zip v5) work. `Gimbal_tendon` also keeps this hole, so it can use the top screw too.
+
+### Why a screw "through the lower bushing, along the Gimbal axis" does not work (checked in CAD)
+`source/render_assembly_fr.py` (panel C of `docs/assemblage_coupes_vis_FR.png`). Along the boss axis the stock Gimbal is solid only from Z 1.1 to 4.9 (above the pin bore) and from Z −2.3 to −1.05; between them the **D2×16 Gimbal-Proximal pin crosses the axis** (Ø2.2 bore, pin Ø2.0 over X ±8.1): a Ø2.0 or Ø2.5 shank would cut it over 5.3 or 7.2 mm³. The existing hole is blind (floor at Z ≈ 4.9, 3.9 mm of material and the pin bore below it), so the screw would first have to be drilled through, and from the bottom the Gimbal body (Z ≤ −2.3) lies inside the fork where the Link turns: a screw head of Ø4.5 or a washer of Ø8 just below it collides with the Link by 11 to 32 mm³ at every flexion angle. Also, the lower bushing sits around the boss (Z 3.5 to 4.5): the screw would never pass through it, and a fixed bushing cannot hold the Gimbal from dropping (the Gimbal falls toward −Z and only something above the boss, or a part of the Gimbal caught by a fixed part, stops it). That is why the retention is either on top (stock) or by the tab and post (`Gimbal_tendon`).
 
 ## The finger part: `finger_link_tendon` (v1, untested)
 
