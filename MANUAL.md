@@ -73,7 +73,7 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 - [ ] Crimp sleeves, about 1 mm
 - [ ] M2.5 screws: 4 per spool (32)
 - [ ] M3 screws: 4 for the servo bay, 2 per PTFE anchor block
-- [ ] Per finger (×4): 2 bushings Ø6 inner (**printed**, `bushing_d6_flanged.stl`, 8 + 2 spares; the original is a bought igus GFM-0608-04), 1 large M2.5 washer, 2 axes D2×10, 2 axes D2×16, 4 thermoplastic screws 2.5×6, 1 thermoplastic screw 2.5×8 (it now goes **from underneath** into the post of the plate, through the washer, see 4.4). The 3 screws 2.5×8 that held each Finger_Frame to the plate are no longer needed for index, middle and ring; the **thumb** still uses its 3 (it keeps its Finger_Frame-1 on the Wrist_Interface)
+- [ ] Per finger (×4): 2 bushings Ø6 inner (**printed**, `bushing_d6_flanged.stl`, 8 + 2 spares, or only 4 + 2 spares with Option 1 below; the original is a bought igus GFM-0608-04), **no metal washer: it is printed (`bushing_washer_d6.stl`, `washer_d8_printed.stl`)**, 2 axes D2×10, 2 axes D2×16, 4 thermoplastic screws 2.5×6, 1 thermoplastic screw 2.5×8 (Option 2: **from underneath** into the post of the plate, through the printed washer; Option 1: from the top through `bushing_washer_d6`; see 4.4). The 3 screws 2.5×8 that held each Finger_Frame to the plate are no longer needed for index, middle and ring; the **thumb** still uses its 3 (it keeps its Finger_Frame-1 on the Wrist_Interface)
 
 ---
 
@@ -110,7 +110,9 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 | `R-Palm_Shell_tendon.stl` | 1 | Replaces the R-Palm_Shell. Notches for the sockets and screws, bigger thumb aperture. |
 | `Gimbal_tendon.stl` | 3 | +1 spare. Replaces the Gimbal of the index, middle and ring fingers (rear tab so it can be screwed from underneath). Print 1 first, tree supports under the tab. |
 | `servo_bay_8x_sts3215.stl` | 1 | Bench test only |
-| `bushing_d6_flanged.stl` | 8 | +2 spares. Replaces Pollen's bought D6 bushing (2 per finger). Print upright, flange down, 0.12 mm layers, all at once. |
+| `bushing_d6_flanged.stl` | 8 (Option 2) or 4 (Option 1) | +2 spares. Replaces Pollen's bought D6 bushing. Option 1 only needs the lower one (4 + 2). Print upright, flange down, 0.12 mm layers, all at once. |
+| `bushing_washer_d6.stl` | 4 | +2 spares. **Option 1.** Replaces the large M2.5 washer and the upper bushing (3 fingers + thumb). Print disc down, sleeve up, no supports, PETG, 0.12 mm, 100% infill. |
+| `washer_d8_printed.stl` | 3 | +1 spare. **Option 2 only** (`Gimbal_tendon`, screw from underneath). Replaces the large M2.5 washer. Print flat. |
 | `finger_link_tendon.stl` | 4 | +2 spares. Replaces the Link. v1: dowel holes added. Print 1 first. Needs supports. |
 
 > The BallJoint_Rod Spacers, the original Link, Finger_Frame-2 and (except for the thumb) Finger_Frame-1 are **not needed** with the tendon drive. Proximal and Distal are printed unchanged; the Gimbal is printed unchanged only for the thumb.
@@ -131,7 +133,7 @@ No prices are listed here. Live costs are tracked on the [MateBot build tracker]
 **InMoov wrist:** RotaWrist1V4, RotaWrist2V3, RotaWrist3V3, WristGearsV5, CableHolderWristV5, 1 each. Not in this repo yet: get them from the [InMoov gallery](https://inmoov.fr/inmoov-stl-parts-viewer/?bodyparts=Rotation-Wrist).
 
 ### Checklist
-- [ ] All finger parts ×4 + spares (incl. 10 bushings); `Gimbal_tendon` ×3 + 1; for the thumb only: 1 Finger_Frame-1 and 1 stock Gimbal
+- [ ] All finger parts ×4 + spares (incl. the bushings, `bushing_washer_d6` ×4 + 2 for Option 1 or `washer_d8_printed` ×3 + 1 for Option 2); `Gimbal_tendon` ×3 + 1 (Option 2 only); for the thumb only: 1 Finger_Frame-1 and 1 stock Gimbal
 - [ ] Palm parts ×1
 - [ ] 10 spools
 - [ ] Forearm shells
@@ -202,8 +204,8 @@ Based on Pollen's official guide ([AmazingHand docs](https://github.com/pollen-r
 1. Press the first printed `bushing_d6_flanged` into the **lower** end of the pivot bore of the plate (`R-Hand_Plate_tendon`, Ø8.15, replaces Finger_Frame-1), flange outside, against a flat surface until the flange touches the block. If a bushing is loose, add a drop of CA glue on its body; if the Gimbal boss does not turn freely, pass a Ø6.2 drill through the bore by hand and add a drop of PTFE or silicone grease.
 2. Offer the finger (its `Gimbal_tendon`, boss up) from below: the boss goes up through that bushing and the **post of the plate goes through the arc slot of the tab**.
 3. Press the second bushing into the upper end of the bore from above (flange in the slab notch).
-*Drawings: `matebot/docs/assemblage_doigt_eclate_FR.png` and `assemblage_coupes_vis_FR.png`. **Option without `Gimbal_tendon`:** use the stock Gimbal and Pollen's 2.5×8 screw + washer from the top, in the Gimbal's end hole (Ø1.9, blind, on the back-of-hand side); R-Top_Shell must be off to tighten it.*
-4. **Screw the Gimbal from underneath:** large M2.5 washer, then the **2.5×8 thermoplastic screw** into the post's Ø1.9 pilot hole (from below, 7.2 mm of thread in the post). Tighten until the head sits on the post: the washer then stays 0.4 mm below the tab and does not clamp it. **Abduction (±25°) must stay free.** (The thumb keeps the original: stock Gimbal, 2.5×8 screw and washer on top of the boss.)
+*Drawings: `matebot/docs/assemblage_doigt_eclate_FR.png` and `assemblage_coupes_vis_FR.png`. **Option 1, without `Gimbal_tendon` (v8, no metal washer):** stock Gimbal, only the lower bushing in step 1 (skip step 3). Drop the printed `bushing_washer_d6` over the boss from above (sleeve down into the bore, disc on the end of the boss), then Pollen's 2.5×8 screw through its Ø2.7 hole into the Gimbal's end hole (Ø1.9, blind, 7.1 mm of thread). Tighten until the disc is clamped on the boss end: it then turns with the Gimbal, which must stay free in yaw. R-Top_Shell must be off to tighten it. See `matebot/README.md`, section "The bushing-washer".*
+4. **Screw the Gimbal from underneath (Option 2):** printed `washer_d8_printed` (no metal washer), then the **2.5×8 thermoplastic screw** into the post's Ø1.9 pilot hole (from below, 7.1 mm of thread in the post). Tighten until the head sits on the post: the washer then stays 0.4 mm below the tab and does not clamp it. **Abduction (±25°) must stay free.** (The thumb keeps the original: stock Gimbal, 2.5×8 screw on top of the boss, with the printed `bushing_washer_d6` instead of the washer.)
 
 ### 4.5 Palm
 1. Use `R-Hand_Plate_tendon` instead of the original R-Hand_Plate, and `R-Palm_Shell_tendon` instead of the R-Palm_Shell (untested). **Fit the palm shell last**, after every Gimbal screw is in (the screw heads are underneath).

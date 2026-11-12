@@ -20,12 +20,13 @@ bu=MT("bushing_d6_flanged"); BP=importlib.util.spec_from_file_location("b",os.pa
 plate=MT("R-Hand_Plate_tendon"); shell=MT("R-Palm_Shell_tendon"); gt=MT("Gimbal_tendon"); gstock=AH("Gimbal"); link=MT("finger_link_tendon"); prox=AH("Proximal")
 low=bu.translate((0,0,P['blk_z'][0]-BM.P['flange_t'])); high=bu.rotate((0,0,0),(1,0,0),180).translate((0,0,P['blk_z'][1]+BM.P['flange_t']))
 z0=P['post_z'][0]; py=P['post_y']
-washer=cq.Workplane("XY").workplane(offset=z0-0.8).center(0,py).circle(4.0).circle(1.35).extrude(0.8)
-head=cq.Workplane("XY").workplane(offset=z0-2.6).center(0,py).circle(2.25).extrude(1.8)
-shank=cq.Workplane("XY").workplane(offset=z0-0.8).center(0,py).circle(1.25).extrude(8.0)
+BWP=importlib.util.spec_from_file_location("bw",os.path.join(here,"bushing_washer_d6.py")); BW=importlib.util.module_from_spec(BWP); BWP.loader.exec_module(BW)
+washer=BW.place_washer_under(BW.build_washer(),0,py,z0)       # flat printed washer D8 x 0.9 (option 2)
+T1=BW.place_top(BW.build(),13.5)                              # printed top-hat bushing-washer (option 1)
+head=cq.Workplane("XY").workplane(offset=z0-2.7).center(0,py).circle(2.25).extrude(1.8)
+shank=cq.Workplane("XY").workplane(offset=z0-0.9).center(0,py).circle(1.25).extrude(8.0)
 screw=head.union(shank)
-tw=cq.Workplane("XY").workplane(offset=13.5).circle(4.0).circle(1.35).extrude(0.8)        # stock top washer
-th=cq.Workplane("XY").workplane(offset=14.3).circle(2.25).extrude(1.8); ts=cq.Workplane("XY").workplane(offset=14.3-8.0).circle(1.25).extrude(8.0); tscrew=th.union(ts)
+th=cq.Workplane("XY").workplane(offset=14.4).circle(2.25).extrude(1.8); ts=cq.Workplane("XY").workplane(offset=14.4-8.0).circle(1.25).extrude(8.0); tscrew=th.union(ts)
 pin16=cq.Workplane("YZ").workplane(offset=-8.1).circle(1.0).extrude(16.2); pin10=cq.Workplane("YZ").workplane(offset=-5.0).center(0,-6).circle(1.0).extrude(10.0)
 tmp=tempfile.mkdtemp()
 def crop(s,box):
@@ -42,7 +43,7 @@ items=[
  (2,high,28,0,'#f59f00',"Bague du haut (collerette dans l'encoche de la dalle)\nbushing_d6_flanged",None),
  (3,low,-18,0,'#f59f00',"Bague du bas, collerette vers le bas\nbushing_d6_flanged",None),
  (4,gt,-40,0,'#228be6',"Gimbal_tendon (languette + fente en arc Ø5)\n(ou Gimbal d'origine, voir la coupe B)",None),
- (5,washer,-70,0,'#868e96',"Grande rondelle M2.5 (Ø8)",None),
+ (5,washer,-70,0,'#868e96',"Rondelle plate imprimée Ø8 x 0,9 (washer_d8_printed)\nremplace la rondelle M2.5 ; option 2 seulement",None),
  (6,screw,-84,0,'#343a40',"Vis thermoplastique 2.5 x 8, par en dessous,\ndans le trou pilote du poteau",None),
  (7,link,-52,0,'#be4bdb',"finger_link_tendon",None),
  (9,shell_c,-118,0,'#c8d0d8',"Coque de paume R-Palm_Shell_tendon\n(posée en dernier)",None),
@@ -76,7 +77,7 @@ for (n,txt),y in zip(rows,ys):
     fig.text(0.64,y,f" {n} ",fontsize=15,fontweight='bold',color='white',va='center',bbox=dict(boxstyle='circle,pad=0.25',fc='#1c7ed6',ec='none'))
     fig.text(0.67,y,txt,fontsize=12.5,va='center')
 fig.text(0.02,0.975,"MateBot - un doigt sur la plaque R-Hand_Plate_tendon v6 - vue éclatée (non à l'échelle, éclatement le long de l'axe Z du pivot)",fontsize=14,fontweight='bold',va='top')
-fig.text(0.02,0.015,"Proximal, Distal et leurs coques ne sont pas représentés. Gimbal_tendon : Gimbal avec languette (vissage par en dessous). Le poteau (Ø4,4) de la plaque traverse la fente de la languette ;\nla rondelle (Ø8) recouvre la languette de 1,5 mm de chaque côté de la fente. Vue générée par la CAO ; non testé à l'impression.",fontsize=10.5,va='bottom')
+fig.text(0.02,0.015,"Proximal, Distal et leurs coques ne sont pas représentés. Gimbal_tendon : Gimbal avec languette (vissage par en dessous). Le poteau (Ø4,4) de la plaque traverse la fente de la languette ;\nla rondelle imprimée (Ø8) recouvre la languette de 1,5 mm de chaque côté de la fente. Vue générée par la CAO ; non testé à l'impression.",fontsize=10.5,va='bottom')
 fig.savefig(os.path.join(DOCS,"assemblage_doigt_eclate_FR.png"),dpi=110); plt.close(fig)
 # ------------------------------------------------------------ 2. sections
 def tris(s,axis,val,th_=0.02):
@@ -99,13 +100,13 @@ ax.set_xlim(-24,12); ax.set_ylim(-13,31); ax.set_title("A. Retenue : Gimbal_tend
 def note(ax,xy,xyt,t,c='k'): ax.annotate(t,xy,xyt,fontsize=11,color=c,arrowprops=dict(arrowstyle='->',color=c))
 note(ax,(-8.6,6),(-23.5,29),"poteau Ø4,4 de la plaque")
 note(ax,(-8.6,2),(-23.5,25.5),"languette du Gimbal_tendon (fente en arc Ø5, ±25°)")
-note(ax,(-8.6,4.5),(-23.5,22),"vis 2.5x8 : 7,2 mm de filet dans le poteau (pilote Ø1,9)")
+note(ax,(-8.6,4.5),(-23.5,22),"vis 2.5x8 : 7,1 mm de filet dans le poteau (pilote Ø1,9)")
 note(ax,(0,16),(-4,29),"pivot du Gimbal Ø6\n+ 2 bagues")
-note(ax,(-8.6,-0.3),(-23.5,-9),"rondelle M2.5 Ø8 : retient la languette\n(0,4 mm sous la languette, ne la serre pas)")
+note(ax,(-8.6,-0.3),(-23.5,-9),"rondelle imprimée Ø8 x 0,9 : retient la languette\n(0,4 mm sous la languette, ne la serre pas)")
 note(ax,(-8.6,-2.4),(-23.5,-12),"tête de vis (Ø4,5), accessible par en dessous")
-ax=axs[1]; draw(ax,base+[(gstock,'#4dabf7',1),(tw,'#868e96',1),(tscrew,'#343a40',1)],'x',0)
-ax.set_xlim(-14,14); ax.set_ylim(-3,31); ax.set_title("B. Sans réimpression : Gimbal d'origine + vis par le dessus\n(trou existant du bout Ø1,9, coupe X=0)",fontsize=14)
-note(ax,(0,15.5),(-13.5,28),"vis 2.5x8 + rondelle dans le trou du bout\n(Ø1,9, environ 8,5 mm de profondeur depuis le haut, borgne)")
+ax=axs[1]; draw(ax,[(plate,'#9aa5b1',0.9),(low,'#f59f00',1),(gstock,'#4dabf7',1),(T1,'#e64980',1),(tscrew,'#343a40',1)],'x',0)
+ax.set_xlim(-14,14); ax.set_ylim(-3,31); ax.set_title("B. Sans réimpression : Gimbal d'origine + vis par le dessus + bague-rondelle\n(trou existant du bout Ø1,9, coupe X=0)",fontsize=14)
+note(ax,(0,15.5),(-13.5,28),"bague-rondelle imprimée (rose, bushing_washer_d6) :\ndisque Ø10 x 0,9 serré par la vis 2.5x8 sur le bout du pivot,\nmanchon dans l'alésage (remplace la bague du haut)\nvis dans le trou du bout (Ø1,9, ~8,5 mm, borgne) : 7,1 mm de filet")
 ax.text(-13.5,-1.8,"il faut retirer R-Top_Shell (dos de la main) pour serrer la vis",fontsize=11,color='#c92a2a')
 ax=axs[2]; draw(ax,[(plate,'#9aa5b1',0.9),(high,'#f59f00',1),(low,'#f59f00',1),(gstock,'#4dabf7',1),(prox,'#8ce99a',0.9),(link,'#be4bdb',0.9),(pin16,'#e03131',1),(pin10,'#e03131',1)],'y',0)
 ax.add_patch(Rectangle((-1.25,-2.3),2.5,7.2,fc='none',ec='#c92a2a',lw=2,ls='--'))
@@ -115,5 +116,5 @@ note(ax,(0,0),(-15.5,28),"l'axe D2x16 (rouge) traverse l'axe du pivot : la vis\n
 note(ax,(0,-4.5),(-15.5,-14),"sous le Gimbal, la tête de vis est sur le passage du Link\n(11 à 32 mm³ de collision selon l'angle)",'#c92a2a')
 note(ax,(0,5.2),(-15.5,22),"le trou d'origine est borgne : ouvert en haut seulement,\nfond à Z≈4,9 ; du bas il faudrait percer 3,9 mm de plus (Z 1,1 à 4,9)")
 for ax in axs: ax.set_aspect('equal'); ax.grid(alpha=.3); ax.tick_params(labelsize=9)
-fig.suptitle("MateBot v6 - chemin de la vis (finger frame = repère de la plaque ; gris : plaque, orange : bagues, bleu : Gimbal, violet : Link, vert : Proximal, rouge : axes)",fontsize=14,y=0.995)
+fig.suptitle("MateBot v8 - chemin de la vis (finger frame = repère de la plaque ; gris : plaque, orange : bagues, bleu : Gimbal, violet : Link, vert : Proximal, rouge : axes)",fontsize=14,y=0.995)
 plt.tight_layout(rect=[0,0,1,0.97]); fig.savefig(os.path.join(DOCS,"assemblage_coupes_vis_FR.png"),dpi=80); plt.close(fig); print("ok")
