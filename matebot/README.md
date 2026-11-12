@@ -2,14 +2,14 @@
 
 MateBot moves the Amazing Hand's 8 servos out of the palm and into the forearm. Each finger is driven by a pair of Feetech STS3215 (12 V) servos pulling tendons through PTFE tubes.
 
-**Status: v0, untested.** Nothing here has been validated on a real build. Measure your own servo and servo horn before printing.
+**Status: v0/v1, untested.** Nothing here has been validated on a real build. Measure your own servo and servo horn before printing.
 
 ## Folders
 
 - `stl/`: ready-to-print files
 - `step/`: editable CAD files
-- `source/`: Python (CadQuery) scripts that generate the parts: `parts.py` (spool, PTFE anchor, servo bay) `finger_link_tendon.py` (the modified finger Link), `bushing_d6.py` (the printable finger bushing, with `verify_bushing_d6.py` and `render_bushing_d6.py`) and `R-Hand_Plate_tendon.py` (the modified hand plate and palm shell), with `verify_R-Hand_Plate_tendon.py` and `render_plate_tendon.py`
-- `docs/`: design notes, assembly guide (French), preview images (`finger_link_tendon_preview.png`, `finger_link_tendon_routing.png`, `R-Hand_Plate_tendon_preview.png`, `R-Hand_Plate_tendon_routing.png`, `bushing_d6_preview.png`) and an explainer animation
+- `source/`: Python (CadQuery) scripts that generate the parts: `parts.py` (spool, PTFE anchor, servo bay) `finger_link_tendon.py` (the modified finger Link), `bushing_d6.py` (the printable finger bushing, with `verify_bushing_d6.py` and `render_bushing_d6.py`) and `R-Hand_Plate_tendon.py` (the modified hand plate and palm shell, now with the Gimbal pivot blocks), `Gimbal_tendon.py` (the Gimbal with a retention tab), with `verify_R-Hand_Plate_tendon.py`, `render_plate_tendon.py` and `render_gimbal_thumb.py`
+- `docs/`: design notes, assembly guide (French), preview images (`finger_link_tendon_preview.png`, `finger_link_tendon_routing.png`, `R-Hand_Plate_tendon_preview.png`, `R-Hand_Plate_tendon_routing.png`, `Gimbal_tendon_preview.png`, `thumb_aperture_preview.png`, `bushing_d6_preview.png`) and an explainer animation
 
 ## Parts to print
 
@@ -19,16 +19,18 @@ MateBot moves the Amazing Hand's 8 servos out of the palm and into the forearm. 
 | `ptfe_anchor_8x.stl` | 2 (servo side only) | Holds the 16 PTFE tube ends in the forearm. The palm ends now sit in `R-Hand_Plate_tendon`. |
 | `servo_bay_8x_sts3215.stl` | 1 | **Bench testing only.** It does not fit inside the forearm; it will be replaced by 4 pair mounts. |
 | `finger_link_tendon.stl` | 4 (+2 spares) | **Replaces Pollen's `Link`** (do not also print the original Link). Same pivot holes, plus a cross bar and two tendon plates, now with **dowel pass-through holes** (v1). Print 1 first. Needs supports. |
+| `Gimbal_tendon.stl` | 3 (+1 spare) | **Replaces Pollen's `Gimbal` on the index, middle and ring fingers** (do not also print the original Gimbal for those 3). Identical, plus a rear tab with an arc slot so the Gimbal can be **screwed from underneath the plate** (see [the Gimbal section](#the-gimbal-screwed-from-underneath-gimbal_tendon-v0-untested)). |
+| `bushing_d6_flanged.stl` | 8 (+2 spares) | **Printable version of Pollen's "Bushing D interior 6 mm"** (GFM-0608-04): 2 per finger, pressed into the pivot bores of `R-Hand_Plate_tendon`. Small part: print all 10 at once. See [the bushing section](#the-finger-bushing-bushing_d6_flanged-v0-untested). |
+| `R-Hand_Plate_tendon.stl` | 1 | **Replaces Pollen's `R-Hand_Plate` and, for the 3 fingers, Finger_Frame-1 and Finger_Frame-2.** Same outline and screw holes, plus a Gimbal pivot block with the D8.15 bore under each finger window, a Gimbal retention post, and 12 PTFE tube sockets. Needs no support (same as the original). |
+| `R-Palm_Shell_tendon.stl` | 1 | **Replaces Pollen's `R-Palm_Shell`.** Same shell with notches where the new sockets, posts and screw heads reach it, and a **bigger thumb aperture**. Print in the same material as the original. |
 
-| `bushing_d6_flanged.stl` | 8 (+2 spares) | **Printable version of Pollen's "Bushing D interior 6 mm"** (GFM-0608-04): 2 per finger, pressed into Finger_Frame-1. Small part: print all 10 at once. See [the bushing section](#the-finger-bushing-bushing_d6_flanged-v0-untested). |
-| `R-Hand_Plate_tendon.stl` | 1 | **Replaces Pollen's `R-Hand_Plate`.** Same outline and screw holes, plus 12 PTFE tube sockets for the index, middle and ring fingers. Needs no support (same as the original). |
-| `R-Palm_Shell_tendon.stl` | 1 | **Replaces Pollen's `R-Palm_Shell`.** Same shell with 3 small notches where the new sockets reach it. Print in the same material as the original. |
+**No longer printed for the index, middle and ring fingers: `Finger_Frame-1` and `Finger_Frame-2`.** Frame-1's function (the D8.15 Gimbal bore with its bushings) is now part of `R-Hand_Plate_tendon`; Frame-2 only carried the servos of the original hand and has no job in the tendon hand. **The thumb is the exception:** it is not on the plate but on the Wrist_Interface, so it still needs **1 printed `Finger_Frame-1`** (Pollen's file, unchanged) and **1 stock `Gimbal`**, plus its own 2 bushings (already in the 10). Print the thumb's Proximal, Distal, shells and `finger_link_tendon` as for the other fingers (4 each).
 
 ## The finger bushing: `bushing_d6_flanged` (v0, untested)
 
 **What Pollen calls it.** In the Amazing Hand bill of materials and assembly guide (Step 2, "Bushings") it is **"Bushing D interior 6 mm / D exterior 8 mm", part number GFM-0608-04**: an igus iglidur GFM flanged plastic bush, 6 mm bore, 8 mm OD, 4 mm long including the flange, flange D12 × 1 mm. It is a *bought* part, 2 per finger (8 per hand with the thumb), so it was never in the STL set. It is the only bushing in the hand: the D2×10 and D2×16 axes turn directly in the printed holes of the Gimbal, Proximal, Distal and Link, and the BallJoint_Rod Spacers (not needed with tendons) are not bushings.
 
-**Where it goes.** The finger's abduction / adduction pivot. The Gimbal has a D6.0 boss (Z 3.5 to 13.5 in the finger frame); `Finger_Frame-1` has a D8.15 through bore (8.0 mm long). One bushing is pushed in from each side, flange outside, until the flange touches the frame. The boss sticks out of the frame by exactly 1.0 mm on each side, which is the flange thickness, so the M2.5 large washer and the 2.5×8 screw end up resting on the outer flange.
+**Where it goes.** The finger's abduction / adduction pivot. The Gimbal has a D6.0 boss (Z 3.5 to 13.5 in the finger frame); the plate's pivot block (`R-Hand_Plate_tendon`, which replaces Finger_Frame-1) has the same D8.15 through bore (8.0 mm long, Z 4.5 to 12.5). One bushing is pushed in from each side, flange outside, until the flange touches the frame. The boss sticks out of the frame by exactly 1.0 mm on each side, which is the flange thickness, so the M2.5 large washer and the 2.5×8 screw end up resting on the outer flange.
 
 | | Printed `bushing_d6_flanged` | Pollen / igus GFM-0608-04 |
 |---|---|---|
@@ -41,15 +43,22 @@ MateBot moves the Amazing Hand's 8 servos out of the palm and into the forearm. 
 | Quantity | **8 (+2 spares = 10)** | 8 |
 
 - **Print:** upright (flange on the bed, body up, no support), PETG, 0.12 mm layers, 3 or more walls (the 0.95 mm wall is all perimeters), 100% infill, about 40 mm/s. Put all 10 on one plate with 3 mm spacing.
-- **Fit:** the printed Finger_Frame-1 bore usually comes out slightly under the drawn D8.15, so the body is a light press fit. Push the bushing in against a flat surface. If it will not go, sand the body; if it is loose, a drop of CA glue on the body. Pass a D6.2 drill or reamer by hand through the bore if the Gimbal boss does not turn freely (D6.3 if it is still tight). One drop of PTFE or silicone grease on the boss; PETG running on PETG can squeak.
-- **Measure before printing all 10:** the real bore of your printed Finger_Frame-1 and the real boss of your printed Gimbal (caliper). Print 2 test bushings first. To re-size, edit `od` and `bore` in `source/bushing_d6.py` and run it.
-- **Verified in CAD** (`source/verify_bushing_d6.py`, 12 of 12 pass): the pair fits the Frame-1 bore and the Gimbal boss with no interference, with the Gimbal turned ±30°; no contact with Finger_Frame-2, Proximal, shells, Distal, the hand plate, `finger_link_tendon`, `R-Hand_Plate_tendon` or `R-Palm_Shell_tendon` (they sit at |X| ≥ 12 mm, far from the D12 flanges), and none while Proximal, shells, Distal and Link are swept through −80° to 0° of flexion. The flange only touches the Proximal if the finger is pushed more than +5° past straight; the frame itself stops the Proximal at +7°.
-- **Not verified:** real printed tolerances, wear and friction of PETG on PETG, and the thumb (its frame is assumed identical to the fingers' Finger_Frame-1).
+- **Fit:** the printed plate bore usually comes out slightly under the drawn D8.15, so the body is a light press fit. Push the bushing in against a flat surface. If it will not go, sand the body; if it is loose, a drop of CA glue on the body. Pass a D6.2 drill or reamer by hand through the bore if the Gimbal boss does not turn freely (D6.3 if it is still tight). One drop of PTFE or silicone grease on the boss; PETG running on PETG can squeak.
+- **Measure before printing all 10:** the real bore of your printed plate and the real boss of your printed Gimbal (caliper). Print 2 test bushings first. To re-size, edit `od` and `bore` in `source/bushing_d6.py` and run it.
+- **Verified in CAD** (`source/verify_bushing_d6.py`, 12 of 12 pass): the pair fits the stock Frame-1 bore (identical to the plate bore) and the Gimbal boss with no interference, with the Gimbal turned ±30°; no contact with Finger_Frame-2, Proximal, shells, Distal, the hand plate, `finger_link_tendon`, `R-Hand_Plate_tendon` or `R-Palm_Shell_tendon` (they sit at |X| ≥ 12 mm, far from the D12 flanges), and none while Proximal, shells, Distal and Link are swept through −80° to 0° of flexion. The flange only touches the Proximal if the finger is pushed more than +5° past straight; the frame itself stops the Proximal at +7°.
+- **Not verified:** real printed tolerances, wear and friction of PETG on PETG, and the thumb (its Finger_Frame-1 is the original Pollen file; the bushings were checked on the fingers' bore, which is the same D8.15). v1 adds: the pair fits the new plate bore of all 3 fingers, and the upper flange sits in the slab notch (0 mm³ interference, `verify_R-Hand_Plate_tendon.py`).
 - Original part, if you ever prefer to buy it: igus iglidur GFM-0608-04 (Pollen's BOM lists 8 per hand at about 1.60 EUR each). Nothing was bought.
 
-## The palm plate: `R-Hand_Plate_tendon` (v0, untested)
+## The palm plate: `R-Hand_Plate_tendon` (v1, untested)
 
 Pollen's plate holds 3 fingers (index, middle, ring) in 3 windows. The **thumb is not on this plate**: it screws into the Wrist_Interface. So the plate takes 3 fingers × 4 tendons = **12 tube ends** (not 8). The thumb's 4 tube ends still need a home on the wrist adapter (not designed yet).
+
+**v1 changes (all three fingers):**
+
+1. **Finger_Frame-1 and Finger_Frame-2 are no longer printed.** Under each finger window the plate now has a **Gimbal pivot block**: the exact outline of Frame-1's bottom face (X ±10, Y −15 to +6) from the slab underside down to Z = 4.5, i.e. the 8 mm long block of Frame-1, with the same **Ø8.15 through bore** (0.3 mm lead-in chamfer on both ends) for the 2 bushings and the Gimbal boss. The Gimbal therefore mounts directly on the plate. The original M2 screw holes stay; Frame-2 only carried the servos and is not needed.
+2. **The Gimbal is screwed from underneath** (see [the Gimbal section](#the-gimbal-screwed-from-underneath-gimbal_tendon-v0-untested)): a **Ø4.4 post** hangs under each block at X = 0, Y = −8.6 (finger frame), down to Z = 0.1, with a **Ø1.9 pilot hole 8 mm deep** opening at its bottom face.
+3. **Anchor columns 1.5 mm shorter, sockets 1.5 mm closer.**
+4. The palm shell (`R-Palm_Shell_tendon`) has a bigger thumb aperture.
 
 Each finger side gets one **anchor column** that hangs under the plate and holds two sockets, the extensor above the flexor (6 columns, 12 sockets):
 
@@ -59,21 +68,54 @@ Each finger side gets one **anchor column** that hangs under the plate and holds
 | Stop shoulder | 1.6 mm thick, Ø2.2 mm through-hole for the tendon |
 | Tendon exit | cone from Ø2.2 to Ø5.0 mm over 3.0 mm, facing the finger (lets the tendon swing without rubbing) |
 | Tube end (stop face) | Y = −30.0 mm, i.e. 30 mm behind the finger pivot |
-| Socket axes | X = ±10.5 mm, extensor at Z = +2.3 mm, flexor at Z = −14.3 mm (the tendons leave the 9.0 mm capstan tangents at Z = +3.0 and −15.0, so they lean 0.7 mm over the 25 mm to the socket; Link pivot at Z = −6) |
-| Column | 8.2 mm wide, 12.6 mm long (Y −38.0 to −25.4), from the slab top (Z = 15.5) down to Z = −18.4 mm |
-| Wall around every socket | 2.0 mm (bore), 1.6 mm (cone mouth) |
+| Socket axes | X = ±10.5 mm, extensor at Z = +2.3 mm, **flexor at Z = −12.8 mm (v0: −14.3)**: the two sockets are **15.1 mm apart (v0 16.6)**. The tendons leave the 9.0 mm capstan tangents at Z = +3.0 and −15.0, so the extensor leans 0.7 mm and the **flexor 2.2 mm** over the 25 mm to the socket (Link pivot at Z = −6); the tendon corridors (Ø3.0) are re-aimed at the real tangent points |
+| Column | 8.2 mm wide, 12.6 mm long (Y −38.0 to −25.4), from the slab top (Z = 15.5) down to **Z = −16.9 mm: 32.4 mm tall (v0: 33.9)** |
+| Wall around every socket | 2.0 mm (bore, also under the flexor bore), 1.6 mm (cone mouth) |
+
+The 1.5 mm came entirely out of the flexor side (flexor moved up, extensor and column top unchanged): moving both sockets 0.75 mm each would have left only 1.25 mm of wall under the flexor bore, below the 1.6 mm minimum.
 
 The sockets sit at X = ±10.5, not at the capstan lines X = ±13.2: this keeps the sockets of neighbouring fingers at least 7.9 mm apart (the fingers fan out by 5.8° and 13.5°), and the tendon leans about 6° inward between the socket and the capstan.
 
-Other changes to the original plate: a Ø4.5 mm clearance hole behind each extensor socket where the tube crosses the plate's cross beam (the flexor tubes pass under the plate), a Ø3 mm tendon corridor, and a cylindrical relief (R10.3) around each Link capstan plate (about 730 mm³ removed in total). All original screw holes are kept.
+Other changes to the original plate: a Ø4.5 mm clearance hole behind each extensor socket where the tube crosses the plate's cross beam (the flexor tubes pass under the plate), a Ø3 mm tendon corridor, and a cylindrical relief (R10.3) around each Link capstan plate, **v1: 2.6 mm wider on the outer side of each plate** so the Link plates can abduct ±25° without touching the plate rails (the ring finger's plate touched by 1.5 mm³ at +25°). All original screw holes are kept.
 
-What was **checked in CAD** (script `source/verify_R-Hand_Plate_tendon.py`, 20 checks): single valid solid; finger positions fitted to the plate's own screw holes (worst error 0.19 mm); no original hole plugged; wall ≥ 1.6 mm around all 12 sockets; no tendon line (finger at rest) touches the plate, Finger_Frame-1/-2, Gimbal or Proximal; the swept Link capstan plates clear the plate; the new material clears the Finger_Frame, Gimbal, Proximal, Top_Shell and Wrist_Interface.
+**Palm shell (`R-Palm_Shell_tendon`).** Notches where the columns (grown by 0.6 mm), the Gimbal post, washer and screw head reach the shell, and a **bigger thumb aperture**: the shell loses about 1030 mm³ in total (v0: 764 mm³), most of it the thumb aperture. The aperture is the envelope of the thumb's parts swept through the full range (abduction ±25°, flexion −80° to +5°) plus **1.5 mm of clearance all round**: the tendon Link's capstan plates (the part that collided with the stock hole) and the Proximal / Proximal_Shell at the wrist end of the aperture (the stock shell edge is only 0.9 mm from the Proximal_Shell at +25° abduction). See `docs/thumb_aperture_preview.png`. **The thumb's position and angle are ESTIMATED**: they come from the 3-hole screw pattern of the Wrist_Interface (the hand's thumb mount), not from Pollen's assembly file.
 
-What is **not** verified: nothing has been printed. The tendon lines were checked with the finger at rest only (not over the full flexion and abduction range). The thin walls left beside the extensor clearance holes where they cut through the original pockets can be as thin as 0.2 mm (they will not print, the hole simply opens into the pocket). The tubes were only checked straight from the sockets back to Y = −85 mm; they will overlap the Wrist_Interface walls a little, which is to be solved with the wrist adapter.
+What was **checked in CAD** (script `source/verify_R-Hand_Plate_tendon.py`, 34 checks, see the numbers in the output): single valid solid; finger positions fitted to the plate's own screw holes (worst error 0.19 mm); no original hole plugged; wall ≥ 1.6 mm around all 12 sockets; Ø8.15 bores coaxial with the finger axes; the 2 bushings fit each bore and the slab notch; stock Gimbal and `Gimbal_tendon` turning ±25° clear the plate; post wall around the pilot ≥ 1.2 mm; washer, screw head and a Ø7 screwdriver column clear the plate and columns; the post slides in the `Gimbal_tendon` slot over ±25°; Proximal, shells, Distal, tendon Link and `Gimbal_tendon` swept over flexion × abduction clear the plate, washer and head; column 32.4 mm and socket spacing 15.1 mm; tendon lines clear the Gimbal parts; relieved shell clear of all added material; thumb parts keep ≥ 1.5 mm from the new shell.
 
-Printing: PETG, plate slab-down exactly like the original (no supports needed: the columns reach the slab top face), 0.2 mm layers, 5+ walls and 40% or more infill (the columns carry the tube reaction, not the tendon tension). The bores are horizontal; they bridge over 4.2 mm, so check them with the tube before gluing and ream with a Ø4.2 drill if tight. Glue the tubes in with a drop of CA glue.
+What is **not** verified: nothing has been printed. The thumb pose is estimated (see above). The extension stop: the Proximal touches the block at +5° to +7° past straight, exactly like the stock Frame-1 (the check range stops at +5°). The tendon lines were checked at rest and at ±25° abduction against the Gimbal parts, not over the full flexion range. The thin walls left beside the extensor clearance holes where they cut through the original pockets can be as thin as 0.2 mm (they will not print, the hole simply opens into the pocket). The tubes were only checked straight from the sockets back to Y = −85 mm; they will overlap the Wrist_Interface walls a little, which is to be solved with the wrist adapter.
 
-Check with calipers: the PTFE tube OD (the sockets assume 4.0 mm: if yours is 4.1 or more, change `sock_d`), and that the tubes seat fully (8 mm).
+Printing: PETG, plate slab-down exactly like the original. No supports are needed: the columns, the pivot blocks and the posts all grow straight up from the slab, and the bores and pilot holes are vertical in that orientation (they print round). 0.2 mm layers, 5+ walls and 40% or more infill. The tube bores are horizontal; they bridge over 4.2 mm, so check them with the tube before gluing and ream with a Ø4.2 drill if tight. Glue the tubes in with a drop of CA glue.
+
+Check with calipers: the PTFE tube OD (the sockets assume 4.0 mm: if yours is 4.1 or more, change `sock_d`), the printed Ø8.15 bores (they must accept the bushings, see above), and that the tubes seat fully (8 mm).
+
+## The Gimbal screwed from underneath: `Gimbal_tendon` (v0, untested)
+
+**The problem.** Pollen keeps the Gimbal in with one 2.5×8 screw and a large M2.5 washer on top of its boss (blind Ø1.9 hole, Z 5.5 to 13.5). With the Frame gone and the palm shell on top, the fingers were not held. The request was to screw the Gimbal in from underneath.
+
+**Why not a screw in the boss axis from below.** The boss axis is also the abduction axis. Below the boss the Gimbal is solid at Z = 0 and the D2×16 Gimbal ↔ Proximal pin crosses that axis, so no screw can enter the boss from below on its axis. A retainer bar under the shoulder would be hit by the Proximal's ears (they sweep radius 5.2 to 8.75 mm around the pivot during abduction), and a clip in a groove of the boss is only 1.0 mm tall. So the screw does not hold the boss; it holds a **tab behind it**.
+
+**What it is.** `Gimbal_tendon.stl` is Pollen's Gimbal plus a **rear tab** (Z 0.5 to 3.5, at radius 8.6 from the boss axis, 8.0 mm wide) with a **Ø5.0 arc slot (±25°)**. The plate's **post (Ø4.4)** stands in the slot. A **large M2.5 washer (Ø8 × 0.8) and a 2.5×8 thermoplastic screw (the one Pollen lists for the top of the boss)** are screwed **from below into the post's Ø1.9 pilot hole**. The washer overlaps the tab by 1.5 mm each side of the slot, so the Gimbal cannot drop or pull out; the post can slide in the slot, so the Gimbal still turns ±25° (abduction). It does not clamp: the washer sits 0.4 mm below the tab and the tab has 1.0 mm of room under the block.
+
+| | |
+|---|---|
+| Screw | **2.5 × 8 mm thermoplastic screw (the same as Pollen's top screw, 1 per finger: no new hardware)**, into a Ø1.9 pilot hole, **7.2 mm of thread in the post** (8.0 mm screw minus the 0.8 mm washer) |
+| Washer | the large M2.5 washer Pollen already lists (Ø8) |
+| Counterbore | none needed: the head (about Ø4.5 × 1.8) sits free below the post, and the palm shell is notched around it |
+| Access | Ø7 mm straight down from the post, not blocked by the plate, anchor columns or reliefs; **the palm shell is fitted after the fingers** (as in Pollen's order), so install the screw before fitting the shell |
+| Original top hole | the Gimbal's top blind hole and the boss end are untouched; the top screw is not needed any more (optional) |
+
+**Install (per finger):**
+1. Press one bushing into the **lower** end of the bore (flange down) of the plate's pivot block.
+2. Offer the `Gimbal_tendon` from below: boss up through that bushing, the post passing through the arc slot of the tab.
+3. Press the second bushing into the upper end of the bore from above (flange in the slab notch).
+4. From below: washer, then the 2.5×8 screw into the post, tighten until the head sits on the post bottom face (then the washer is held 0.4 mm from the tab). Check that the Gimbal turns by hand ±25°.
+5. Fit the Proximal, Distal and `finger_link_tendon` as before. **Dowel pins D2×10 / D2×16** as in the previous version.
+
+**Verified in CAD** (`verify_R-Hand_Plate_tendon.py`): `Gimbal_tendon` is one valid solid (volume 1029 mm³ vs 902 for the stock Gimbal); the post (+0.2 mm margin) passes the slot over ±25°; washer and head clear all moving finger parts (Proximal, shells, Distal, tendon Link, tab) over flexion × abduction; wall ≥ 1.5 mm around the slot. **Not verified:** the real force the 2.5×8 screw holds in a printed Ø1.9 pilot (the post wall is 1.25 mm), or the real abduction range (if your fingers abduct more than ±25°, enlarge `abd` in `source/Gimbal_tendon.py` and `source/R-Hand_Plate_tendon.py`).
+
+Printing: like the original Gimbal (boss up, fork on the bed) with **tree supports under the new tab** (3 mm thick, it overhangs the shoulder by about 6 mm); print 1 first and check that the post slides in the slot with a little play (ream the slot with a Ø5 drill if tight). PETG, 4+ walls, 100% infill on the tab.
+
+Run `python source/Gimbal_tendon.py "<Amazing Hand Parts - Gimbal.step>"` to regenerate it. Preview: `docs/Gimbal_tendon_preview.png`.
 
 ## The finger part: `finger_link_tendon` (v1, untested)
 
@@ -103,7 +145,7 @@ Design numbers (CAD estimates from the original STL files, not measurements on a
 - The spool's horn screw pattern is not yet matched to the real Feetech horn.
 - The servo pocket clearance is tight (about 0.2 mm per side).
 - The 4 servo-pair mounts and the wrist adapter (with the thumb's 4 tube ends) have not been designed yet.
-- `R-Hand_Plate_tendon` is a v0 and is not printed yet. `Finger_Frame-2` only held the servos in the original hand and has no job in the tendon hand; it is still compatible with the new plate.
+- `R-Hand_Plate_tendon` v1 and `Gimbal_tendon` are not printed yet. `Finger_Frame-1` and `-2` are no longer printed for the 3 fingers (the thumb still needs one Frame-1).
 - The cross bar fills the original M2 rod hole of the barrel. Nothing else of the original Link is removed.
 - The rim radius grew from 9.0 to 9.7 mm in v1, so the tendon lever arm is 9.0 mm instead of 8.3 mm and the plate relief in `R-Hand_Plate_tendon` grew from R9.6 to R10.3. A v0 Link on a v1 plate works; a v1 Link on a v0 plate scrapes the plate walls of the middle and ring fingers.
 

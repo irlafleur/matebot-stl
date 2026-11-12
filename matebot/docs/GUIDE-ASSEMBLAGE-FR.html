@@ -57,10 +57,22 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <td>v1 non testé (trous pour les axes ajoutés). Imprime-en 1 d'abord. Supports nécessaires. Voir le README de <code>matebot/</code></td>
 </tr>
 <tr>
-<td>Doigt : Finger_Frame-1, Finger_Frame-2, Proximal, Distal, Gimbal, Proximal_Shell, Distal_Shell (pas de Link, voir ci-dessus)</td>
+<td>Gimbal à languette (remplace le Gimbal des 3 doigts de la plaque : index, majeur, annulaire)</td>
+<td><code>Gimbal_tendon.stl</code></td>
+<td>3 (+1 de rechange)</td>
+<td>Languette arrière avec fente en arc pour <strong>visser le Gimbal par en dessous</strong>. Imprime-en 1 d'abord, supports en arbre sous la languette. Voir le README de <code>matebot/</code></td>
+</tr>
+<tr>
+<td>Doigt : Proximal, Distal, Proximal_Shell, Distal_Shell (pas de Link, voir ci-dessus)</td>
 <td><code>Amazing Hand Parts - &lt;nom&gt;.stl</code></td>
-<td>4 de chaque</td>
+<td>4 de chaque (+2 Distal)</td>
 <td>Shells en TPU (le README garde les coques/coussinets TPU d'origine)</td>
+</tr>
+<tr>
+<td><strong>Pouce seulement</strong> : Finger_Frame-1 et Gimbal d'origine</td>
+<td><code>Amazing Hand Parts - Finger_Frame-1.stl</code>, <code>Amazing Hand Parts - Gimbal.stl</code></td>
+<td>1 de chaque (+1 Gimbal)</td>
+<td>Le pouce se monte sur l'interface poignet, pas sur la plaque : il garde son Finger_Frame-1. <strong>Finger_Frame-1 et Finger_Frame-2 ne s'impriment plus</strong> pour index, majeur, annulaire (le bloc de pivot est dans la plaque ; Frame-2 ne servait qu'aux servos)</td>
 </tr>
 <tr>
 <td>Spacer</td>
@@ -72,13 +84,13 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <td>Plaque de main à gaines (remplace <code>R-Hand_Plate</code>)</td>
 <td><code>R-Hand_Plate_tendon.stl</code></td>
 <td>1</td>
-<td>v0 non testé. 12 logements de gaine (index, majeur, annulaire). Même contour et mêmes trous de vis que l'original. Pas de supports (comme l'original)</td>
+<td>v1 non testé. <strong>Remplace aussi les Finger_Frame-1 et -2</strong> des 3 doigts : bloc de pivot Ø8,15 sous chaque fenêtre + poteau de vissage du Gimbal. 12 logements de gaine (colonnes <strong>1,5 mm plus courtes</strong> : logements 1,5 mm plus proches). Même contour et mêmes trous de vis que l'original. Pas de supports (comme l'original)</td>
 </tr>
 <tr>
 <td>Coque de paume (remplace <code>R-Palm_Shell</code>)</td>
 <td><code>R-Palm_Shell_tendon.stl</code></td>
 <td>1</td>
-<td>3 petites encoches là où les nouveaux logements touchent la coque</td>
+<td>Encoches pour les logements, les poteaux et les vis, et <strong>ouverture du pouce agrandie</strong> (1,5 mm de jeu sur toute la course estimée)</td>
 </tr>
 <tr>
 <td>Coque supérieure, interface poignet</td>
@@ -93,7 +105,7 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <li>8 × STS3215 12 V, 1 adaptateur Waveshare Bus Servo Adapter (A) dédié à la main, une alimentation 12 V 10 A.</li>
 <li>Tresse PE ~100 lb, ~7 m de tube PTFE 2 × 4 mm, sertissages ~1 mm (pas encore achetés ni chiffrés).</li>
 <li>Vis M2.5 (spool sur palonnier, 4 par spool, soit 32), vis M3 (4 pour le support, 2 par bloc d'ancrage).</li>
-<li>Doigts (guide officiel, par doigt) : 2 bagues Ø int. 6 (<strong>imprimées</strong> : <code>bushing_d6_flanged.stl</code>), 1 grande rondelle M2.5, 2 axes D2×10, 2 axes D2×16, 4 vis thermoplastique 2.5×6, 1 vis 2.5×8.</li>
+<li>Doigts (guide officiel, par doigt) : 2 bagues Ø int. 6 (<strong>imprimées</strong> : <code>bushing_d6_flanged.stl</code>), 1 grande rondelle M2.5, 2 axes D2×10, 2 axes D2×16, 4 vis thermoplastique 2.5×6, 1 vis 2.5×8 (elle se visse maintenant <strong>par en dessous</strong> dans le poteau de la plaque). Les 3 vis 2.5×8 qui fixaient chaque Finger_Frame à la plaque ne servent plus pour index, majeur, annulaire (le pouce garde les siennes).</li>
 <li>Outils (guide officiel) : forets Ø1.5 et Ø2, taraud M2, tournevis PH0, pince plate, scalpel, Dremel, perceuse.</li>
 </ul>
 <h2>3. Préparer et tester les servos (avant tout montage)</h2>
@@ -129,8 +141,8 @@ Sources : <code>README.md</code> et <code>parts.py</code> (matebot-hand-tendon),
 <li><strong>Reprise des trous Ø2 :</strong> sur Proximal, Distal, Gimbal et <code>finger_link_tendon</code> (à la place du Link), les trous de pivot doivent être en partie <strong>glissants</strong> (plusieurs allers-retours de foret) et en partie <strong>serrés</strong> (un seul aller-retour). Nettoie les surfaces imprimées avec support.</li>
 <li><strong>Mécanisme :</strong> enfonce les axes D2×10 dans le Distal avec le <code>finger_link_tendon</code> entre les oreilles (plaques vers l'extérieur), puis fais de même avec le Gimbal. Les axes passent dans les trous de Ø2,5 des plaques : l'axe D2×10 du Gimbal dans le <strong>trou rond au centre de la plaque</strong> (le pivot du Link), l'axe D2×16 Gimbal ↔ Proximal dans la <strong>fente en arc</strong> au-dessus du pivot (incline un peu le Link, de +10° en extension à −30° en flexion, pour aligner la fente avec l'axe). Enfonce ensuite les axes D2×16 dans le Proximal pour tenir le sous-ensemble ; une fois les axes en place, les trous sont libres. <strong>Vérifie que la flexion et l'extension sont fluides sur toute la course.</strong></li>
 <li><strong>Coques :</strong> Proximal_Shell puis Distal_Shell, avec des vis 2.5×6. <strong>Ne serre pas trop</strong>, sinon la vis traverse la coque mince.</li>
-<li><strong>Bagues :</strong> enfonce les 2 bagues imprimées <code>bushing_d6_flanged</code> de chaque côté du Finger_Frame-1, collerette à l'extérieur, en appuyant sur une surface plane jusqu'à ce que la collerette touche le cadre. C'est le pivot d'abduction. Si une bague est lâche, une goutte de colle cyano sur son corps ; si le pivot du Gimbal ne tourne pas librement, repasse un foret Ø6,2 à la main dans l'alésage et mets une goutte de graisse PTFE ou silicone. Mesure d'abord l'alésage réel de ton Finger_Frame-1 et le pivot réel de ton Gimbal : imprime 2 bagues d'essai avant les 10.</li>
-<li><strong>Montage final :</strong> insère le doigt dans les bagues, puis serre la vis 2.5×8 avec sa grande rondelle dans le Gimbal <strong>sans bloquer l'abduction</strong>.</li>
+<li><strong>Bagues :</strong> enfonce la première bague imprimée <code>bushing_d6_flanged</code> dans le côté <strong>bas</strong> de l'alésage Ø8,15 du bloc de pivot de la plaque (qui remplace le Finger_Frame-1), collerette à l'extérieur, en appuyant sur une surface plane jusqu'à ce que la collerette touche le bloc. C'est le pivot d'abduction. Si une bague est lâche, une goutte de colle cyano sur son corps ; si le pivot du Gimbal ne tourne pas librement, repasse un foret Ø6,2 à la main dans l'alésage et mets une goutte de graisse PTFE ou silicone. Mesure d'abord l'alésage réel de ta plaque imprimée et le pivot réel de ton Gimbal : imprime 2 bagues d'essai avant les 10.</li>
+<li><strong>Montage final (vissage par en dessous) :</strong> présente le doigt par en dessous : le pivot du <code>Gimbal_tendon</code> (côté haut) passe dans la première bague, et le <strong>poteau de la plaque passe dans la fente en arc de la languette</strong>. Enfonce la deuxième bague par le haut (collerette dans l'encoche de la dalle). Puis, <strong>par en dessous</strong> : grande rondelle M2.5, puis <strong>vis thermoplastique 2.5×8 dans le trou Ø1,9 du poteau</strong> (7,2 mm de filet engagés) ; serre jusqu'à ce que la tête touche le poteau (la rondelle reste alors à 0,4 mm de la languette et ne la serre pas). Vérifie à la main que l'abduction (±25°) reste libre. <strong>Pose la coque de paume en dernier</strong>, une fois toutes les vis posées. Pour le <strong>pouce</strong> : Finger_Frame-1 et Gimbal d'origine, vis 2.5×8 et rondelle sur le dessus du pivot, comme dans le guide officiel.</li>
 <li><strong>Différence avec la version à tendons :</strong> utilise <code>finger_link_tendon</code> à la place du Link (mêmes trous de pivot) et saute les bielles à rotule, les palonniers et les Spacers. Chaque plaque a une gorge sur son bord et deux poches pour le nœud ou le sertissage (Ø3,2 × 2 mm, canal de 1,2 mm). <strong>Poche du bas = fléchisseur</strong> (côté paume), <strong>poche du haut = extenseur</strong> (dos du doigt). Passe le tendon dans le canal, fais un <strong>double nœud d'arrêt</strong> (ou sertis) dans la poche, laisse 10 mm de queue, mets une goutte de colle cyano, puis remets le nœud au fond. <strong>N'attache pas le tendon dans le trou ou la fente de Ø2,5</strong> : leur bras de levier (6 mm ou 0) ne correspond pas aux 9 mm de la gorge, la boucle ne resterait pas fermée. Croise les boucles : fléchisseur du servo A sur la plaque +X et son extenseur sur la plaque −X, l'inverse pour le servo B.</li>
 <li>Vérifie que les plaques (jusqu'à X = ±14,4 mm) ne touchent ni le doigt voisin ni la fenêtre de la paume sur toute la course. Les extrémités de gaines dans la paume restent <strong>à concevoir</strong> (à 30 mm ou plus derrière la base du doigt).</li>
 <li><strong>Premiers essais avec la limite de couple des servos à 10 %</strong> (environ 35 N dans le tendon) : le Link à tendons est la pièce la plus faible du doigt. Tout ce qui précède est une estimation CAO, non testée.</li>

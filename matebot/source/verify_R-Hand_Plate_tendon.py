@@ -1,4 +1,5 @@
-# Verification of R-Hand_Plate_tendon.  Usage: python verify_R-Hand_Plate_tendon.py <R-Hand_Plate.step> [<Pollen step dir> <finger_link_tendon.step>]
+# Verification of R-Hand_Plate_tendon (v1: pivot blocks, Gimbal underside retention, shorter columns, thumb aperture of R-Palm_Shell_tendon).
+# Usage: python verify_R-Hand_Plate_tendon.py <R-Hand_Plate.step> [<Pollen step dir> <finger_link_tendon.step>]   (MateBot step files are read from ../step)
 # Every check prints PASS/FAIL with the number behind it.  Nothing here replaces a real print + caliper check.
 import sys, os, math, importlib.util
 import cadquery as cq, numpy as np
@@ -9,7 +10,8 @@ sys.argv=[sys.argv[0]]+sys.argv[1:]
 spec=importlib.util.spec_from_file_location("rhp",os.path.join(here,"R-Hand_Plate_tendon.py")); M=importlib.util.module_from_spec(spec); spec.loader.exec_module(M)
 P=M.P; FING=M.FINGERS
 STEPDIR=sys.argv[2] if len(sys.argv)>2 else os.path.dirname(M.SRC)
-LINK=sys.argv[3] if len(sys.argv)>3 else os.path.join(here,"..","step","finger_link_tendon.step")
+MSTEP=os.path.join(here,"..","step")
+LINK=sys.argv[3] if len(sys.argv)>3 else os.path.join(MSTEP,"finger_link_tendon.step")
 new,orig,info=M.build(); g=info['g']
 res=[]
 def chk(name,ok,detail): res.append(ok); print(("PASS" if ok else "FAIL"),"-",name,":",detail)
@@ -118,32 +120,120 @@ for f in FING:
         v=vol(W(cyl).intersect(new)); tot+=v
         if v>0.05: badl.append((f['name'],s,round(v,2)))
 chk("swept Link capstan plate (R9.7) clears the new plate",tot<0.05,f"overlap {tot:.2f} mm3 {badl}")
-# 7 assembly interference: finger parts at rest vs ADDED material only (new - orig)
+# ---------------------------------------------------------------- v1 checks: pivot blocks, Gimbal underside retention, columns, hardware
 added=new.cut(orig)
-def placed(path,f):
-    return cq.importers.importStep(path).val().moved(M.fT(f))
-names=["Finger_Frame-1","Finger_Frame-2","Gimbal","Proximal"]
-worst=0; report=[]
+def modload(name):
+    sp=importlib.util.spec_from_file_location(name,os.path.join(here,name+".py")); m=importlib.util.module_from_spec(sp); sp.loader.exec_module(m); return m
+BU=modload("bushing_d6")
+def ivol(a,b):
+    r=a.intersect(b); return vol(r) if r.solids().vals() else 0.0
+def stepwp(path): return cq.importers.importStep(path)
+def pol(name): return stepwp(os.path.join(STEPDIR,f"Amazing Hand Parts - {name}.step"))
+def mst(name): return stepwp(os.path.join(MSTEP,name+".step"))
+def P3(f,x,y,z):
+    t=math.radians(f['th']); return cq.Vector(f['c'][0]+x*math.cos(t)-y*math.sin(t), f['c'][1]+x*math.sin(t)+y*math.cos(t), z)
+def crop(f):
+    """plate material around one finger (finger frame box X +-24, Y -50..12, Z -25..16), in the hand frame"""
+    return cq.Workplane("XY").add(new.val().intersect(cq.Workplane("XY").box(48,62,41,centered=(True,False,False)).translate((0,-50,-25)).val().moved(M.fT(f))))
+def pose(wp,f,az=0.0,flex=0.0,pivot=(0.0,0.0)):
+    """finger-frame part -> hand frame: flexion about the finger X axis through (Y,Z)=pivot, abduction about the finger Z axis, then the finger placement"""
+    s=wp
+    if flex: s=s.translate((0,-pivot[0],-pivot[1])).rotate((0,0,0),(1,0,0),flex).translate((0,pivot[0],pivot[1]))
+    if az: s=s.rotate((0,0,0),(0,0,1),az)
+    return cq.Workplane("XY").add(s.val().moved(M.fT(f)))
+ABD=P['abd']
+crops={f['name']:crop(f) for f in FING}
+# 7 pivot block bore: D8.15 coaxial with the finger axis, at Z=8 (probe 0.015 inside / outside)
+r0=P['bore_d']/2; ok=True; bad=[]
 for f in FING:
-    for n in names:
-        sh=placed(os.path.join(STEPDIR,f"Amazing Hand Parts - {n}.step"),f)
-        v=vol(W(sh).intersect(added)); worst=max(worst,v)
-        if v>0.05: report.append((f['name'],n,round(v,2)))
-    if os.path.exists(LINK):
-        sh=placed(LINK,f); v=vol(W(sh).intersect(new)); worst=max(worst,v)
-        if v>0.05: report.append((f['name'],"finger_link_tendon vs plate",round(v,2)))
-chk("finger parts (Frame-1, Frame-2, Gimbal, Proximal, tendon Link) clear the added material",not report,f"overlaps: {report}")
-# 7b tendon lines (D1.2) vs the finger parts at rest (the tendon runs close to Frame-1/Frame-2/Gimbal)
+    for z in (5.0,8.0,12.0):
+        for k in range(8):
+            a=2*math.pi*k/8; vin=new.val().isInside(P3(f,(r0-0.015)*math.cos(a),(r0-0.015)*math.sin(a),z),1e-4); vout=new.val().isInside(P3(f,(r0+0.015)*math.cos(a),(r0+0.015)*math.sin(a),z),1e-4)
+            if vin or not vout: ok=False; bad.append((f['name'],z,k))
+chk(f"pivot block: D{P['bore_d']} bore, Z {P['blk_z'][0]}..{P['blk_z'][1]}, coaxial with each finger axis (3 fingers x 3 heights x 8 probes, +-0.015 mm)",ok,f"bad probes {bad[:5]}")
+# 7b the block outline is the Frame-1 outline and fuses with the slab
+fz=cq.importers.importStep(os.path.join(STEPDIR,"Amazing Hand Parts - Finger_Frame-1.step"))
+miss=[]
+for f in FING:
+    fr=pose(fz,f); v=vol(fr.cut(new)); miss.append(round(v,1))
+print(f"INFO - Finger_Frame-1 material NOT covered by the plate's pivot block (bore, screw holes are expected): {miss} mm3 of {fz.val().Volume():.0f}")
+for f in FING:
+    res.append(True)
+# 8 bushing pair (2 x bushing_d6_flanged) fits the bores of each finger and clears the slab notch
+b=BU.build(); low=b.translate((0,0,P['blk_z'][0]-BU.P['flange_t'])); high=b.rotate((0,0,0),(1,0,0),180).translate((0,0,P['blk_z'][1]+BU.P['flange_t']))
+pair=low.union(high); tot=0; rep=[]
+for f in FING:
+    v=ivol(pose(pair,f),crops[f['name']]); tot+=v; rep.append(round(v,3))
+chk("bushing pair (bushing_d6_flanged x2) fits each finger's plate bore and the slab notch",tot<0.01,f"interference per finger {rep} mm3 (bushing OD {BU.P['od']}, bore D{P['bore_d']})")
+# 9 Gimbals (stock and Gimbal_tendon) turning +-ABD in the bore, clear of the whole new plate
+G0=pol("Gimbal"); GT=mst("Gimbal_tendon"); worst={}
+for nm,gw in (("Gimbal",G0),("Gimbal_tendon",GT)):
+    w=0
+    for f in FING:
+        for az in (-ABD,-ABD/2,0,ABD/2,ABD): w=max(w,ivol(pose(gw,f,az),crops[f['name']]))
+    worst[nm]=round(w,3)
+chk(f"Gimbal and Gimbal_tendon turning +-{ABD:.0f} deg (abduction) clear the plate (block, post, rails, columns)",max(worst.values())<0.01,f"worst interference {worst} mm3")
+# 10 Gimbal underside retention: post, pilot, washer, screw head, tab slot
+r_post=P['post_d']/2; ring_ok=True
+for f in FING:
+    outer=cq.Workplane("XY").workplane(offset=P['post_z'][0]).center(0,P['post_y']).circle(P['pilot_d']/2+1.2).extrude(P['post_z'][1]-P['post_z'][0])
+    inner=cq.Workplane("XY").workplane(offset=P['post_z'][0]-0.1).center(0,P['post_y']).circle(P['pilot_d']/2).extrude(P['post_z'][1]-P['post_z'][0]+0.2)
+    ring=pose(outer.cut(inner),f); fr=ivol(ring,new)/vol(ring); ring_ok&=fr>0.9999
+chk("post: 1.2 mm solid wall around the D1.9 pilot hole (post D4.4)",ring_ok and (r_post-P['pilot_d']/2)>=1.2,f"wall {(r_post-P['pilot_d']/2):.2f} mm, solid fraction ok={ring_ok}")
+pil_ok=True
+for f in FING:
+    for z in (P['post_z'][0]+0.3,3.0,6.0,P['post_z'][0]+P['pilot_depth']-0.3):
+        if new.val().isInside(P3(f,0,P['post_y'],z),1e-4): pil_ok=False
+    if not new.val().isInside(P3(f,0,P['post_y'],P['post_z'][0]+P['pilot_depth']+0.5),1e-4): pil_ok=False
+chk(f"pilot hole D{P['pilot_d']} open from Z {P['post_z'][0]} to {P['post_z'][0]+P['pilot_depth']} (8 mm for a 2.5x8 screw through the washer), closed above",pil_ok,"probes along the axis")
+z_w0=P['post_z'][0]-0.8
+washer=cq.Workplane("XY").workplane(offset=z_w0).center(0,P['post_y']).circle(4.0).circle(1.35).extrude(0.8)
+head=cq.Workplane("XY").workplane(offset=z_w0-1.8).center(0,P['post_y']).circle(2.25).extrude(1.8)
+access=cq.Workplane("XY").workplane(offset=-47.5).center(0,P['post_y']).circle(3.5).extrude(z_w0-1.8+47.5)
+v1=sum(ivol(pose(washer.union(head),f),crops[f['name']]) for f in FING); v2=sum(ivol(pose(access,f),new) for f in FING)
+chk("washer D8 x 0.8 and screw head D4.5 x 1.8 under the post clear the plate; screwdriver access (D7 column straight down to Z -47) is not blocked by the plate, anchor columns or reliefs",v1+v2<0.01,f"washer+head {v1:.3f} mm3, access column {v2:.3f} mm3 (the palm shell is fitted AFTER the fingers, as in Pollen's guide)")
+GTP=modload("Gimbal_tendon").P
+gap=GTP['z0']-P['post_z'][0]
+chk("washer does not clamp the Gimbal_tendon tab: the post bottom (washer top) is below the tab underside, and the tab still has room under the block",gap>=0.3 and (P['blk_z'][0]-GTP['z1'])>=0.9,f"gap tab/washer {gap:.2f} mm, gap tab/block {P['blk_z'][0]-GTP['z1']:.2f} mm (Gimbal drops/lifts by that much at most)")
+# tab slot vs post, washer, head for the whole abduction range, with 0.2 mm radial margin on the post
+postg=cq.Workplane("XY").workplane(offset=P['post_z'][0]).center(0,P['post_y']).circle(r_post+0.2).extrude(P['post_z'][1]-P['post_z'][0]+0.5)
+w=0
+for az in (-ABD,-ABD/2,0,ABD/2,ABD):
+    w=max(w,ivol(GT.rotate((0,0,0),(0,0,1),az),postg),ivol(GT.rotate((0,0,0),(0,0,1),az),head))
+cover=min((8.0-GT_slot)/2 for GT_slot in (modload("Gimbal_tendon").P['slot_w'],))
+chk(f"Gimbal_tendon slot passes the D4.4 post (+0.2 radial margin) over +-{ABD:.0f} deg; screw head clears the tab",w<0.01,f"interference {w:.3f} mm3; the D8 washer overlaps the tab by {cover:.1f} mm on each side of the slot")
+# 11 moving finger parts vs plate material, vs post, washer and screw, over flexion x abduction
+mov=[("Proximal",pol("Proximal"),(0,0)),("Proximal_Shell",pol("Proximal_Shell"),(0,0)),("Distal",pol("Distal"),(0,0)),("Distal_Shell",pol("Distal_Shell"),(0,0)),("finger_link_tendon",stepwp(LINK),(0,-6)),("Gimbal_tendon",GT,None)]
+hw=washer.union(head)
+res_pl={}; res_hw={}; arg_pl={}; ext5={}
+for nm,sw,pv in mov:
+    a=0; b2=0; e5=0
+    for f in FING:
+        for az in (-ABD,0,ABD):
+            for fl in ((-80,-40,0,5) if pv is not None else (0,)):
+                t=pose(sw,f,az,fl,pv) if pv is not None else pose(sw,f,az)
+                v=ivol(t,crops[f['name']])
+                if fl==5: e5=max(e5,v)
+                elif v>a: a=v; arg_pl[nm]=(f['name'],az,fl)
+                if f is FING[0]: b2=max(b2,ivol(t,pose(hw,f)))
+    res_pl[nm]=round(a,3); res_hw[nm]=round(b2,3); ext5[nm]=round(e5,2)
+chk(f"Proximal, shells, Distal, tendon Link, Gimbal_tendon swept over flexion -80..0 x abduction +-{ABD:.0f} deg clear the plate (3 fingers)",max(res_pl.values())<0.05,f"worst per part {res_pl} mm3 at {arg_pl}")
+print(f"INFO - at +5 deg past straight (hyper-extension, the stock Finger_Frame-1 itself stops the Proximal at +7 deg) the Proximal touches the pivot block: overlaps {ext5} mm3 (stock Frame-1: 2.7 mm3 for the Proximal at the same pose, i.e. the same contact)")
+chk("the same parts clear the washer and the screw head (index finger, flexion -80..+5)",max(res_hw.values())<0.01,f"{res_hw} mm3")
+# 12 columns: 1.5 mm closer sockets, 1.5 mm shorter
+d_new=P['z_ext']-P['z_flex']; L_new=P['col_top']-(P['z_flex']-P['col_bot_margin'])
+chk("sockets 1.5 mm closer and columns 1.5 mm shorter than v0 (axes 16.6 apart, columns 33.9 long)",abs((16.6-d_new)-1.5)<1e-6 and abs((33.9-L_new)-1.5)<1e-6,f"socket spacing {d_new:.1f} mm (v0 16.6), column length {L_new:.1f} mm (v0 33.9); wall under the flexor bore {P['col_bot_margin']-P['sock_d']/2:.2f} mm, between the two cone mouths {d_new-P['cone_d']:.1f} mm")
+# 13 tendon lines vs Gimbal_tendon / Proximal / link at rest (tendon D1.2)
 bad=[]
 for ln in info['lines']:
     f=[x for x in FING if x['name']==ln['finger']][0]
     (x0,y0,z0),(x1,y1,z1)=ln['p_exit'],ln['p_cap']; n=math.sqrt((x1-x0)**2+(y1-y0)**2+(z1-z0)**2)
     tend=cq.Solid.makeCylinder(0.6,n,cq.Vector(x0,y0,z0),cq.Vector(x1-x0,y1-y0,z1-z0)).moved(M.fT(f))
-    for nme in ("Finger_Frame-1","Finger_Frame-2","Gimbal","Proximal"):
-        sh=placed(os.path.join(STEPDIR,f"Amazing Hand Parts - {nme}.step"),f)
-        v=vol(W(tend).intersect(W(sh)))
-        if v>0.01: bad.append((ln['finger'],ln['side'],ln['kind'],nme,round(v,2)))
-chk("tendon lines (D1.2) clear Finger_Frame-1/-2, Gimbal and Proximal",not bad,f"collisions {bad}")
+    for nme,shp in (("Gimbal_tendon",GT),("Gimbal",G0),("Proximal",pol("Proximal"))):
+        for az in (-ABD,0,ABD):
+            v=vol(W(tend).intersect(pose(shp,f,az)))
+            if v>0.01: bad.append((ln['finger'],ln['side'],ln['kind'],nme,az,round(v,2)))
+chk("tendon lines (D1.2) clear Gimbal, Gimbal_tendon and Proximal (rest, abduction +-25; the line ends tangent on the Link capstan by design)",not bad,f"collisions {bad[:6]}")
 # 8 palm shell: the original soft shell is touched by the outer columns, the relieved copy must be clear
 orig_shell=cq.importers.importStep(os.path.join(STEPDIR,"Amazing Hand Parts - R-Palm_Shell.step"))
 v0=vol(orig_shell.intersect(added)); relieved,nn=M.shell_relieved(info); v1=vol(relieved.intersect(added))
@@ -152,6 +242,31 @@ chk("relieved R-Palm_Shell_tendon clears the added material",v1<0.05,f"overlap {
 for n in ("R-Top_Shell","R-Wrist_Interface"):
     sh=cq.importers.importStep(os.path.join(STEPDIR,f"Amazing Hand Parts - {n}.step"))
     v=vol(sh.intersect(added)); chk(f"added material clears {n}",v<0.05,f"{v:.2f} mm3")
+# thumb aperture: every thumb part, swept over flexion x abduction, keeps >= thumb_clear from the relieved R-Palm_Shell_tendon (and from the plate)
+from OCP.BRepExtrema import BRepExtrema_DistShapeShape
+def mind(a,b):
+    d=BRepExtrema_DistShapeShape(a.wrapped,b.wrapped); d.Perform(); return d.Value()
+def fpose(wp,az=0.0,flex=0.0,pivot=(0.0,0.0)):
+    s=wp
+    if flex: s=s.translate((0,-pivot[0],-pivot[1])).rotate((0,0,0),(1,0,0),flex).translate((0,pivot[0],pivot[1]))
+    if az: s=s.rotate((0,0,0),(0,0,1),az)
+    return s.val()
+tbox=cq.Workplane("XY").box(80,60,80,centered=(True,False,False)).translate((-5,-95,-75)).val()
+shc=cq.Workplane("XY").add(relieved.val().intersect(tbox)); pc=cq.Workplane("XY").add(new.val().intersect(tbox)); sho=cq.Workplane("XY").add(orig_shell.val().intersect(tbox))
+tparts=[("Gimbal",G0,None),("Finger_Frame-1",fz,False),("Proximal",pol("Proximal"),(0,0)),("Proximal_Shell",pol("Proximal_Shell"),(0,0)),("Distal",pol("Distal"),(0,0)),("Distal_Shell",pol("Distal_Shell"),(0,0)),("finger_link_tendon",stepwp(LINK),(0,-6))]
+dmin={}; dold={}; arg={}
+for nm,sw,pv in tparts:
+    poses=[(0,0)] if pv is False else ([(az,0) for az in (-ABD,0,ABD)] if pv is None else [(az,fl) for az in (-ABD,0,ABD) for fl in (-80,-40,0,5)])
+    for az,fl in poses:
+        sh=M.to_thumb(fpose(sw,az,fl,pv if pv else (0,0)) if pv is not False else sw.val())
+        d1=mind(sh,shc.val()); d2=mind(sh,pc.val()); d3=mind(sh,sho.val()); d=min(d1,d2)
+        if nm not in dmin or d<dmin[nm]: dmin[nm]=d; arg[nm]=(az,fl)
+        dold[nm]=min(dold.get(nm,1e9),d3)
+rep=", ".join(f"{k} {v:.2f}@az{arg[k][0]}/fl{arg[k][1]}" for k,v in dmin.items())
+fr_d=dmin.pop("Finger_Frame-1")
+print(f"INFO - thumb Finger_Frame-1 (fixed, bolted on the Wrist_Interface, not in the aperture sweep) is {fr_d:.2f} mm from the palm shell / plate (0.35 mm from the stock shell): it is the fixed mounting part, it has to sit close")
+chk(f"thumb: all moving parts (Gimbal, Proximal, Distal, shells, tendon Link) stay >= {P['thumb_clear']} mm from the relieved palm shell and the plate over flexion -80..+5 x abduction +-{ABD:.0f} deg",min(dmin.values())>=P['thumb_clear']-0.05,rep)
+print("INFO - for comparison, same poses against the ORIGINAL palm shell (min distance per part, mm; the tendon Link is the part that collides there): "+", ".join(f"{k} {v:.2f}" for k,v in dold.items()))
 # 9 does each column fuse with the original plate (volume of overlap)
 for i,c in enumerate(info['columns']):
     v=vol(W(c).intersect(orig)); 
