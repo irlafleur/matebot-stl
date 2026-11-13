@@ -1,5 +1,6 @@
-# Verification of the v13 one-piece flat forearm plate
-# (packed single row of 8 STS3215, body-to-body, TL/TR/BL/BR).
+# Verification of the v14 one-piece flat forearm plate
+# (packed single row of 8 STS3215, body-to-body, TL/TR/BL/BR,
+#  front/back M3 attachments, side-rail M3 grid).
 # Usage: python verify_forearm_mount_row.py
 import os, sys, math
 import cadquery as cq
@@ -33,7 +34,7 @@ def ivol(a, b):
         except Exception:
             return float("nan")
 
-print("building v13 plate...")
+print("building v14 plate...")
 parts = F.build_all()
 p = F.P
 sts = parts["stations"]
@@ -57,9 +58,10 @@ chk("spool_r8: one valid solid, max dim <= 250 mm",
     f"solids={len(sols_s)}  {bb_s.xlen:.1f} x {bb_s.ylen:.1f} x {bb_s.zlen:.1f} mm")
 
 # 2. thicknesses
-chk("web 4 mm, low end walls 3.5 mm thick x 16 mm high, no U flanges",
-    p["web_t"] >= 4.0 and p["wall_t"] >= 3.0 and p["wall_h"] >= 8.0,
-    f"web {p['web_t']}, wall_t {p['wall_t']}, wall_h {p['wall_h']}")
+chk("web 4 mm, low end walls 3.5 x 16 mm, corner posts 24 mm with 3 mm wall around M3, no U flanges",
+    p["web_t"] >= 4.0 and p["wall_t"] >= 3.0 and p["wall_h"] >= 8.0
+    and abs(p["boss_wall"] - 3.0) < 1e-9 and p["ear_h"] >= 16.0,
+    f"web {p['web_t']}, wall_t {p['wall_t']}, wall_h {p['wall_h']}, ear_h {p['ear_h']}, boss_wall {p['boss_wall']}")
 
 # 3. official servo numbers
 chk("STS3215 body 45.22 x 24.72, height to horn 35, both horns 37.25, shaft 10.11 from output end",
@@ -117,7 +119,6 @@ for s in sts:
     if s["face"] != "bottom":
         continue
     for x, y, z in F.idler_holes_F(s["xf"], s["y"], s["zf"], s["face"], s["side"]):
-        # a point at mid-web should be empty (the hole)
         mid = cq.Vector(x, y, p["web_t"] / 2)
         if pl.val().isInside(mid, 0.2):
             misses.append((round(x, 2), round(y, 2)))
@@ -125,15 +126,42 @@ chk("16 M2x6 holes in the plate line up with the idler ears of index and ring on
     len(m2) == 16 and m2_fingers == ["index", "ring"] and misses == [],
     f"n={len(m2)}, fingers={m2_fingers}, misses={misses}, web={p['web_t']} mm + 2 mm in the 2.8 mm ear")
 
-# 8. no M3 grids, no wrist flange, no sockets, no second plate
+# 8. still no wrist flange, U flanges, sockets or second plate
 extra = [k for k in pat if k in ("front_wi_m2", "side_flange_m3", "web_shell_top_m3",
                                    "web_shell_bot_m3", "elbow_m3", "joint_m3")]
-chk("no wrist flange, no U flanges, no M3 grids, no joint, no socket bosses, no second plate",
+chk("no wrist flange, no U flanges, no joint, no socket bosses, no second plate",
     extra == [] and "plate_bottom" not in parts and "plate_top" not in parts
     and "plate" in parts,
     f"extra patterns={extra}, keys={sorted(parts)}")
 
-# 9. spool cut-outs only on top-face servos; idler clearance on bottom-face
+# 9. front/back M3 attachments and inside posts
+end = pat["end_m3"]["holes"]
+end_xs = sorted(set(h["x"] for h in end))
+end_zs = sorted(set(h["z"] for h in end))
+chk("front and back walls have 4 M3 clearance holes each (2x2, x=+/-32, z=-6 and -16), 3 mm boss wall",
+    len(end) == 8 and abs(p["m3_clear"] - 3.4) < 1e-9 and abs(p["boss_wall"] - 3.0) < 1e-9
+    and all(abs(abs(h["x"]) - p["end_x"]) < 1e-9 for h in end)
+    and {h["end"] for h in end} == {"front", "back"}
+    and set(end_zs) == set(p["end_z"]),
+    f"n={len(end)}, xs={end_xs}, zs={end_zs}")
+
+# 10. side-rail M3 grid, 15 mm pitch, not under the bodies
+web = pat["web_m3"]["holes"]
+web_xs = sorted(set(h["x"] for h in web))
+web_ys = sorted(set(h["y"] for h in web))
+pitches = [round(web_ys[i+1] - web_ys[i], 3) for i in range(len(web_ys)-1)] if len(web_ys) > 1 else []
+body_half_x = BODY_L / 2
+head_r = 2.75
+clear_ok = all(abs(h["x"]) - p["m3_clear"] / 2 >= body_half_x + 0.5 for h in web)
+head_ok = all(abs(h["x"]) - head_r >= body_half_x + 0.4 for h in web)
+chk("side-rail M3 grid: clearance 3.4 mm, 15 mm pitch, two rows at x=+/-32, inside to outside, clear of the servo bodies",
+    len(web) >= 20 and abs(p["web_pitch"] - 15.0) < 1e-9
+    and all(abs(dp - 15.0) < 1e-9 for dp in pitches)
+    and web_xs == [-p["end_x"], p["end_x"]]
+    and clear_ok and head_ok,
+    f"n={len(web)}, rows={web_xs}, y={web_ys[0] if web_ys else None}..{web_ys[-1] if web_ys else None} ({len(web_ys)}), pitches={set(pitches)}")
+
+# 11. spool / idler cut-outs
 spool_pts = pat["spool_cuts"]["holes"]
 idler_pts = pat["idler_cuts"]["holes"]
 want_spool = [(s["xf"], s["y"]) for s in sts if s["face"] == "top"]
@@ -143,31 +171,16 @@ chk("Ø28 spool cut-outs only where a spool faces the plate (thumb, middle); Ø2
     and len(spool_pts) == 4 and len(idler_pts) == 4,
     f"spool={spool_pts}, idler={idler_pts}")
 
-# 10. two front cable holes
+# 12. two front cable holes
 cables = pat["cable_front"]["holes"]
-chk("front wall has exactly two cable holes (Ø10), nothing else extra",
+chk("front wall still has exactly two cable holes (Ø10)",
     len(cables) == 2 and p["cable_hole_d"] == 10.0,
     f"cables={cables}, d={p['cable_hole_d']}")
 
-# 11. spools through the cut-outs, no intersection with the plate
-# Place each spool at the output face of its servo and test vs the plate.
+# 13. spools through the cut-outs, no intersection with the plate
 spool_hits = []
 for s in sts:
-    sp_body = sp
-    # spool sits on the output horn, in +Z_s of S, so after place_S it sits
-    # outward from zf along the face normal.
-    if s["face"] == "top":
-        placed = F.place_S(sp_body, s["xf"], s["y"], s["zf"], s["face"], s["side"])
-    else:
-        # palmar spool is on the far side; still should miss the plate
-        placed = F.place_S(sp_body.rotate((0, 0, 0), (1, 0, 0), 180),
-                           s["xf"], s["y"], s["zf"], "top", s["side"])
-        # For a bottom servo, output is at zf=-35, spool goes further down in -Z.
-        # Easier: translate the stock spool (built in +Z from 0) to the output
-        # face and flip. Use place_S on a spool already in S (extruded +Z from
-        # the horn face, which is Z_s=0 toward +Z). place_S with face=bottom
-        # rotates 180 about X, so +Z_s goes to -Z_f, starting at zf. Good.
-        placed = F.place_S(sp_body, s["xf"], s["y"], s["zf"], s["face"], s["side"])
+    placed = F.place_S(sp, s["xf"], s["y"], s["zf"], s["face"], s["side"])
     vol = ivol(placed, pl)
     if not (vol == 0 or (isinstance(vol, float) and vol < 1.0)):
         spool_hits.append((s["i"], s["finger"], s["ab"], vol))
@@ -175,8 +188,7 @@ chk("spools pass through the Ø28 cut-outs (top face) or clear the plate (bottom
     spool_hits == [],
     f"overlaps={spool_hits}")
 
-# 12. servo envelopes clear the plate (cables not through the web;
-#     idler horn in the Ø22 hole; spool in the Ø28 hole)
+# 14. servo envelopes clear the plate, posts and grid
 env_hits = []
 for s in sts:
     env = F.place_S(envelope(cl=0.0, with_horns=True, with_cables=True),
@@ -184,22 +196,27 @@ for s in sts:
     vol = ivol(env, pl)
     if not (vol == 0 or (isinstance(vol, float) and vol < 1.0)):
         env_hits.append((s["i"], s["finger"], s["ab"], s["face"], vol))
-chk("all 8 servo envelopes clear the plate (Ø28 / Ø22 cut-outs, cables leave at the sides)",
+chk("all 8 servo envelopes clear the plate, the corner posts and the hole grid",
     env_hits == [],
     f"overlaps={env_hits}")
 
-# 13. front/back walls do not bite into the packed bodies
-# first body starts at wall_t, last ends at wall_t+pack_len
+# 15. front/back walls flush with the pack
 first_start = sts[0]["y"] - BODY_W / 2
 last_end = sts[-1]["y"] + BODY_W / 2
 chk("end walls sit flush with the first and last body faces (pack is 200.56 mm)",
     abs(first_start - p["wall_t"]) < 1e-9 and abs(last_end - (p["wall_t"] + p["pack_len"])) < 1e-9,
     f"first_start={first_start:.2f}, last_end={last_end:.2f}, wall_t={p['wall_t']}, pack={p['pack_len']:.2f}")
 
-# 14. width is just enough for the Ø28 cut-outs, thickness is web + wall height
-chk("assembled pack is one flat plate, barely wider than the Ø28 cut-outs, human-scale",
-    abs(bb.xlen - 2 * p["half_w"]) < 0.2 and bb.ylen < 220 and bb.zlen <= p["web_t"] + p["wall_h"] + 0.2,
-    f"bbox {bb.xlen:.1f} x {bb.ylen:.1f} x {bb.zlen:.1f} mm, half_w={p['half_w']}")
+# 16. bbox
+chk("assembled pack is one flat plate, max dim <= 250 mm, height is web + corner posts",
+    abs(bb.xlen - 2 * p["half_w"]) < 0.2 and bb.ylen < 220
+    and bb.zlen <= p["web_t"] + p["ear_h"] + 0.2,
+    f"bbox {bb.xlen:.1f} x {bb.ylen:.1f} x {bb.zlen:.1f} mm, half_w={p['half_w']}, ear_h={p['ear_h']}")
+
+# 17. features are only on the body side of the web (printable flat, no supports)
+chk("all added material is on the body side of the web (printable outer-face down, no supports)",
+    bb.zmax <= p["web_t"] + 0.05 and bb.zmin >= -p["ear_h"] - 0.05,
+    f"zmin={bb.zmin:.2f}, zmax={bb.zmax:.2f}")
 
 print()
 n_ok = sum(res)

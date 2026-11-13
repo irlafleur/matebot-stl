@@ -1,4 +1,4 @@
-# v13 previews: top view + 3/4 view of the one flat plate, French labels.
+# v14 previews: top view + 3/4 view of the one flat plate, French labels.
 # Usage: python render_forearm_mount_row.py
 import os, math
 import matplotlib.pyplot as plt
@@ -47,6 +47,25 @@ def draw_top_view(ax, with_notes=True):
     for x, z in pat["cable_front"]["holes"]:
         ax.add_patch(Circle((x, p["wall_t"] / 2), p["cable_hole_d"] / 2,
                             facecolor="white", edgecolor="#1F4E79", lw=0.8, zorder=4))
+    # side-rail M3 grid
+    if "web_m3" in pat:
+        for h in pat["web_m3"]["holes"]:
+            ax.add_patch(Circle((h["x"], h["y"]), 1.7, facecolor="none",
+                                edgecolor="#1F4E79", lw=0.5, zorder=5))
+    # front/back M3 (shown on the end walls)
+    if "end_m3" in pat:
+        for h in pat["end_m3"]["holes"]:
+            y = p["wall_t"] / 2 if h["end"] == "front" else ye - p["wall_t"] / 2
+            ax.add_patch(Circle((h["x"], y), 1.7, facecolor="none",
+                                edgecolor="#7A1F1F", lw=0.7, zorder=5))
+            # corner post footprint
+            r = p["boss_od"] / 2
+            x0 = h["x"] - r if h["x"] > 0 else -p["half_w"]
+            x1 = p["half_w"] if h["x"] > 0 else h["x"] + r
+            y0 = 0 if h["end"] == "front" else ye - p["wall_t"] - p["boss_in"]
+            ax.add_patch(Rectangle((x0, y0), x1 - x0, p["wall_t"] + p["boss_in"],
+                                   facecolor="#6A7C88", edgecolor="none",
+                                   alpha=0.35, zorder=3))
 
     for s in sts:
         x0, x1, y0, y1 = servo_rect(s)
@@ -88,10 +107,18 @@ def draw_top_view(ax, with_notes=True):
                     fontsize=6.5, ha="left", color="#7A1F1F",
                     arrowprops=dict(arrowstyle="->", color="#7A1F1F", lw=0.6))
         ax.annotate("Servos collés\njeu 0,4 mm, sans colle",
-                    xy=(0, (sts[3]["y"] + sts[4]["y"]) / 2), xytext=(36, 110),
+                    xy=(0, (sts[3]["y"] + sts[4]["y"]) / 2), xytext=(46, 110),
                     fontsize=6.5, ha="left", color="#7A3E00",
                     arrowprops=dict(arrowstyle="->", color="#7A3E00", lw=0.6))
-    ax.set_xlim(-40, 78)
+        ax.annotate("Grille M3\npas 15 mm, rives\n(intérieur → extérieur)",
+                    xy=(p["end_x"], 110), xytext=(46, 150),
+                    fontsize=6.5, ha="left", color="#1F4E79",
+                    arrowprops=dict(arrowstyle="->", color="#1F4E79", lw=0.6))
+        ax.annotate("4 × M3 + poteaux\nparoi 3 mm",
+                    xy=(p["end_x"], p["wall_t"] / 2), xytext=(46, 25),
+                    fontsize=6.5, ha="left", color="#7A1F1F",
+                    arrowprops=dict(arrowstyle="->", color="#7A1F1F", lw=0.6))
+    ax.set_xlim(-52, 92)
     ax.set_ylim(-28, ye + 24)
     ax.set_xlabel("X (mm)  —  radial ←    → ulnaire")
     ax.set_ylabel("Y (mm)  —  avant → arrière")
@@ -147,7 +174,7 @@ def draw_34(ax):
 
 def fig_chassis():
     fig = plt.figure(figsize=(13.2, 8.6), facecolor="white")
-    fig.suptitle("MateBot v13 — plaque plate, 8 servos collés  (non testé)",
+    fig.suptitle("MateBot v14 — plaque plate, attaches M3 avant/arrière et grille  (non testé)",
                  fontsize=13, fontweight="bold")
     ax = fig.add_axes([0.05, 0.08, 0.48, 0.82])
     draw_top_view(ax)
@@ -158,7 +185,7 @@ def fig_chassis():
     fig.text(0.75, 0.10,
              "Séquence avant → arrière : TL, TR, BL, BR, répétée.\n"
              "Axe long du servo en travers. Jeu 0,4 mm, sans colle.\n"
-             "v12 (deux plaques en U) est remplacé.",
+             "v13 (plaque plate sans attaches) est remplacé.",
              ha="center", fontsize=7.5, color="#333")
     # legend
     handles = [
@@ -180,7 +207,7 @@ def fig_chassis():
 
 def fig_parts():
     fig, ax = plt.subplots(1, 1, figsize=(8.2, 5.6), facecolor="white")
-    fig.suptitle("MateBot v13 — pièce à imprimer  (une plaque plate, ≤ 250 mm)",
+    fig.suptitle("MateBot v14 — pièce à imprimer  (une plaque plate, ≤ 250 mm)",
                  fontsize=12, fontweight="bold")
     w, ye_ = p["half_w"], ye
     ax.set_aspect("equal")
@@ -194,6 +221,13 @@ def fig_parts():
     for x, z in pat["cable_front"]["holes"]:
         ax.add_patch(Circle((x, p["wall_t"] / 2), p["cable_hole_d"] / 2,
                             facecolor="white", edgecolor="#1F4E79", lw=0.8))
+    for h in pat.get("web_m3", {}).get("holes", []):
+        ax.add_patch(Circle((h["x"], h["y"]), 1.7, facecolor="none",
+                            edgecolor="#1F4E79", lw=0.5))
+    for h in pat.get("end_m3", {}).get("holes", []):
+        y = p["wall_t"] / 2 if h["end"] == "front" else ye_ - p["wall_t"] / 2
+        ax.add_patch(Circle((h["x"], y), 1.7, facecolor="none",
+                            edgecolor="#7A1F1F", lw=0.7))
     for s in sts:
         if s["face"] == "top":
             ax.add_patch(Circle((s["xf"], s["y"]), 14, facecolor="#eee",
@@ -210,7 +244,7 @@ def fig_parts():
     ax.set_ylim(-16, ye_ + 16)
     ax.set_xticks([]); ax.set_yticks([])
     ax.text(0.5, -0.06,
-            f"56,0 × {ye_:.2f}".replace(".", ",") + " × 20,0 mm  (plaque 4 mm + murs 16 mm)",
+            f"78,0 × {ye_:.2f}".replace(".", ",") + " × 28,0 mm  (plaque 4 mm + poteaux 24 mm)",
             transform=ax.transAxes, ha="center", fontsize=8, color="#333")
     fig.text(0.5, 0.03,
              "Plus 8× spool_r8 (inchangé, Ø22 × 11,5 mm, cercle de 14 mm, vis M3×6).\n"
@@ -227,7 +261,7 @@ def fig_parts():
 def fig_tubes():
     # Kept as the third annotated drawing (cables + mounting), French labels.
     fig = plt.figure(figsize=(13.2, 9.6), facecolor="white")
-    fig.suptitle("MateBot v13 — trous, vis et câbles  (légendes en français)",
+    fig.suptitle("MateBot v14 — trous, vis et câbles  (légendes en français)",
                  fontsize=12.5, fontweight="bold", y=0.98)
     ax = fig.add_axes([0.05, 0.08, 0.55, 0.84])
     draw_top_view(ax, with_notes=True)
@@ -241,10 +275,11 @@ def fig_tubes():
         ("La plaque", None),
         ("Une seule plaque plate de 4 mm, à peine plus", "#222"),
         ("longue que les 8 servos collés (200,56 mm", "#222"),
-        ("+ deux murs de 3,5 mm). Largeur 56 mm.", "#222"),
+        ("+ deux murs de 3,5 mm). Largeur 78 mm", "#222"),
+        ("(rives pour les vis M3, hors des corps).", "#222"),
         ("Mur arrière bas (3,5 × 16 mm), fermé.", "#7A1F1F"),
         ("Mur avant bas, deux trous Ø10 pour les", "#1F4E79"),
-        ("câbles bus (x = ±16 mm). Rien d'autre.", "#1F4E79"),
+        ("câbles bus (x = ±16 mm).", "#1F4E79"),
         ("", None),
         ("Servos", None),
         ("Rangée unique, axe long en travers,", "#222"),
@@ -267,6 +302,16 @@ def fig_tubes():
         ("face (toujours sans flancs en U). Ne pas", "#7A3E00"),
         ("utiliser les oreilles côté palonnier.", "#7A3E00"),
         ("", None),
+        ("Attaches M3 (passage Ø3,4)", None),
+        ("Avant et arrière : 4 trous par bout,", "#7A1F1F"),
+        ("rectangle 64 × 10 mm (x = ±32, z = −6 et", "#7A1F1F"),
+        ("−16). Poteaux intérieurs, paroi 3 mm.", "#7A1F1F"),
+        ("Pour des pièces visées plus tard.", "#7A1F1F"),
+        ("Rives : grille pas 15 mm, 12 trous par", "#1F4E79"),
+        ("côté à x = ±32 (24 au total). Vis de", "#1F4E79"),
+        ("l'intérieur vers l'extérieur : tête côté", "#1F4E79"),
+        ("servos, tige qui ressort à z = +4.", "#1F4E79"),
+        ("", None),
         ("Câbles", None),
         ("Les sorties bus sont sur les côtés (±X).", "#1F4E79"),
         ("On les ramène vers l'avant par les 2 trous.", "#1F4E79"),
@@ -275,7 +320,7 @@ def fig_tubes():
         ("", None),
         ("Bobine spool_r8 : 4 × M3×6 sur le cercle de", "#222"),
         ("14 mm + vis centrale M3×6. Inchangée.", "#222"),
-        ("v12 (deux plaques en U) est remplacé.", "#7A3E00"),
+        ("v13 (plaque plate sans attaches) est remplacé.", "#7A3E00"),
     ]
     y = 0.98
     for text, col in lines:
