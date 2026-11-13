@@ -2,26 +2,26 @@
 
 MateBot moves the Amazing Hand's 8 servos out of the palm and into the forearm. Each finger is driven by a pair of Feetech STS3215 (12 V) servos pulling tendons through PTFE tubes.
 
-**Status: v0/v1/v14, untested.** v13 (and v12, v11, v10) of the forearm chassis is superseded. Nothing here has been validated on a real build. Measure your own servo and servo horn before printing.
+**Status: v0/v1/v15, untested.** v14 (and v13, v12, v11, v10) of the forearm chassis is superseded. Nothing here has been validated on a real build. Measure your own servo and servo horn before printing.
 
 ## Folders
 
 - `stl/`: ready-to-print files
 - `step/`: editable CAD files
-- `source/`: Python (CadQuery) scripts that generate the parts: `parts.py` (spool, PTFE anchor, servo bay), `sts3215.py` (official STS3215 envelope from the Waveshare 2D/STEP drawings), `forearm_mount_row.py` (v14 one-piece flat plate with M3 end attachments and a side-rail grid, packed single row of 8, with `verify_forearm_mount_row.py` and `render_forearm_mount_row.py`; v13–v10 plates are superseded), `finger_link_tendon.py` (the modified finger Link), `bushing_d6.py` (the printable finger bushing, with `verify_bushing_d6.py` and `render_bushing_d6.py`), `bushing_washer_d6.py` (the printed bushing + washer for the screw, v8, with `verify_bushing_washer_d6.py` and `render_bushing_washer_d6.py`) and `R-Hand_Plate_tendon.py` (the modified hand plate and palm shell, now with the Gimbal pivot blocks), `Gimbal_tendon.py` (the Gimbal with a retention tab), with `verify_R-Hand_Plate_tendon.py`, `render_plate_tendon.py` and `render_gimbal_thumb.py`, `render_assembly_fr.py` (the French assembly drawings)
+- `source/`: Python (CadQuery) scripts that generate the parts: `parts.py` (spool, PTFE anchor, servo bay), `sts3215.py` (official STS3215 envelope from the Waveshare 2D/STEP drawings), `forearm_mount_row.py` (v15 one-piece 56 mm flat plate with 8 web M3 attachments and countersunk M2 posts, packed single row of 8, with `verify_forearm_mount_row.py` and `render_forearm_mount_row.py`; v14–v10 plates are superseded), `finger_link_tendon.py` (the modified finger Link), `bushing_d6.py` (the printable finger bushing, with `verify_bushing_d6.py` and `render_bushing_d6.py`), `bushing_washer_d6.py` (the printed bushing + washer for the screw, v8, with `verify_bushing_washer_d6.py` and `render_bushing_washer_d6.py`) and `R-Hand_Plate_tendon.py` (the modified hand plate and palm shell, now with the Gimbal pivot blocks), `Gimbal_tendon.py` (the Gimbal with a retention tab), with `verify_R-Hand_Plate_tendon.py`, `render_plate_tendon.py` and `render_gimbal_thumb.py`, `render_assembly_fr.py` (the French assembly drawings)
 - `docs/`: design notes, assembly guide (French), preview images (`finger_link_tendon_preview.png`, `finger_link_tendon_routing.png`, `R-Hand_Plate_tendon_preview.png`, `R-Hand_Plate_tendon_routing.png`, `Gimbal_tendon_preview.png`, `thumb_aperture_preview.png`, `assemblage_doigt_eclate_FR.png`, `assemblage_coupes_vis_FR.png`, `bushing_d6_preview.png`, `bushing_washer_d6_preview.png`, `forearm_chassis_preview.png`, `forearm_parts_preview.png`, `forearm_tubes_FR.png`, `spool_r8_preview.png`) and an explainer animation
 
 ## Parts to print
 
 | File | Quantity | Notes |
 |---|---|---|
-| `spool_r8.stl` | 8 (+2 spare) | One per servo. Two grooves: flexor and extensor. Official 14 mm horn BCD, 4 × M3×6 (not longer). 100% infill or 6 walls. See [the forearm chassis](#the-flat-forearm-plate-v14-untested). |
-| `forearm_plate.stl` | 1 | **New in v14.** One flat plate (78.0 × 207.6 × 28.0 mm). Packed row of 8, M3 end posts and side-rail grid. |
+| `spool_r8.stl` | 8 (+2 spare) | One per servo. Two grooves: flexor and extensor. Official 14 mm horn BCD, 4 × M3×6 (not longer). 100% infill or 6 walls. See [the forearm chassis](#the-flat-forearm-plate-v15-untested). |
+| `forearm_plate.stl` | 1 | **New in v15.** One flat plate (56.0 × 207.6 × 20.0 mm). Packed row of 8, 8 × M3 over the bodies, countersunk M2 posts. |
 | `forearm_plate_top.stl` / `forearm_plate_bottom.stl` | 0 | **Superseded (v12).** Two U-plates. Do not print these for a new build. |
 | `forearm_plate_top_wrist.stl` / `_elbow` / `forearm_plate_bottom_wrist.stl` / `_elbow` | 0 | **Superseded (v11).** Split halves. Do not print these for a new build. |
 | `forearm_wrist_yoke.stl` / `forearm_rail_3x_L.stl` / `_R` / `forearm_brace.stl` | 0 | **Superseded (v10).** Do not print these for a new build. |
-| `ptfe_anchor_8x.stl` | 0 (bench only) | **Not used with the v14 plate.** No PTFE sockets on this plate; tubes pass around. Bench only. |
-| `servo_bay_8x_sts3215.stl` | 1 | **Bench testing only.** It does not fit inside the forearm; the v14 plate is the current arm mount (minimal, not yet a full forearm). |
+| `ptfe_anchor_8x.stl` | 0 (bench only) | **Not used with the v15 plate.** No PTFE sockets on this plate; tubes pass around. Bench only. |
+| `servo_bay_8x_sts3215.stl` | 1 | **Bench testing only.** It does not fit inside the forearm; the v15 plate is the current arm mount (minimal, not yet a full forearm). |
 | `finger_link_tendon.stl` | 4 (+2 spares) | **Replaces Pollen's `Link`** (do not also print the original Link). Same pivot holes, plus a cross bar and two tendon plates, now with **dowel pass-through holes** (v1). Print 1 first. Needs supports. |
 | `Gimbal_tendon.stl` | 3 (+1 spare) | **Replaces Pollen's `Gimbal` on the index, middle and ring fingers** (do not also print the original Gimbal for those 3). Identical, plus a rear tab with an arc slot so the Gimbal can be **screwed from underneath the plate** (see [the Gimbal section](#the-gimbal-screwed-from-underneath-gimbal_tendon-v0-untested)). |
 | `bushing_washer_d6.stl` | 4 (+2 spares) | **New in v8. Replaces the large M2.5 washer AND the upper bushing** on the stock-Gimbal option (the screw from the top): one printed top-hat part, disc Ø10 × 0.9 + sleeve OD 7.95 / ID 6.2 × 3.5. Used for the 3 fingers and the thumb. Print disc down, sleeve up, no supports. See [the section below](#the-bushing-washer-bushing_washer_d6-v8-untested). |
@@ -57,7 +57,7 @@ MateBot moves the Amazing Hand's 8 servos out of the palm and into the forearm. 
 
 ## The palm plate: `R-Hand_Plate_tendon` (v1, untested)
 
-Pollen's plate holds 3 fingers (index, middle, ring) in 3 windows. The **thumb is not on this plate**: it screws into the Wrist_Interface. So the plate takes 3 fingers × 4 tendons = **12 tube ends** (not 8). The thumb's 4 tube ends are not on the v14 plate (no sockets; tubes pass around for now). The rotating-wrist adapter (InMoov RotaWrist ↔ Wrist_Interface) is still not designed; the v10 yoke bolts to the Wrist_Interface with a **fixed wrist**.
+Pollen's plate holds 3 fingers (index, middle, ring) in 3 windows. The **thumb is not on this plate**: it screws into the Wrist_Interface. So the plate takes 3 fingers × 4 tendons = **12 tube ends** (not 8). The thumb's 4 tube ends are not on the v15 plate (no sockets; tubes pass around for now). The rotating-wrist adapter (InMoov RotaWrist ↔ Wrist_Interface) is still not designed; the v10 yoke bolts to the Wrist_Interface with a **fixed wrist**.
 
 **v1 changes (all three fingers):**
 
@@ -181,48 +181,44 @@ Design numbers (CAD estimates from the original STL files, not measurements on a
 - Printing: the original Link also needs supports in every orientation. Print `finger_link_tendon` with the plate lying flat (X up) and tree supports under the cross bar and the Link strip, 4+ walls, 100% infill on the plates.
 - Strength (hand estimate, not FEA): the cross bar and plates should hold roughly 50 to 80 N of tendon tension in PETG. The STS3215 can pull much more. **Start with the servo torque limit at 10% (about 35 N at the 8 mm spool)** and raise it only after testing.
 
-## The flat forearm plate (v14, untested)
+## The flat forearm plate (v15, untested)
 
-A printable **flat plate**, not a shell and not a two-plate sandwich. **v13 is superseded** (v12, v11 and v10 remain superseded).
+A printable **flat plate**, not a shell and not a two-plate sandwich. **v14 is superseded** (Ian-Remi rejected the 78 mm widening). v13, v12, v11 and v10 remain superseded.
 
 **Layout:** the same packed single row of 8 STS3215 as v13, long axis **across** the forearm, shaft perpendicular to the plate, **TL, TR, BL, BR, repeat**. Adjacent servos of each finger sit on the same face (thumb and middle dorsal, index and ring palmar). Shafts alternate left/right (horn at x = ±12.5 mm). Bodies sit **face-to-face** with a 0.4 mm nominal gap (no glue, no service gap). The official 24.72 mm width already includes the ears.
 
-The rack is **one 4 mm flat rectangle**, barely longer than the 8 packed bodies (8 × 24.72 + 7 × 0.4 = 200.56 mm) plus a low 3.5 mm wall at each end: closed at the back with a 16 mm stop, and at the front a 16 mm wall with **two Ø10 cable holes**. M2×6 go through the plate into the idler ears of the four servos whose idlers face it (index and ring), access from the outside. The four servos whose spools face the plate (thumb and middle) get a **Ø28 cut-out**; this plate cannot reach their idler ears (35 mm away). They are located by the packed neighbours and the back wall only. If those four later need a clamped mount, the simplest fix is a second identical flat plate on the other face. Do not use the output-side ears.
+**The plate** is one 4 mm rectangle, **56.0 × 207.56 × 20.0 mm** (the v13 width). Length is the packed row (200.56 mm) plus a 3.5 mm wall at each end. Closed at the back with a low 16 mm stop. At the front, a low wall with two Ø10 cable holes only (x = ±16 mm, z = −8 mm). No U flanges, no second plate, no socket bosses, no wrist flange, no side-rail grid, no corner posts.
 
-**v14 additions** (everything else is the v13 plate):
+**v15 additions** (everything else is the v13 plate):
 
-- **Front and back attachments.** 4 × M3 clearance holes (Ø3.4) at each end, in a 64 × 10 mm rectangle (x = ±32 mm, z = −6 and −16 mm). Corner posts on the inside (body side) give a **3 mm wall** around each hole (boss Ø9.4 mm) and stand 24 mm down from the web, extending 6 mm inward in Y, clear of the servo bodies (bodies end at |x| = 22.61 mm; post inner face at |x| = 27.3 mm). Screws go from the inside of the pack toward the outside of each end, so later parts can be bolted on. The plate is **78 mm wide** (was 56 mm in v13) so these posts and the side-rail grid sit beside the servos, not under them.
-- **Side-rail grid, for attaching other things.** 24 × M3 clearance holes (Ø3.4), two rows at x = ±32 mm, **15 mm pitch** along Y (y = 20, 35, …, 185 mm), 12 holes per side. **Screws go from the inside to the outside:** the head sits on the inner face (z = 0, beside the servos); the thread protrudes from the outer face (z = +4) to take a nut or a tapped part on the outside. These are clearance holes, not threaded holes. They are not under the servo bodies, and they miss the Ø28/Ø22 cut-outs and the M2 servo holes.
+- **Eight attachment holes, one per servo.** 8 × M3 clearance (Ø3.4) in the web, over each servo body, on the solid side **opposite** the spool / idler cut-out (the cable end of the body). Pattern: x = −xf = ±12.50 mm, y = the servo's shaft Y (zigzag, the same two columns as the shafts but mirrored). **Screws go from the inside to the outside:** an ISO 7380 M3 button head (dk ≈ 5.7 mm, k ≈ 1.65 mm) sits in a Ø6.5 × 1.8 mm counterbore on the inner face, flush at z = 0 so it does not hit the servo; the thread protrudes at z = +4 to take a nut or a tapped part on the outside. These are clearance holes, not threaded. They replace the front/back wall holes of v14 ("8 trous par plaque c'est bon"): there are no holes in the end walls. Because the head is under the servo, **fit these screws before the servos** (or remove the servo to change them).
+- **M2 servo screws sit in 3.5 mm-wall posts and are countersunk.** Each of the 16 idler-ear holes (index and ring) has a post on the inside, 3.5 mm tall, with a 3.5 mm target wall around the Ø2.4 clearance hole (boss Ø9.4 mm). A full cylinder of that size **cannot** sit between servos packed 0.4 mm apart (hole centres across a gap are only 4.62 mm apart) and would also hit the Ø19.2 idler horn at the shaft-end holes, so each post is clipped: it stays 0.1 mm inside its own servo's body outline (wall toward the neighbour ≈ 2.0 mm) and outside a Ø20 horn keep-out (wall toward the horn ≈ 3.2 mm). The four idler-facing servos sit on the ends of the posts, 3.5 mm further from the plate than in v13. The outer face of each hole has a 90° countersink, Ø4.8 mm, for an **M2×10 flat-head screw, DIN 7991 / ISO 10642** (dk = 4.0 mm, k = 1.2 mm). Engagement: 4 mm web + 3.5 mm post + 2.5 mm into the 2.8 mm ear. Do not use M2×12 (it would bottom on the housing). Access remains from the outside.
 
-Previews (top view and 3/4 view, French labels): [`docs/forearm_chassis_preview.png`](docs/forearm_chassis_preview.png), [`docs/forearm_parts_preview.png`](docs/forearm_parts_preview.png), holes, screws and cables: [`docs/forearm_tubes_FR.png`](docs/forearm_tubes_FR.png).
+**A single plate still cannot clamp the four spool-facing servos** (thumb, middle). Their idler ears are 35 mm away on the far side; this plate only gives them a Ø28 cut-out. They are located by the packed neighbours and the back wall. The simplest later fix is a second identical flat plate on the other face (still no U flanges). Do not use the output-side ears (different hole pattern).
 
-**Dimensions (CAD):** 78.0 × 207.56 × 28.0 mm (plate 4 mm + 24 mm corner posts). Packed row 200.56 mm; the two 3.5 mm walls add 7 mm. Mid-span wall height remains 16 mm (overall 20 mm there). Servos hang 35 mm below the inner face; top-face spools stand 7.5 mm proud of the outer face.
+**Servo dimensions** are the official Waveshare / Feetech figures in `sts3215.py` (body 45.22 × 24.72 mm, 35 mm to the output-horn outer face). Mount through the **idler** ears only. `spool_r8` is unchanged (14 mm BCD, 4 × M3×6 + centre M3×6). `CL = 0.4 mm` is a print allowance. Measure your own servo before printing a full set.
 
-**Tubes.** No sockets on this plate. PTFE tubes pass around; routing will be added back later if needed.
+**Print:** black PETG, 0.20 mm, 5 walls, ~30 % gyroid. Outer face on the bed (the countersinks print against the bed), walls and posts up, no supports.
 
-**Servo dimensions** are the official Waveshare / Feetech figures in `sts3215.py` (body 45.22 × 24.72 mm, 35 mm to the output-horn outer face). Mount through the **idler** ears only, with **M2×6** (M2×8 would enter the case). `spool_r8` is unchanged (14 mm BCD, 4 × M3×6 + centre M3×6). `CL = 0.4 mm` is a print allowance. Measure your own servo before printing a full set.
+### Mounting patterns (v15)
 
-**Mounting patterns** (frame F, mm; also labelled in French on the previews):
+| Pattern | Screw | Notes |
+| --- | --- | --- |
+| Index and ring, idler ears | 16 × M2×10 flat-head, DIN 7991 / ISO 10642 90°, through Ø2.4, countersunk Ø4.8 on the outer face | 4 holes per servo, from the outside. Inside posts, 3.5 mm wall (clipped toward the neighbour and the horn), 3.5 mm tall. 4 mm plate + 3.5 mm post + 2.5 mm in the 2.8 mm ear. Not M2×12. Thumb and middle are not screwed to this plate. |
+| Attachments, over the 8 bodies | 8 × M3, through Ø3.4, inner counterbore Ø6.5 × 1.8 mm | One per servo, opposite the cut-out, x = ±12.50 mm, y = shaft Y. Inside → outside, ISO 7380 button head flush on the inner face. Fit before the servos. |
+| Spool `spool_r8` | 4 × M3×6 on the 14 mm circle + centre M3×6 | Unchanged from v9–v14. |
 
-| Pattern | Screw | Positions |
-|---|---|---|
-| Servo idler ears (index, ring) | 16 × M2×6, through Ø2.4 | Official idler pattern, 4 holes per servo, in the plate. Access from the outside. 4 mm of plate + 2 mm in the 2.8 mm ear. Do not use M2×8. Thumb and middle have no M2 on this plate. |
-| Spool cut-outs (thumb, middle) | — | Ø28, only where a spool faces the plate. |
-| Idler clearance (index, ring) | — | Ø22, for the idler horn (protrudes 2.25 mm). |
-| Front cable holes | — | Two Ø10 in the low front wall, at x = ±16 mm, z = −8 mm. Bus leads leave the bodies at the sides (±X) and can be dressed forward through these holes. |
-| Front / back attachments | 8 × M3, through Ø3.4 | 4 per end, rectangle 64 × 10 mm (x = ±32, z = −6 and −16). Inside corner posts, 3 mm wall around the hole. Screws from inside toward the outside of each end. |
-| Side-rail grid | 24 × M3, through Ø3.4 | Two rows at x = ±32 mm, pitch 15 mm (y = 20 to 185 mm). From the inside (head on z = 0) to the outside (thread at z = +4). |
-| Spool `spool_r8` | 4 × M3×6 on the 14 mm circle + centre M3×6 | Unchanged from v9–v13. |
+**Hardware (plate only):** 16 × M2×10 flat-head (DIN 7991 / ISO 10642) into the idler ears of index and ring, from the outside; 32 × M3×6 spool-to-horn (not longer); 8 × M3×6 centre horn screws; 8 × M3×8 to M3×12 button-head (ISO 7380) + nuts for the attachment holes (from the inside, thread out; length depends on the part you add). No wrist M2.
 
-**Print (black PETG, 0.20 mm, 5 walls, ~30 % gyroid; spools 100 % or 6 walls).** Plate: outer face on the bed, walls and posts up, no supports. Spools flange-down, no support.
+CAD verification (`verify_forearm_mount_row.py`): 20/20 checks passed (one solid, max dim ≤ 250 mm, official servo numbers, bodies packed at 0.4 mm, length = 200.56 + 7 mm, 16 countersunk M2 holes aligned with index/ring idler ears, Ø28 only on thumb/middle, 8 web M3 opposite the cut-outs, no servo/spool overlap with the plate or the clipped posts, posts stay out of the pack gaps, printable outer-face down). Nothing has been printed.
 
-**Hardware (plate only):** 16 × M2×6 into the idler ears of index and ring, from the outside; 32 × M3×6 spool-to-horn (not longer); 8 × M3×6 centre horn screws; M3×10 or M3×12 + nuts for the 8 end-attachment holes and for as many of the 24 rail holes as you use (from the inside, thread out). No wrist M2.
+## The flat forearm plate (v14, superseded)
 
-CAD verification (`verify_forearm_mount_row.py`): 19/19 checks passed (one solid, max dim ≤ 250 mm, official servo numbers, bodies packed at 0.4 mm, length = 200.56 + 7 mm, 16 M2 holes aligned with index/ring idler ears, Ø28 only on thumb/middle, 8 end M3 + 24 rail M3, no servo/spool overlap with the plate or the posts, printable outer-face down). Nothing has been printed.
+v14 (the same packed row on a **78 mm** plate, with 8 M3 in the end walls, 24 mm corner posts and a 24-hole side-rail grid) is **superseded by v15**. Ian-Remi rejected the widening: the holes can sit over the servos, on the other side from the cut-outs, and 8 holes per plate is enough. Do not print a leftover v14 STL for a new build.
 
 ## The flat forearm plate (v13, superseded)
 
-v13 (the same packed row on a 56 × 207.6 × 20 mm flat plate, no end attachments and no rail grid) is **superseded by v14**. Do not print a leftover v13 STL for a new build.
+v13 (the same packed row on a 56 × 207.6 × 20 mm flat plate, no attachment holes and no M2 posts) is **superseded by v15**. Do not print a leftover v13 STL for a new build.
 
 ## The two-plate U-channel forearm chassis (v12, superseded)
 
@@ -236,8 +232,8 @@ v10 (two rails of 3 plus a thumb pair, mid-plane plate, alternating faces) remai
 
 ## Known issues
 
-- The v14 plate, the spool-to-horn fit and the pocket clearance (0.4 mm per side) have not been printed or measured on a real STS3215.
-- The rotating-wrist adapter (InMoov RotaWrist ↔ Amazing Hand Wrist_Interface) is still not designed. The v14 plate has no wrist flange; it is not bolted to the Wrist_Interface. A rotating-wrist adapter and PTFE routing through a rotating wrist are still open.
+- The v15 plate, the spool-to-horn fit and the pocket clearance (0.4 mm per side) have not been printed or measured on a real STS3215.
+- The rotating-wrist adapter (InMoov RotaWrist ↔ Amazing Hand Wrist_Interface) is still not designed. The v15 plate has no wrist flange; it is not bolted to the Wrist_Interface. A rotating-wrist adapter and PTFE routing through a rotating wrist are still open.
 - The servo-side sockets no longer use `ptfe_anchor_8x` (kept for bench tests with the 8-servo bay).
 - `R-Hand_Plate_tendon` v1 and `Gimbal_tendon` are not printed yet. `Finger_Frame-1` and `-2` are no longer printed for the 3 fingers (the thumb still needs one Frame-1).
 - The cross bar fills the original M2 rod hole of the barrel. Nothing else of the original Link is removed.
