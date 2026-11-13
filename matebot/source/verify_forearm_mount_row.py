@@ -1,7 +1,8 @@
-# Verification of the v16 one-piece flat forearm plate
+# Verification of the v17 one-piece flat forearm plate
 # (packed single row of 8 STS3215, body-to-body, TL/TR/BL/BR,
-#  8 end-wall M3 attachments, 4 per end / 2 per side, clipped M2 posts
-#  with a countersink on the outer face).
+#  8 web M3 over the bodies, 8 end-wall M3 (4 per end / 2 per side of
+#  the arc), a R13 arch in both end walls, clipped M2 posts with a
+#  countersink on the outer face).
 # Usage: python verify_forearm_mount_row.py
 import os, sys, math
 import cadquery as cq
@@ -35,7 +36,7 @@ def ivol(a, b):
         except Exception:
             return float("nan")
 
-print("building v16 plate...")
+print("building v17 plate...")
 parts = F.build_all()
 p = F.P
 sts = parts["stations"]
@@ -58,13 +59,13 @@ chk("spool_r8: one valid solid, max dim <= 250 mm",
     len(sols_s) == 1 and all(s.isValid() for s in sols_s) and max(bb_s.xlen, bb_s.ylen, bb_s.zlen) <= 250,
     f"solids={len(sols_s)}  {bb_s.xlen:.1f} x {bb_s.ylen:.1f} x {bb_s.zlen:.1f} mm")
 
-# 2. thicknesses and v16 features, still the v13 envelope (56 mm, no rails)
-chk("web 4 mm, low end walls 3.5 x 16 mm, plate 56 mm wide, M2 posts 3.5 mm wall / 3.5 mm tall, no U flanges",
-    p["web_t"] >= 4.0 and p["wall_t"] >= 3.0 and p["wall_h"] >= 8.0
-    and abs(p["half_w"] - 28.0) < 1e-9
+# 2. thicknesses and v17 features, still the v13 envelope (56 mm, no rails)
+chk("web 4 mm, end walls 3.5 x 16 mm, plate 56 mm wide, arc R13, M2 posts 3.5 mm wall / 3.5 mm tall, no U flanges",
+    p["web_t"] >= 4.0 and p["wall_t"] >= 3.0 and abs(p["wall_h"] - 16.0) < 1e-9
+    and abs(p["half_w"] - 28.0) < 1e-9 and abs(p["arc_r"] - 13.0) < 1e-9
     and abs(p["m2_boss_wall"] - 3.5) < 1e-9 and abs(p["m2_boss_h"] - 3.5) < 1e-9,
     f"web {p['web_t']}, wall_t {p['wall_t']}, wall_h {p['wall_h']}, half_w {p['half_w']}, "
-    f"m2_boss_wall {p['m2_boss_wall']}, m2_boss_h {p['m2_boss_h']}")
+    f"arc_r {p['arc_r']}, m2_boss_wall {p['m2_boss_wall']}, m2_boss_h {p['m2_boss_h']}")
 
 # 3. official servo numbers
 chk("STS3215 body 45.22 x 24.72, height to horn 35, both horns 37.25, shaft 10.11 from output end",
@@ -150,10 +151,10 @@ chk("16 M2 holes line up with the idler ears of index and ring only, countersunk
 # 8. still no wrist flange, U flanges, sockets, second plate or v14 rails
 extra = [k for k in pat if k in ("front_wi_m2", "side_flange_m3", "web_shell_top_m3",
                                    "web_shell_bot_m3", "elbow_m3", "joint_m3",
-                                   "attach_m3", "web_m3")]
-chk("no wrist flange, no U flanges, no joint, no socket bosses, no second plate, no v14 rails or v15 web M3",
+                                   "web_m3", "cable_front")]
+chk("no wrist flange, no U flanges, no joint, no socket bosses, no second plate, no v14 rails, no Ø10 cable holes",
     extra == [] and "plate_bottom" not in parts and "plate_top" not in parts
-    and "plate" in parts and "end_m3" in pat,
+    and "plate" in parts and "end_m3" in pat and "attach_m3" in pat and "end_arcs" in pat,
     f"extra patterns={extra}, keys={sorted(parts)}, pat={sorted(pat)}")
 
 # 9. 8 end-wall M3: 4 per end, TWO on each side, not 1 per side
@@ -202,21 +203,54 @@ chk("end walls have 4 M3 each (2 per side of the centre, stacked in Z), clearanc
     f"n={len(end)} front={n_front} back={n_back} xs={end_xs} zs={end_zs} "
     f"two_per_side={two_per_side} open={open_ok} cbore={cbore_ok} edge={edge_ok}")
 
-# 10. end M3 miss the front cable holes and stay off the pack mid-plane
-cable_ok, cable_min = True, 1e9
-need = p["cable_hole_d"] / 2 + p["m3_clear"] / 2 + 0.6  # ~7.3
+# 10. end M3 flank the arc with >= 3 mm of material (counterbore edge to arc)
+arc_ok, arc_min = True, 1e9
+need_arc = p["m3_cbore_d"] / 2 + 3.0  # 6.25 mm centre-to-arc
 for h in end:
-    if h["end"] != "front":
-        continue
-    for cx, cz in pat["cable_front"]["holes"]:
-        d = math.hypot(h["x"] - cx, h["z"] - cz)
-        cable_min = min(cable_min, d)
-        if d < need:
-            cable_ok = False
-chk("front end M3 stay clear of the two Ø10 cable holes; all 8 stay in the end walls",
-    cable_ok and cable_min >= need
+    # distance in the wall plane (X, Z) from hole centre to the arc circle
+    d = math.hypot(h["x"], h["z"] + p["wall_h"]) - p["arc_r"]
+    arc_min = min(arc_min, d)
+    if d < need_arc:
+        arc_ok = False
+chk("end-wall M3 flank the arc with >= 3 mm of material; all 8 stay in the end walls",
+    arc_ok and arc_min >= need_arc
     and all(h["dir"] == "Y" for h in end),
-    f"min M3-cable = {cable_min:.2f} mm (need >= {need:.2f})")
+    f"min counterbore-edge-to-arc = {arc_min - p['m3_cbore_d']/2:.2f} mm "
+    f"(centre-to-arc {arc_min:.2f}, need >= {need_arc:.2f})")
+
+# 10b. 8 web M3 over the solid body, opposite the cut-outs (restored from v15)
+att = pat["attach_m3"]["holes"]
+att_ok = True
+att_detail = []
+for h, s in zip(att, sts):
+    want_x = -s["xf"]
+    good = (h["i"] == s["i"] and abs(h["x"] - want_x) < 1e-9 and abs(h["y"] - s["y"]) < 1e-9)
+    mid = cq.Vector(h["x"], h["y"], p["web_t"] / 2)
+    open_ = not pl.val().isInside(mid, 0.2)
+    inner = not pl.val().isInside(cq.Vector(h["x"], h["y"], 0.5), 0.15)
+    cut_r = p["spool_cut_d"] / 2 if s["face"] == "top" else p["idler_cut_d"] / 2
+    dist_cut = abs(h["x"] - s["xf"]) - cut_r
+    over_body = abs(h["x"]) <= BODY_L / 2 + 0.01
+    att_detail.append((h["i"], round(h["x"], 2), round(h["y"], 2), open_, inner,
+                       round(dist_cut, 2), over_body))
+    if not (good and open_ and inner and dist_cut >= 3.0 and over_body):
+        att_ok = False
+chk("8 web M3, one over each servo body, opposite the cut-out, inside-to-outside with an inner counterbore",
+    att_ok and len(att) == 8 and abs(p["m3_clear"] - 3.4) < 1e-9
+    and abs(p["m3_cbore_d"] - 6.5) < 1e-9 and p["m3_cbore_h"] >= 1.6,
+    f"n={len(att)}, items={att_detail}")
+
+# 10c. web M3 miss the M2 posts and the cut-outs; centre-to-M2 >= 8 mm
+m3_m2_ok, m3_m2_min = True, 1e9
+for h in att:
+    for m in m2:
+        d = math.hypot(h["x"] - m["x"], h["y"] - m["y"])
+        m3_m2_min = min(m3_m2_min, d)
+        if d < 8.0:
+            m3_m2_ok = False
+chk("web M3 stay clear of the M2 holes/posts (centre distance >= 8 mm) and of the cut-outs",
+    m3_m2_ok and m3_m2_min >= 8.0,
+    f"min M3-M2 = {m3_m2_min:.2f} mm")
 
 # 11. spool / idler cut-outs
 spool_pts = pat["spool_cuts"]["holes"]
@@ -228,11 +262,32 @@ chk("Ø28 spool cut-outs only where a spool faces the plate (thumb, middle); Ø2
     and len(spool_pts) == 4 and len(idler_pts) == 4,
     f"spool={spool_pts}, idler={idler_pts}")
 
-# 12. two front cable holes
-cables = pat["cable_front"]["holes"]
-chk("front wall still has exactly two cable holes (Ø10)",
-    len(cables) == 2 and p["cable_hole_d"] == 10.0,
-    f"cables={cables}, d={p['cable_hole_d']}")
+# 12. one R13 arch in EACH end wall, open at the free edge, no Ø10 cable holes
+# A point inside the notch must be empty; the 3 mm lintel under the web
+# must still be solid; same on front and back.
+wt = p["wall_t"]
+ye = parts["y_end"]
+lintel_z = -p["wall_h"] + p["arc_r"]  # -3.0
+arc_ok_geom = True
+details_arc = []
+for end, y_mid in (("front", wt / 2), ("back", ye - wt / 2)):
+    # mid-notch should be empty (halfway from free edge to crown)
+    empty_pt = cq.Vector(0.0, y_mid, -p["wall_h"] + p["arc_r"] / 2)
+    empty = not pl.val().isInside(empty_pt, 0.2)
+    # lintel under the web (1.5 mm below z=0, 1.5 mm above the crown) is solid
+    lintel_pt = cq.Vector(0.0, y_mid, -1.5)
+    lintel = pl.val().isInside(lintel_pt, 0.15)
+    # a point just outside the arc, at the free edge, is solid (the jamb)
+    jamb_pt = cq.Vector(p["arc_r"] + 2.0, y_mid, -p["wall_h"] + 2.0)
+    jamb = pl.val().isInside(jamb_pt, 0.15)
+    details_arc.append((end, empty, lintel, jamb, lintel_z))
+    if not (empty and lintel and jamb):
+        arc_ok_geom = False
+lintel_meat = p["wall_h"] - p["arc_r"]
+chk("both end walls have one R13 arch open at the free edge, 3 mm lintel, no Ø10 cable holes",
+    arc_ok_geom and abs(p["arc_r"] - 13.0) < 1e-9 and abs(lintel_meat - 3.0) < 1e-9
+    and "cable_front" not in pat and "end_arcs" in pat,
+    f"lintel={lintel_meat:.1f} mm, crown z={lintel_z:.1f}, items={details_arc}")
 
 # 13. spools through the cut-outs, no intersection with the plate
 spool_hits = []

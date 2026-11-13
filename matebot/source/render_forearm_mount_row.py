@@ -1,8 +1,8 @@
-# v16 previews: top view + 3/4 view of the one flat plate, French labels.
+# v17 previews: top view + 3/4 view of the one flat plate, French labels.
 # Usage: python render_forearm_mount_row.py
 import os, math
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, Circle, FancyBboxPatch, FancyArrow
+from matplotlib.patches import Rectangle, Circle, FancyBboxPatch, FancyArrow, Arc, Wedge
 from matplotlib.lines import Line2D
 from forearm_mount_row import (
     P, stations, patterns, y_end, y_pack_start, y_pack_end, SHAFT_X, BODY_W, BODY_L,
@@ -43,11 +43,22 @@ def draw_top_view(ax, with_notes=True):
                             facecolor=C_WALL, edgecolor="#3D4A55", lw=0.6, zorder=3))
     ax.add_patch(Rectangle((-w, ye - p["wall_t"]), 2 * w, p["wall_t"],
                             facecolor=C_WALL, edgecolor="#3D4A55", lw=0.6, zorder=3))
-    # cable holes in the front wall
-    for x, z in pat["cable_front"]["holes"]:
-        ax.add_patch(Circle((x, p["wall_t"] / 2), p["cable_hole_d"] / 2,
-                            facecolor="white", edgecolor="#1F4E79", lw=0.8, zorder=4))
-    # 8 x M3 in the end walls (4 per end, 2 per side, stacked in Z).
+    # Arch opening in both end walls (shown as a 26 mm white gap in the wall band)
+    for y0 in (0.0, ye - p["wall_t"]):
+        ax.add_patch(Rectangle((-p["arc_r"], y0), 2 * p["arc_r"], p["wall_t"],
+                               facecolor="white", edgecolor="#1F4E79", lw=0.6, zorder=4))
+        ax.plot([-p["arc_r"], -p["arc_r"]], [y0, y0 + p["wall_t"]],
+                color="#1F4E79", lw=0.7, zorder=4)
+        ax.plot([p["arc_r"], p["arc_r"]], [y0, y0 + p["wall_t"]],
+                color="#1F4E79", lw=0.7, zorder=4)
+    # 8 x M3 in the web (over the body, opposite the cut-out)
+    if "attach_m3" in pat:
+        for h in pat["attach_m3"]["holes"]:
+            ax.add_patch(Circle((h["x"], h["y"]), 3.25, facecolor="#d9e8f5",
+                                edgecolor="#1F4E79", lw=0.6, zorder=5))
+            ax.add_patch(Circle((h["x"], h["y"]), 1.7, facecolor="white",
+                                edgecolor="#1F4E79", lw=0.6, zorder=6))
+    # 8 x M3 in the end walls (4 per end, 2 per side of the arc, stacked in Z).
     # In top view the two Z-stacked holes of a column coincide; draw
     # one circle per column and label it 2x.
     if "end_m3" in pat:
@@ -100,11 +111,11 @@ def draw_top_view(ax, with_notes=True):
                 fontweight="bold")
 
     if with_notes:
-        ax.annotate("AVANT\n2 trous Ø10\npour les câbles bus",
-                    xy=(16, p["wall_t"] / 2), xytext=(36, -18),
+        ax.annotate("AVANT\narc R13, ouvert\nau bord libre",
+                    xy=(0, p["wall_t"] / 2), xytext=(36, -22),
                     fontsize=6.5, ha="left", color="#1F4E79",
                     arrowprops=dict(arrowstyle="->", color="#1F4E79", lw=0.6))
-        ax.annotate("ARRIÈRE FERMÉ\nmur bas 3,5 × 16 mm",
+        ax.annotate("ARRIÈRE\nmême arc R13\n(n'est plus fermé)",
                     xy=(0, ye - p["wall_t"] / 2), xytext=(36, ye - 8),
                     fontsize=6.5, ha="left", color="#7A1F1F",
                     arrowprops=dict(arrowstyle="->", color="#7A1F1F", lw=0.6))
@@ -112,8 +123,12 @@ def draw_top_view(ax, with_notes=True):
                     xy=(0, (sts[3]["y"] + sts[4]["y"]) / 2), xytext=(46, 110),
                     fontsize=6.5, ha="left", color="#7A3E00",
                     arrowprops=dict(arrowstyle="->", color="#7A3E00", lw=0.6))
-        ax.annotate("4 × M3 par bout\n(2 de chaque côté)\nintérieur → extérieur",
+        ax.annotate("4 × M3 par bout\n(2 de chaque côté\nde l'arc)",
                     xy=(24.0, p["wall_t"] / 2), xytext=(36, 86),
+                    fontsize=6.5, ha="left", color="#1F4E79",
+                    arrowprops=dict(arrowstyle="->", color="#1F4E79", lw=0.6))
+        ax.annotate("8 × M3 dans la toile\n(1 par servo, côté\nopposé à la découpe)",
+                    xy=(-12.5, sts[0]["y"]), xytext=(36, 14),
                     fontsize=6.5, ha="left", color="#1F4E79",
                     arrowprops=dict(arrowstyle="->", color="#1F4E79", lw=0.6))
         ax.annotate("Poteaux M2\nparoi 3,5 mm\nvis fraisée M2×10",
@@ -139,14 +154,21 @@ def draw_34(ax):
         ax.fill(xs, ys, facecolor=fc, edgecolor=ec, lw=lw, alpha=alpha, zorder=zorder)
 
     w, ye_, t, h, wt = p["half_w"], ye, p["web_t"], p["wall_h"], p["wall_t"]
+    ar = p["arc_r"]
+    def wall_face(y, zorder):
+        # outer face of an end wall, with the R13 arch open at z=-h
+        pts = [(-w, y, 0), (w, y, 0), (w, y, -h)]
+        for i in range(17):
+            th = i * math.pi / 16.0
+            pts.append((ar * math.cos(th), y, -h + ar * math.sin(th)))
+        pts.append((-w, y, -h))
+        poly(pts, C_WALL, zorder=zorder)
     # plate top (outer +Z) and a side edge
     poly([(-w, 0, t), (w, 0, t), (w, ye_, t), (-w, ye_, t)], "#C5D0D8", zorder=3)
     poly([(w, 0, 0), (w, ye_, 0), (w, ye_, t), (w, 0, t)], "#9AAEB8", zorder=4)
-    # front wall (down in -Z)
-    poly([(-w, 0, 0), (w, 0, 0), (w, 0, -h), (-w, 0, -h)], C_WALL, zorder=6)
+    wall_face(0.0, 6)
     poly([(-w, 0, 0), (-w, wt, 0), (-w, wt, -h), (-w, 0, -h)], C_WALL, zorder=6)
-    # back wall
-    poly([(-w, ye_, 0), (w, ye_, 0), (w, ye_, -h), (-w, ye_, -h)], C_WALL, zorder=5)
+    wall_face(ye_, 5)
     poly([(w, ye_ - wt, 0), (w, ye_, 0), (w, ye_, -h), (w, ye_ - wt, -h)], C_WALL, zorder=5)
 
     for s in sts:
@@ -170,14 +192,14 @@ def draw_34(ax):
         px, py = proj(x, y, z)
         ax.text(px, py, text, fontsize=7, **k)
     T(0, -8, 10, "Plaque plate (4 mm)", color="#1F4E79", fontweight="bold", ha="center")
-    T(0, ye_ + 8, -4, "Mur arrière", color="#7A1F1F", ha="left")
-    T(0, -12, -h - 2, "Mur avant, 2 trous câbles", color="#1F4E79", ha="center")
+    T(0, ye_ + 8, -4, "Mur arrière, arc R13", color="#7A1F1F", ha="left")
+    T(0, -12, -h - 2, "Mur avant, arc R13", color="#1F4E79", ha="center")
     ax.set_title("Vue de 3/4  —  une seule plaque plate, servos dessous", fontsize=9)
 
 
 def fig_chassis():
     fig = plt.figure(figsize=(13.2, 8.6), facecolor="white")
-    fig.suptitle("MateBot v16 — plaque plate 56 mm, 4 × M3 par extrémité et poteaux M2  (non testé)",
+    fig.suptitle("MateBot v17 — plaque plate 56 mm, arc R13, M3 toile + extrémités, poteaux M2  (non testé)",
                  fontsize=13, fontweight="bold")
     ax = fig.add_axes([0.05, 0.08, 0.48, 0.82])
     draw_top_view(ax)
@@ -188,7 +210,7 @@ def fig_chassis():
     fig.text(0.75, 0.10,
              "Séquence avant → arrière : TL, TR, BL, BR, répétée.\n"
              "Axe long du servo en travers. Jeu 0,4 mm, sans colle.\n"
-             "v15 (8 trous dans la toile) est remplacé.",
+             "v16 est corrigée : les 8 trous dans la toile sont rétablis.",
              ha="center", fontsize=7.5, color="#333")
     # legend
     handles = [
@@ -210,7 +232,7 @@ def fig_chassis():
 
 def fig_parts():
     fig, ax = plt.subplots(1, 1, figsize=(8.2, 5.6), facecolor="white")
-    fig.suptitle("MateBot v16 — pièce à imprimer  (une plaque plate, ≤ 250 mm)",
+    fig.suptitle("MateBot v17 — pièce à imprimer  (une plaque plate, ≤ 250 mm)",
                  fontsize=12, fontweight="bold")
     w, ye_ = p["half_w"], ye
     ax.set_aspect("equal")
@@ -221,9 +243,15 @@ def fig_parts():
                            edgecolor="#222", lw=0.5))
     ax.add_patch(Rectangle((-w, ye_ - p["wall_t"]), 2 * w, p["wall_t"],
                            facecolor=C_WALL, edgecolor="#222", lw=0.5))
-    for x, z in pat["cable_front"]["holes"]:
-        ax.add_patch(Circle((x, p["wall_t"] / 2), p["cable_hole_d"] / 2,
-                            facecolor="white", edgecolor="#1F4E79", lw=0.8))
+    for y0 in (0.0, ye_ - p["wall_t"]):
+        ax.add_patch(Rectangle((-p["arc_r"], y0), 2 * p["arc_r"], p["wall_t"],
+                               facecolor="white", edgecolor="#1F4E79", lw=0.6))
+    if "attach_m3" in pat:
+        for h in pat["attach_m3"]["holes"]:
+            ax.add_patch(Circle((h["x"], h["y"]), 3.25, facecolor="#d9e8f5",
+                                edgecolor="#1F4E79", lw=0.5))
+            ax.add_patch(Circle((h["x"], h["y"]), 1.7, facecolor="white",
+                                edgecolor="#1F4E79", lw=0.5))
     if "end_m3" in pat:
         seen = set()
         for h in pat["end_m3"]["holes"]:
@@ -273,7 +301,7 @@ def fig_parts():
 def fig_tubes():
     # Kept as the third annotated drawing (cables + mounting), French labels.
     fig = plt.figure(figsize=(13.2, 9.6), facecolor="white")
-    fig.suptitle("MateBot v16 — trous, vis et câbles  (légendes en français)",
+    fig.suptitle("MateBot v17 — trous, vis et câbles  (légendes en français)",
                  fontsize=12.5, fontweight="bold", y=0.98)
     ax = fig.add_axes([0.05, 0.08, 0.55, 0.84])
     draw_top_view(ax, with_notes=True)
@@ -290,9 +318,12 @@ def fig_tubes():
         ("+ deux murs de 3,5 mm). Largeur 56 mm", "#222"),
         ("(comme v13 ; la plaque v14 de 78 mm est", "#222"),
         ("abandonnée).", "#222"),
-        ("Mur arrière bas (3,5 × 16 mm), fermé.", "#7A1F1F"),
-        ("Mur avant bas, deux trous Ø10 pour les", "#1F4E79"),
-        ("câbles bus (x = ±16 mm).", "#1F4E79"),
+        ("Les deux murs ont un arc R13, ouvert au", "#1F4E79"),
+        ("bord libre (ouverture 26 mm, linteau 3 mm).", "#1F4E79"),
+        ("Les deux trous Ø10 de v13–v16 sont retirés.", "#1F4E79"),
+        ("Le mur arrière n'est plus fermé.", "#7A1F1F"),
+        ("Hauteur des murs inchangée (16 mm) : les", "#222"),
+        ("vis empilées sont à côté de l'arc.", "#222"),
         ("", None),
         ("Servos", None),
         ("Rangée unique, axe long en travers,", "#222"),
@@ -314,34 +345,39 @@ def fig_tubes():
         ("Limite d'une seule plaque", None),
         ("Une plaque ne peut pas visser les 4 servos", "#7A3E00"),
         ("dont la bobine la traverse. Ils sont tenus", "#7A3E00"),
-        ("par les voisins et le mur arrière seulement.", "#7A3E00"),
+        ("par les voisins et les murs seulement.", "#7A3E00"),
         ("Correctif le plus simple plus tard : une", "#7A3E00"),
         ("deuxième plaque plate identique sur l'autre", "#7A3E00"),
         ("face (toujours sans flancs en U). Ne pas", "#7A3E00"),
         ("utiliser les oreilles côté palonnier.", "#7A3E00"),
         ("", None),
-        ("Attaches : 8 × M3 dans les murs", None),
+        ("8 × M3 dans la toile (rétablis, v15)", None),
+        ("Un trou par servo, côté plein opposé à la", "#1F4E79"),
+        ("découpe, x = ±12,50 mm, y = axe du servo.", "#1F4E79"),
+        ("Lamage Ø6,5 × 1,8 mm à l'intérieur.", "#1F4E79"),
+        ("Vis de l'intérieur vers l'extérieur, à", "#1F4E79"),
+        ("poser avant les servos.", "#1F4E79"),
+        ("", None),
+        ("8 × M3 dans les murs (en plus, pas à la place)", None),
         ("4 trous par extrémité, DEUX de chaque", "#1F4E79"),
-        ("côté du centre (et des trous de câbles) :", "#1F4E79"),
-        ("x = ±24 mm, z = −5,0 et −12,5 mm", "#1F4E79"),
-        ("(rectangle 48 × 7,5 mm). Axe selon Y.", "#1F4E79"),
-        ("Lamage Ø6,5 × 1,8 mm à l'intérieur du", "#1F4E79"),
-        ("mur (tête bouton ISO 7380 affleurante).", "#1F4E79"),
+        ("côté de l'arc : x = ±24 mm, z = −5,0", "#1F4E79"),
+        ("et −12,5 mm (rectangle 48 × 7,5 mm).", "#1F4E79"),
+        ("Axe selon Y. Lamage Ø6,5 × 1,8 mm à", "#1F4E79"),
+        ("l'intérieur du mur (tête bouton ISO 7380).", "#1F4E79"),
         ("Vis de l'intérieur vers l'extérieur, à", "#1F4E79"),
         ("poser avant les servos. Pas de poteaux", "#1F4E79"),
         ("vers l'intérieur : le mur (3,5 mm) est", "#1F4E79"),
         ("contre le premier / dernier servo.", "#1F4E79"),
-        ("Les 8 trous dans la toile (v15) sont retirés.", "#1F4E79"),
         ("", None),
         ("Câbles", None),
         ("Les sorties bus sont sur les côtés (±X).", "#1F4E79"),
-        ("On les ramène vers l'avant par les 2 trous.", "#1F4E79"),
+        ("On les ramène par l'arc avant (et arrière).", "#1F4E79"),
         ("Pas de logements de tubes sur cette plaque ;", "#222"),
-        ("les gaines PTFE passent autour.", "#222"),
+        ("les gaines PTFE passent par les arcs ou autour.", "#222"),
         ("", None),
         ("Bobine spool_r8 : 4 × M3×6 sur le cercle de", "#222"),
         ("14 mm + vis centrale M3×6. Inchangée.", "#222"),
-        ("v15 (8 trous dans la toile) est remplacé.", "#7A3E00"),
+        ("v16 est corrigée (trous de toile rétablis).", "#7A3E00"),
     ]
 
     y = 0.995
