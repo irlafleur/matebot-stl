@@ -1,246 +1,176 @@
-# v12 previews: top view + 3/4 view in the style of Ian-Remi's sketch,
-# French labels, and a tube-routing / mounting-pattern drawing.
+# v13 previews: top view + 3/4 view of the one flat plate, French labels.
 # Usage: python render_forearm_mount_row.py
-import os, math, sys
-import matplotlib
-matplotlib.use("Agg")
+import os, math
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, Circle, Rectangle, FancyArrowPatch, Polygon, Arc, Wedge
+from matplotlib.patches import Rectangle, Circle, FancyBboxPatch, FancyArrow
 from matplotlib.lines import Line2D
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-import numpy as np
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import forearm_mount_row as F
-from sts3215 import BODY_L, BODY_W, H_TO_HORN, SHAFT_FROM_OUT, SHAFT_FROM_CABLE
+from forearm_mount_row import (
+    P, stations, patterns, y_end, y_pack_start, y_pack_end, SHAFT_X, BODY_W, BODY_L,
+)
+from sts3215 import BODY_W as BW, SHAFT_FROM_OUT, SHAFT_FROM_CABLE, H_TO_HORN
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DOCS = os.path.normpath(os.path.join(HERE, "..", "docs"))
+DOCS = os.path.join(HERE, "..", "docs")
 
-# colours
-C_TOP = "#4C7A9B"
-C_BOT = "#C4A574"
-C_SERVO_TOP = "#E07A3D"
-C_SERVO_BOT = "#3D8B7A"
-C_SPOOL = "#E2B04A"
-C_IDLER = "#6B6B6B"
-C_PLATE = "#D9D3C7"
-C_PLATE2 = "#B7C4CE"
-FINGER_COL = dict(thumb="#C0392B", index="#2980B9", middle="#27AE60", ring="#8E44AD")
+p = P
+sts = stations()
+pat = patterns()
+ye = y_end()
+C_PLATE = "#9AAEB8"
+C_WALL = "#6A7C88"
+C_TOP = "#E08A3D"      # dorsal servo (spool through the plate)
+C_BOT = "#3D8B6E"      # palmar servo (idler on the plate)
+C_SPOOL = "#E4B84A"
 FINGER_FR = dict(thumb="Pouce", index="Index", middle="Majeur", ring="Annulaire")
-
-p = F.P
-sts = F.stations()
-paths = F.tube_paths()
-pat = F.patterns()
-ye = F.y_end()
+FINGER_COL = dict(thumb="#C0392B", index="#2471A3", middle="#1E8449", ring="#7D3C98")
 
 
 def servo_rect(s):
-    """Body rectangle in XY (long axis across the forearm)."""
-    # body X: shaft + [-SHAFT_FROM_OUT, +SHAFT_FROM_CABLE] with side
-    if s["side"] == "left":
-        x0 = s["xf"] - SHAFT_FROM_OUT  # actually left: +X_s along +X, so x from xf-10.11 to xf+35.11
-        x1 = s["xf"] + SHAFT_FROM_CABLE
-    else:
-        x0 = s["xf"] - SHAFT_FROM_CABLE
-        x1 = s["xf"] + SHAFT_FROM_OUT
-    y0 = s["y"] - BODY_W / 2
-    y1 = s["y"] + BODY_W / 2
+    # body in XY: long axis across X, width along Y, centred on (0, y) in X
+    x0, x1 = -BODY_L / 2, BODY_L / 2
+    y0, y1 = s["y"] - BODY_W / 2, s["y"] + BODY_W / 2
     return x0, x1, y0, y1
 
 
-def draw_top_view(ax, with_tubes=False, with_patterns=True):
+def draw_top_view(ax, with_notes=True):
     ax.set_aspect("equal")
-    # plates (top web outline)
-    x_lip = p["x_bot_wall_out"] + p["lip"]
-    # bottom plate slightly larger (flange)
-    ax.add_patch(Rectangle((-44, -2), 88, p["flange_t"] + 2,
-                            facecolor="#C9B89A", edgecolor="#5A4A32", lw=0.8, zorder=1))
-    ax.add_patch(Rectangle((-x_lip, p["flange_t"]), 2 * x_lip, ye - p["flange_t"],
+    w = p["half_w"]
+    # plate
+    ax.add_patch(Rectangle((-w, 0), 2 * w, ye,
                             facecolor="#D5DEE6", edgecolor="#3D4A55", lw=0.9, zorder=2))
-    # U walls (nested)
-    for sign in (-1, 1):
-        ax.add_patch(Rectangle((sign * p["x_top_wall_in"] if sign > 0 else -p["x_top_wall_out"],
-                                p["flange_t"]),
-                               p["wall"], ye - p["flange_t"],
-                               facecolor="#9AAEB8", edgecolor="none", zorder=3, alpha=0.7))
-    # packed row: no service-gap joint
-
-    # M3 lip grid
-    if with_patterns:
-        for h in pat["web_shell_top_m3"]["holes"]:
-            ax.add_patch(Circle((h["x"], h["y"]), 1.7, facecolor="none",
-                                edgecolor="#1F4E79", lw=0.5, zorder=5))
-        for x, y, z in pat["elbow_m3"]["top"]:
-            ax.add_patch(Circle((x, y), 1.7, facecolor="none",
-                                edgecolor="#7A1F1F", lw=0.7, zorder=5))
-        # WI holes at y=0
-        for x, y, z in pat["front_wi_m2"]["positions"]:
-            ax.add_patch(Circle((x, 3.0), 1.2, facecolor="none",
-                                edgecolor="#222", lw=0.7, zorder=6))
-        ax.add_patch(Circle((0, 3.0), 17.0, facecolor="none",
-                            edgecolor="#222", lw=0.6, ls=":", zorder=6))
+    # front and back walls (shown as darker bands)
+    ax.add_patch(Rectangle((-w, 0), 2 * w, p["wall_t"],
+                            facecolor=C_WALL, edgecolor="#3D4A55", lw=0.6, zorder=3))
+    ax.add_patch(Rectangle((-w, ye - p["wall_t"]), 2 * w, p["wall_t"],
+                            facecolor=C_WALL, edgecolor="#3D4A55", lw=0.6, zorder=3))
+    # cable holes in the front wall
+    for x, z in pat["cable_front"]["holes"]:
+        ax.add_patch(Circle((x, p["wall_t"] / 2), p["cable_hole_d"] / 2,
+                            facecolor="white", edgecolor="#1F4E79", lw=0.8, zorder=4))
 
     for s in sts:
         x0, x1, y0, y1 = servo_rect(s)
-        col = C_SERVO_TOP if s["face"] == "top" else C_SERVO_BOT
+        col = C_TOP if s["face"] == "top" else C_BOT
         ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0,
                                facecolor=col, edgecolor="#222", lw=0.7,
                                alpha=0.95, zorder=7))
-        # spool or idler mark
         if s["face"] == "top":
+            ax.add_patch(Circle((s["xf"], s["y"]), 14.0, facecolor="none",
+                                edgecolor="#333", lw=0.5, ls=":", zorder=8))
             ax.add_patch(Circle((s["xf"], s["y"]), 11.0, facecolor=C_SPOOL,
                                 edgecolor="#6A4A10", lw=0.7, zorder=8, alpha=0.95))
             ax.add_patch(Circle((s["xf"], s["y"]), 8.0, facecolor="none",
                                 edgecolor="#6A4A10", lw=0.5, zorder=8))
         else:
-            ax.add_patch(Circle((s["xf"], s["y"]), 3.2, facecolor="#222",
-                                edgecolor="#222", zorder=8))
             ax.add_patch(Circle((s["xf"], s["y"]), 11.0, facecolor="none",
                                 edgecolor="#555", lw=0.5, ls="--", zorder=8))
-        # cut-out ring on the plate of the spool face
-        ax.add_patch(Circle((s["xf"], s["y"]), 14.0, facecolor="none",
-                            edgecolor="#333", lw=0.4, ls=":", zorder=8))
+            ax.add_patch(Circle((s["xf"], s["y"]), 3.2, facecolor="#222",
+                                edgecolor="#222", zorder=8))
+            # M2 holes
+            for h in pat["servo_idler_m2"]["holes"]:
+                if h["i"] == s["i"]:
+                    ax.add_patch(Circle((h["x"], h["y"]), 1.2, facecolor="none",
+                                        edgecolor="#222", lw=0.5, zorder=9))
         label = f"{s['i']+1}  {FINGER_FR[s['finger']]} {s['ab']}"
         side = "G" if s["side"] == "left" else "D"
         face = "dessus" if s["face"] == "top" else "dessous"
         ax.text(0, s["y"], f"{label}\n{face}, arbre {side}",
-                ha="center", va="center", fontsize=5.5, color="#111", zorder=9,
+                ha="center", va="center", fontsize=5.5, color="#111", zorder=10,
                 fontweight="bold")
 
-    if with_tubes:
-        for path in paths:
-            pts = path["pts_ptfe"]
-            xs, ys = [q[0] for q in pts], [q[1] for q in pts]
-            col = FINGER_COL[path["finger"]]
-            ls = "-" if path["face"] == "top" else (0, (2.2, 1.4))
-            ax.plot(xs, ys, color=col, lw=1.15, ls=ls, zorder=10, solid_capstyle="round")
-            ax.plot(xs[-1], ys[-1], "o", color=col, ms=2.4, zorder=11)
-
-    # annotations
-    ax.annotate("POIGNET\n6 vis M2, cercle R=21 mm\n+ enregistrement Ø33,6",
-                xy=(0, 0), xytext=(58, -8),
-                fontsize=6.5, ha="left", color="#222",
-                arrowprops=dict(arrowstyle="->", color="#222", lw=0.6))
-    ax.annotate("COUDE OUVERT\n4 vis M3 par plaque",
-                xy=(12, ye - 5), xytext=(50, ye - 20),
-                fontsize=6.5, ha="left", color="#7A1F1F",
-                arrowprops=dict(arrowstyle="->", color="#7A1F1F", lw=0.6))
-    ax.annotate("Servos collés\njeu 0,4 mm, sans colle",
-                xy=(0, (sts[3]["y"]+sts[4]["y"])/2), xytext=(52, 130),
-                fontsize=6.5, ha="left", color="#7A3E00",
-                arrowprops=dict(arrowstyle="->", color="#7A3E00", lw=0.6))
-    ax.text(-x_lip - 2, (ye + p["flange_t"]) / 2, "Grille M3\nlèvres / coque\npas 20 mm",
-            ha="right", va="center", fontsize=6.5, color="#1F4E79")
-    ax.set_xlim(-78, 92)
-    ax.set_ylim(-28, ye + 28)
+    if with_notes:
+        ax.annotate("AVANT\n2 trous Ø10\npour les câbles bus",
+                    xy=(16, p["wall_t"] / 2), xytext=(36, -18),
+                    fontsize=6.5, ha="left", color="#1F4E79",
+                    arrowprops=dict(arrowstyle="->", color="#1F4E79", lw=0.6))
+        ax.annotate("ARRIÈRE FERMÉ\nmur bas 3,5 × 16 mm",
+                    xy=(0, ye - p["wall_t"] / 2), xytext=(36, ye - 8),
+                    fontsize=6.5, ha="left", color="#7A1F1F",
+                    arrowprops=dict(arrowstyle="->", color="#7A1F1F", lw=0.6))
+        ax.annotate("Servos collés\njeu 0,4 mm, sans colle",
+                    xy=(0, (sts[3]["y"] + sts[4]["y"]) / 2), xytext=(36, 110),
+                    fontsize=6.5, ha="left", color="#7A3E00",
+                    arrowprops=dict(arrowstyle="->", color="#7A3E00", lw=0.6))
+    ax.set_xlim(-40, 78)
+    ax.set_ylim(-28, ye + 24)
     ax.set_xlabel("X (mm)  —  radial ←    → ulnaire")
-    ax.set_ylabel("Y (mm)  —  poignet → coude")
+    ax.set_ylabel("Y (mm)  —  avant → arrière")
     ax.grid(True, color="#ddd", lw=0.4)
     ax.set_axisbelow(True)
 
 
 def draw_34(ax):
-    """Schematic 3/4 (isometric) view of the sandwich."""
     ax.set_axis_off()
-    # simple cabinet projection
-    a, b = 0.5, 0.4
+    a, b = 0.45, 0.38
     def proj(x, y, z):
         return x + a * y, z + b * y
 
-    def box(x0, x1, y0, y1, z0, z1, fc, ec="#333", alpha=0.9, lw=0.5, zorder=2):
-        # 3 visible faces
-        faces = [
-            [(x0, y1, z0), (x1, y1, z0), (x1, y1, z1), (x0, y1, z1)],  # front-ish
-            [(x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)],  # top
-            [(x1, y0, z0), (x1, y1, z0), (x1, y1, z1), (x1, y0, z1)],  # right
-        ]
-        for fcs in faces:
-            pts = [proj(*q) for q in fcs]
-            ax.add_patch(Polygon(pts, closed=True, facecolor=fc, edgecolor=ec,
-                                 lw=lw, alpha=alpha, zorder=zorder + 0.001 * fcs[0][1]))
+    def poly(pts, fc, ec="#333", alpha=0.9, lw=0.5, zorder=2):
+        xs, ys = zip(*[proj(*q) for q in pts])
+        ax.fill(xs, ys, facecolor=fc, edgecolor=ec, lw=lw, alpha=alpha, zorder=zorder)
 
-    # bottom plate web + walls + flange
-    x_lip = p["x_bot_wall_out"] + p["lip"]
-    box(-x_lip, x_lip, p["flange_t"], ye, p["z_outer_bot"], p["z_inner_bot"], C_BOT, zorder=2)
-    box(-p["x_bot_wall_out"], -p["x_bot_wall_in"], p["flange_t"], ye, p["z_outer_bot"], p["wall_overlap_z"],
-        "#A88A58", zorder=3)
-    box(p["x_bot_wall_in"], p["x_bot_wall_out"], p["flange_t"], ye, p["z_outer_bot"], p["wall_overlap_z"],
-        "#A88A58", zorder=3)
-    box(-44, 44, 0, p["flange_t"], -40, 42, "#BFA67A", zorder=4)
+    w, ye_, t, h, wt = p["half_w"], ye, p["web_t"], p["wall_h"], p["wall_t"]
+    # plate top (outer +Z) and a side edge
+    poly([(-w, 0, t), (w, 0, t), (w, ye_, t), (-w, ye_, t)], "#C5D0D8", zorder=3)
+    poly([(w, 0, 0), (w, ye_, 0), (w, ye_, t), (w, 0, t)], "#9AAEB8", zorder=4)
+    # front wall (down in -Z)
+    poly([(-w, 0, 0), (w, 0, 0), (w, 0, -h), (-w, 0, -h)], C_WALL, zorder=6)
+    poly([(-w, 0, 0), (-w, wt, 0), (-w, wt, -h), (-w, 0, -h)], C_WALL, zorder=6)
+    # back wall
+    poly([(-w, ye_, 0), (w, ye_, 0), (w, ye_, -h), (-w, ye_, -h)], C_WALL, zorder=5)
+    poly([(w, ye_ - wt, 0), (w, ye_, 0), (w, ye_, -h), (w, ye_ - wt, -h)], C_WALL, zorder=5)
 
-    # servos + spools (draw before top plate so the top plate sits on them)
     for s in sts:
-        x0, x1, y0, y1 = servo_rect(s)
-        if s["face"] == "top":
-            z0, z1 = p["z_inner_bot"], p["z_inner_bot"] + 32
-            box(x0, x1, y0, y1, z0, z1, C_SERVO_TOP, zorder=5)
-            # spool above top inner
-            sx, sy = s["xf"], s["y"]
-            # cylinder as a circle in projection is messy; use a short box
-            box(sx - 8, sx + 8, sy - 8, sy + 8, p["z_inner_top"], p["z_inner_top"] + p["spool_h"],
-                C_SPOOL, zorder=8)
-        else:
-            z0, z1 = p["z_inner_top"] - 32, p["z_inner_top"]
-            box(x0, x1, y0, y1, z0, z1, C_SERVO_BOT, zorder=5)
-            sx, sy = s["xf"], s["y"]
-            box(sx - 8, sx + 8, sy - 8, sy + 8, p["z_inner_bot"] - p["spool_h"], p["z_inner_bot"],
-                C_SPOOL, zorder=1)
+        col = C_TOP if s["face"] == "top" else C_BOT
+        x0, x1 = -BODY_L / 2, BODY_L / 2
+        y0, y1 = s["y"] - BODY_W / 2, s["y"] + BODY_W / 2
+        z0, z1 = -H_TO_HORN, 0.0
+        # frontish face and top (against the plate)
+        poly([(x0, y1, z0), (x1, y1, z0), (x1, y1, z1), (x0, y1, z1)], col, alpha=0.85, zorder=8)
+        poly([(x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)], col, alpha=0.55, zorder=7)
+        # spool mark
+        cx, cy = proj(s["xf"], s["y"], 6.0 if s["face"] == "top" else -H_TO_HORN - 6)
+        ax.plot(cx, cy, "o", color=C_SPOOL if s["face"] == "top" else "#222",
+                ms=5 if s["face"] == "top" else 3, zorder=9,
+                markeredgecolor="#6A4A10" if s["face"] == "top" else "#222")
 
-    # top plate (slightly transparent)
-    box(-x_lip, x_lip, p["flange_t"], ye, p["z_inner_top"], p["z_outer_top"], C_TOP, alpha=0.55, zorder=7)
-    box(-p["x_top_wall_out"], -p["x_top_wall_in"], p["flange_t"], ye, -p["wall_overlap_z"], p["z_outer_top"],
-        "#3E6580", alpha=0.45, zorder=6)
-    box(p["x_top_wall_in"], p["x_top_wall_out"], p["flange_t"], ye, -p["wall_overlap_z"], p["z_outer_top"],
-        "#3E6580", alpha=0.45, zorder=6)
-
-    # labels in projected space
-    def T(x, y, z, txt, **k):
-        px, py = proj(x, y, z)
-        ax.text(px, py, txt, fontsize=6.2, **k)
-
-    T(0, -8, 50, "Plaque supérieure (U)", color=C_TOP, fontweight="bold", ha="center")
-    T(0, -8, -52, "Plaque inférieure (U) + bride poignet", color="#7A5A20", fontweight="bold", ha="center")
-    T(0, ye + 8, 40, "Coude ouvert", color="#7A1F1F", ha="center")
-    T(50, 80, 8, "Flancs en U\ngrille M3 pas 15 mm", color="#333", ha="left")
     ax.set_aspect("equal")
-    # bounds
-    corners = [proj(x, y, z) for x in (-50, 50) for y in (-10, ye + 10) for z in (-55, 55)]
-    ax.set_xlim(min(c[0] for c in corners) - 5, max(c[0] for c in corners) + 20)
-    ax.set_ylim(min(c[1] for c in corners) - 5, max(c[1] for c in corners) + 10)
+    # labels
+    def T(x, y, z, text, **k):
+        px, py = proj(x, y, z)
+        ax.text(px, py, text, fontsize=7, **k)
+    T(0, -8, 10, "Plaque plate (4 mm)", color="#1F4E79", fontweight="bold", ha="center")
+    T(0, ye_ + 8, -4, "Mur arrière", color="#7A1F1F", ha="left")
+    T(0, -12, -h - 2, "Mur avant, 2 trous câbles", color="#1F4E79", ha="center")
+    ax.set_title("Vue de 3/4  —  une seule plaque plate, servos dessous", fontsize=9)
 
 
 def fig_chassis():
-    fig = plt.figure(figsize=(13.5, 10.2), facecolor="white")
-    fig.suptitle("MateBot v12 — châssis avant-bras, servos collés, deux plaques en U  (non testé)",
-                 fontsize=13, fontweight="bold", y=0.98)
-    ax1 = fig.add_axes([0.05, 0.07, 0.40, 0.86])
-    ax2 = fig.add_axes([0.48, 0.10, 0.50, 0.80])
-    draw_top_view(ax1, with_tubes=False, with_patterns=True)
-    ax1.set_title("Vue de dessus  —  gros rond = bobine dessus, point = bobine dessous", fontsize=9)
+    fig = plt.figure(figsize=(13.2, 8.6), facecolor="white")
+    fig.suptitle("MateBot v13 — plaque plate, 8 servos collés  (non testé)",
+                 fontsize=13, fontweight="bold")
+    ax = fig.add_axes([0.05, 0.08, 0.48, 0.82])
+    draw_top_view(ax)
+    ax.set_title("Vue de dessus  —  gros rond = bobine à travers la plaque, point = poulie folle contre la plaque",
+                 fontsize=8)
+    ax2 = fig.add_axes([0.55, 0.18, 0.42, 0.62])
     draw_34(ax2)
-    ax2.set_title("Vue de 3/4  —  les deux plaques en U enserrent la rangée de 8 servos", fontsize=9)
+    fig.text(0.75, 0.10,
+             "Séquence avant → arrière : TL, TR, BL, BR, répétée.\n"
+             "Axe long du servo en travers. Jeu 0,4 mm, sans colle.\n"
+             "v12 (deux plaques en U) est remplacé.",
+             ha="center", fontsize=7.5, color="#333")
     # legend
     handles = [
-        Line2D([0], [0], marker="o", color="none", markerfacecolor=C_SPOOL, markeredgecolor="#6A4A10",
-               markersize=9, label="Bobine sur le dessus (gros rond)"),
-        Line2D([0], [0], marker="o", color="none", markerfacecolor="#222",
-               markersize=5, label="Bobine en dessous (petit point)"),
-        Line2D([0], [0], marker="s", color="none", markerfacecolor=C_SERVO_TOP,
-               markersize=8, label="Servo face dorsale (TL / TR)"),
-        Line2D([0], [0], marker="s", color="none", markerfacecolor=C_SERVO_BOT,
-               markersize=8, label="Servo face palmaire (BL / BR)"),
-        Line2D([0], [0], color="#1F4E79", marker="o", markerfacecolor="none",
-               markersize=6, lw=0, markeredgecolor="#1F4E79", label="Grille M3 supports de coque"),
+        Line2D([0], [0], marker="o", color="w", markerfacecolor=C_SPOOL, markeredgecolor="#6A4A10",
+               markersize=8, label="Bobine à travers la plaque (Ø28)"),
+        Line2D([0], [0], marker="o", color="w", markerfacecolor="#222",
+               markersize=5, label="Poulie folle contre la plaque (M2×6)"),
+        Rectangle((0, 0), 1, 1, facecolor=C_TOP, edgecolor="#222", label="Servo face dorsale (TL / TR)"),
+        Rectangle((0, 0), 1, 1, facecolor=C_BOT, edgecolor="#222", label="Servo face palmaire (BL / BR)"),
     ]
-    fig.legend(handles=handles, loc="lower right", fontsize=7.5, frameon=False,
-               bbox_to_anchor=(0.98, 0.01))
-    fig.text(0.48, 0.02,
-             "Séquence poignet → coude : TL, TR, BL, BR, répétée.  Axe long du servo en travers de l'avant-bras.  "
-             "Vis M2×6 dans les oreilles, accès depuis l'extérieur.",
-             fontsize=7, color="#333")
+    ax2.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.0, -0.08),
+               frameon=False, fontsize=7)
     out = os.path.join(DOCS, "forearm_chassis_preview.png")
     fig.savefig(out, dpi=140)
     plt.close()
@@ -249,36 +179,44 @@ def fig_chassis():
 
 
 def fig_parts():
-    fig, axes = plt.subplots(1, 2, figsize=(10.2, 5.4), facecolor="white")
-    fig.suptitle("MateBot v12 — pièces à imprimer  (deux plaques d'une pièce, ≤ 250 mm)", fontsize=12, fontweight="bold")
-    info = [
-        ("Plaque supérieure (une pièce)", "forearm_plate_top",
-         "85,0 × 240,2 × 37,5 mm", C_TOP),
-        ("Plaque inférieure (une pièce)\n(+ bride 6 vis M2, enregistrement Ø33,6)", "forearm_plate_bottom",
-         "88,0 × 248,2 × 82,0 mm", C_BOT),
-    ]
-    x_lip = p["x_bot_wall_out"] + p["lip"]
-    for ax, (title, fn, dim, col) in zip(axes, info):
-        ax.set_aspect("equal")
-        ax.set_title(title, fontsize=9)
-        y0 = 0 if "bottom" in fn else p["flange_t"]
-        y1 = ye + (p["register_t"] if "bottom" in fn else 0)
-        x0 = -44 if "bottom" in fn else -x_lip
-        x1 = 44 if "bottom" in fn else x_lip
-        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, facecolor=col,
-                               edgecolor="#222", lw=0.8, alpha=0.85))
-        for s in sts:
-            ax.add_patch(Circle((s["xf"], s["y"]), 8, facecolor=C_SPOOL if s["face"]==("top" if "top" in fn else "bottom") else "#eee",
-                                edgecolor="#444", lw=0.5))
-        ax.set_xlim(x0 - 8, x1 + 8)
-        ax.set_ylim(y0 - 14, y1 + 14)
-        ax.set_xticks([]); ax.set_yticks([])
-        ax.text(0.5, -0.06, dim, transform=ax.transAxes, ha="center", fontsize=7.5, color="#333")
-    fig.text(0.5, 0.02,
-             "Plus 8× spool_r8 (inchangé, Ø22 × 11,5 mm, cercle de 14 mm, vis M3×6).  "
-             "Impression : PETG, 5 parois, 30 % gyroid, 0,2 mm.  Plaques : semelle vers le plateau.",
-             ha="center", fontsize=7.5, color="#333")
-    fig.tight_layout(rect=(0, 0.06, 1, 0.92))
+    fig, ax = plt.subplots(1, 1, figsize=(8.2, 5.6), facecolor="white")
+    fig.suptitle("MateBot v13 — pièce à imprimer  (une plaque plate, ≤ 250 mm)",
+                 fontsize=12, fontweight="bold")
+    w, ye_ = p["half_w"], ye
+    ax.set_aspect("equal")
+    ax.set_title("Plaque avant-bras (une pièce)", fontsize=9)
+    ax.add_patch(Rectangle((-w, 0), 2 * w, ye_, facecolor="#9AAEB8",
+                           edgecolor="#222", lw=0.8, alpha=0.9))
+    ax.add_patch(Rectangle((-w, 0), 2 * w, p["wall_t"], facecolor=C_WALL,
+                           edgecolor="#222", lw=0.5))
+    ax.add_patch(Rectangle((-w, ye_ - p["wall_t"]), 2 * w, p["wall_t"],
+                           facecolor=C_WALL, edgecolor="#222", lw=0.5))
+    for x, z in pat["cable_front"]["holes"]:
+        ax.add_patch(Circle((x, p["wall_t"] / 2), p["cable_hole_d"] / 2,
+                            facecolor="white", edgecolor="#1F4E79", lw=0.8))
+    for s in sts:
+        if s["face"] == "top":
+            ax.add_patch(Circle((s["xf"], s["y"]), 14, facecolor="#eee",
+                                edgecolor="#333", lw=0.6, ls=":"))
+            ax.text(s["xf"], s["y"], "Ø28", ha="center", va="center", fontsize=5.5, color="#333")
+        else:
+            ax.add_patch(Circle((s["xf"], s["y"]), 11, facecolor="#eee",
+                                edgecolor="#555", lw=0.5, ls="--"))
+            for h in pat["servo_idler_m2"]["holes"]:
+                if h["i"] == s["i"]:
+                    ax.add_patch(Circle((h["x"], h["y"]), 1.2, facecolor="none",
+                                        edgecolor="#222", lw=0.5))
+    ax.set_xlim(-w - 10, w + 10)
+    ax.set_ylim(-16, ye_ + 16)
+    ax.set_xticks([]); ax.set_yticks([])
+    ax.text(0.5, -0.06,
+            f"56,0 × {ye_:.2f}".replace(".", ",") + " × 20,0 mm  (plaque 4 mm + murs 16 mm)",
+            transform=ax.transAxes, ha="center", fontsize=8, color="#333")
+    fig.text(0.5, 0.03,
+             "Plus 8× spool_r8 (inchangé, Ø22 × 11,5 mm, cercle de 14 mm, vis M3×6).\n"
+             "Impression : PETG, 5 parois, 30 % gyroid, 0,2 mm.  Face extérieure sur le plateau, murs vers le haut, sans support.",
+             ha="center", fontsize=7.2, color="#333")
+    fig.tight_layout(rect=(0, 0.08, 1, 0.92))
     out = os.path.join(DOCS, "forearm_parts_preview.png")
     fig.savefig(out, dpi=140)
     plt.close()
@@ -287,68 +225,66 @@ def fig_parts():
 
 
 def fig_tubes():
-    fig = plt.figure(figsize=(13.2, 10.4), facecolor="white")
-    fig.suptitle("MateBot v12 — chemin des tubes PTFE et motifs de fixation  (légendes en français)",
+    # Kept as the third annotated drawing (cables + mounting), French labels.
+    fig = plt.figure(figsize=(13.2, 9.6), facecolor="white")
+    fig.suptitle("MateBot v13 — trous, vis et câbles  (légendes en français)",
                  fontsize=12.5, fontweight="bold", y=0.98)
-    ax = fig.add_axes([0.05, 0.08, 0.58, 0.86])
-    draw_top_view(ax, with_tubes=True, with_patterns=True)
-    ax.set_title("Vue de dessus  —  trait plein = face dorsale, pointillé = face palmaire", fontsize=9)
+    ax = fig.add_axes([0.05, 0.08, 0.55, 0.84])
+    draw_top_view(ax, with_notes=True)
+    ax.set_title("Vue de dessus", fontsize=9)
 
-    # side panel: patterns + routing notes
-    axp = fig.add_axes([0.66, 0.08, 0.32, 0.86])
+    axp = fig.add_axes([0.64, 0.08, 0.34, 0.84])
     axp.set_axis_off()
     axp.set_xlim(0, 1)
     axp.set_ylim(0, 1)
     lines = [
-        ("Chemins des tubes", None),
-        ("Pouce  —  plaque supérieure, lèvre radiale,", FINGER_COL["thumb"]),
-        ("puis descente palmaire-radiale vers le poignet.", FINGER_COL["thumb"]),
-        ("Index  —  plaque inférieure, voie palmaire", FINGER_COL["index"]),
-        ("un peu en retrait (x = −20) pour laisser 18 mm", FINGER_COL["index"]),
-        ("avec la descente du pouce.", FINGER_COL["index"]),
-        ("Majeur  —  plaque supérieure, lèvre ulnaire,", FINGER_COL["middle"]),
-        ("sortie par la fenêtre Ø34.", FINGER_COL["middle"]),
-        ("Annulaire  —  plaque inférieure, lèvre ulnaire,", FINGER_COL["ring"]),
-        ("couloir latéral palmaire.", FINGER_COL["ring"]),
-        ("Rayon de courbure ≥ 30 mm, doigts ≥ 8 mm.", "#222"),
+        ("La plaque", None),
+        ("Une seule plaque plate de 4 mm, à peine plus", "#222"),
+        ("longue que les 8 servos collés (200,56 mm", "#222"),
+        ("+ deux murs de 3,5 mm). Largeur 56 mm.", "#222"),
+        ("Mur arrière bas (3,5 × 16 mm), fermé.", "#7A1F1F"),
+        ("Mur avant bas, deux trous Ø10 pour les", "#1F4E79"),
+        ("câbles bus (x = ±16 mm). Rien d'autre.", "#1F4E79"),
         ("", None),
-        ("Motifs de fixation (repère F, mm)", None),
-        ("Poignet : 6 × M2, passage Ø2,4, bride 6 mm", "#222"),
-        ("  cercle R = 21 mm, angles 20°, 100°, 140°,", "#222"),
-        ("  −140°, −100°, −20°.  Enregistrement", "#222"),
-        ("  Ø33,6 × 2 mm dans la fenêtre Ø34.", "#222"),
-        ("Servos : 32 × M2×6, passage Ø2,4, dans les", "#222"),
-        ("  4 oreilles côté poulie folle.  Accès depuis", "#222"),
-        ("  l'extérieur de la plaque opposée à la bobine.", "#222"),
-        ("  4 mm de plaque + 2 mm dans l'oreille (2,8 mm).", "#222"),
-        ("  Ne pas utiliser de M2×8 (butée sur le boîtier).", "#222"),
-        ("Flancs en U : grille M3, pas 15 mm, 2 rangées", "#222"),
-        ("  à z = ±5 mm, vis selon X (assemblage des", "#222"),
-        ("  deux plaques + attaches futures).", "#222"),
-        ("Lèvres des semelles : grille M3, pas 20 mm,", "#1F4E79"),
-        ("  supports de coque, dessus et dessous.", "#1F4E79"),
-        ("Coude (arrière ouvert) : 4 × M3 par plaque,", "#7A1F1F"),
-        ("  sur les lèvres arrière (ye-10 et ye-4),", "#7A1F1F"),
-        ("  pour une pièce coude.", "#7A1F1F"),
-        ("Servos collés, jeu 0,4 mm, sans colle.", "#7A3E00"),
-        ("  (largeur officielle 24,72 mm déjà avec oreilles;", "#7A3E00"),
-        ("  le jeu évite le zéro-tolérance Feetech 24,7).", "#7A3E00"),
-        ("Plaques d'une pièce : plus de joint ni vis de", "#7A3E00"),
-        ("  splice (l'ensemble tient dans 250 mm).", "#7A3E00"),
-        ("Câbles bus : fentes dans les parois, puis le", "#1F4E79"),
-        ("  long de l'extérieur des flancs en U jusqu'au", "#1F4E79"),
-        ("  coude ouvert (plus d'espace entre les corps).", "#1F4E79"),
+        ("Servos", None),
+        ("Rangée unique, axe long en travers,", "#222"),
+        ("TL / TR / BL / BR. Jeu 0,4 mm, sans colle.", "#7A3E00"),
+        ("Pouce et majeur (dessus) : bobine à travers", C_TOP),
+        ("une découpe Ø28. Pas de vis M2 sur cette", C_TOP),
+        ("plaque : les oreilles du fouet sont 35 mm", C_TOP),
+        ("plus loin, de l'autre côté.", C_TOP),
+        ("Index et annulaire (dessous) : 4 × M2×6", C_BOT),
+        ("dans les oreilles du fouet, depuis l'extérieur.", C_BOT),
+        ("Passage Ø2,4. 4 mm de plaque + 2 mm dans", C_BOT),
+        ("l'oreille (2,8 mm). Pas de M2×8.", C_BOT),
+        ("", None),
+        ("Limite d'une seule plaque", None),
+        ("Une plaque ne peut pas visser les 4 servos", "#7A3E00"),
+        ("dont la bobine la traverse. Ils sont tenus", "#7A3E00"),
+        ("par les voisins et le mur arrière seulement.", "#7A3E00"),
+        ("Correctif le plus simple plus tard : une", "#7A3E00"),
+        ("deuxième plaque plate identique sur l'autre", "#7A3E00"),
+        ("face (toujours sans flancs en U). Ne pas", "#7A3E00"),
+        ("utiliser les oreilles côté palonnier.", "#7A3E00"),
+        ("", None),
+        ("Câbles", None),
+        ("Les sorties bus sont sur les côtés (±X).", "#1F4E79"),
+        ("On les ramène vers l'avant par les 2 trous.", "#1F4E79"),
+        ("Pas de logements de tubes sur cette plaque ;", "#222"),
+        ("les gaines PTFE passent autour.", "#222"),
+        ("", None),
         ("Bobine spool_r8 : 4 × M3×6 sur le cercle de", "#222"),
-        ("  14 mm + vis centrale M3×6.  Inchangé.", "#222"),
+        ("14 mm + vis centrale M3×6. Inchangée.", "#222"),
+        ("v12 (deux plaques en U) est remplacé.", "#7A3E00"),
     ]
     y = 0.98
     for text, col in lines:
         if text == "":
-            y -= 0.012
+            y -= 0.010
             continue
         weight = "bold" if col is None else "normal"
         color = "#111" if col is None else col
-        size = 8.2 if col is None else 7.2
+        size = 8.0 if col is None else 6.9
         axp.text(0.0, y, text, va="top", ha="left", fontsize=size,
                  color=color, fontweight=weight, transform=axp.transAxes)
         y -= 0.026 if col is None else 0.023
