@@ -1,4 +1,4 @@
-# v15 previews: top view + 3/4 view of the one flat plate, French labels.
+# v16 previews: top view + 3/4 view of the one flat plate, French labels.
 # Usage: python render_forearm_mount_row.py
 import os, math
 import matplotlib.pyplot as plt
@@ -47,13 +47,21 @@ def draw_top_view(ax, with_notes=True):
     for x, z in pat["cable_front"]["holes"]:
         ax.add_patch(Circle((x, p["wall_t"] / 2), p["cable_hole_d"] / 2,
                             facecolor="white", edgecolor="#1F4E79", lw=0.8, zorder=4))
-    # 8 x M3 attachment holes (over the body, opposite the cut-out)
-    if "attach_m3" in pat:
-        for h in pat["attach_m3"]["holes"]:
-            ax.add_patch(Circle((h["x"], h["y"]), 3.25, facecolor="#d9e8f5",
-                                edgecolor="#1F4E79", lw=0.6, zorder=5))
-            ax.add_patch(Circle((h["x"], h["y"]), 1.7, facecolor="white",
-                                edgecolor="#1F4E79", lw=0.6, zorder=6))
+    # 8 x M3 in the end walls (4 per end, 2 per side, stacked in Z).
+    # In top view the two Z-stacked holes of a column coincide; draw
+    # one circle per column and label it 2x.
+    if "end_m3" in pat:
+        seen = set()
+        for h in pat["end_m3"]["holes"]:
+            y = p["wall_t"] / 2 if h["end"] == "front" else ye - p["wall_t"] / 2
+            key = (h["end"], h["x"])
+            if key in seen:
+                continue
+            seen.add(key)
+            ax.add_patch(Circle((h["x"], y), 1.7, facecolor="white",
+                                edgecolor="#1F4E79", lw=0.8, zorder=5))
+            ax.text(h["x"], y, "2×", ha="center", va="center",
+                    fontsize=4.5, color="#1F4E79", zorder=6, fontweight="bold")
     # M2 post footprints (clipped in CAD; drawn as target OD here)
     if "servo_idler_m2" in pat:
         r = p.get("m2_boss_od", 9.4) / 2
@@ -104,8 +112,8 @@ def draw_top_view(ax, with_notes=True):
                     xy=(0, (sts[3]["y"] + sts[4]["y"]) / 2), xytext=(46, 110),
                     fontsize=6.5, ha="left", color="#7A3E00",
                     arrowprops=dict(arrowstyle="->", color="#7A3E00", lw=0.6))
-        ax.annotate("8 × M3 passage\nau-dessus des servos\n(intérieur → extérieur)",
-                    xy=(12.5, 66.1), xytext=(36, 86),
+        ax.annotate("4 × M3 par bout\n(2 de chaque côté)\nintérieur → extérieur",
+                    xy=(24.0, p["wall_t"] / 2), xytext=(36, 86),
                     fontsize=6.5, ha="left", color="#1F4E79",
                     arrowprops=dict(arrowstyle="->", color="#1F4E79", lw=0.6))
         ax.annotate("Poteaux M2\nparoi 3,5 mm\nvis fraisée M2×10",
@@ -169,7 +177,7 @@ def draw_34(ax):
 
 def fig_chassis():
     fig = plt.figure(figsize=(13.2, 8.6), facecolor="white")
-    fig.suptitle("MateBot v15 — plaque plate 56 mm, 8 × M3 et poteaux M2  (non testé)",
+    fig.suptitle("MateBot v16 — plaque plate 56 mm, 4 × M3 par extrémité et poteaux M2  (non testé)",
                  fontsize=13, fontweight="bold")
     ax = fig.add_axes([0.05, 0.08, 0.48, 0.82])
     draw_top_view(ax)
@@ -180,7 +188,7 @@ def fig_chassis():
     fig.text(0.75, 0.10,
              "Séquence avant → arrière : TL, TR, BL, BR, répétée.\n"
              "Axe long du servo en travers. Jeu 0,4 mm, sans colle.\n"
-             "v14 (plaque élargie 78 mm) est remplacé.",
+             "v15 (8 trous dans la toile) est remplacé.",
              ha="center", fontsize=7.5, color="#333")
     # legend
     handles = [
@@ -202,7 +210,7 @@ def fig_chassis():
 
 def fig_parts():
     fig, ax = plt.subplots(1, 1, figsize=(8.2, 5.6), facecolor="white")
-    fig.suptitle("MateBot v15 — pièce à imprimer  (une plaque plate, ≤ 250 mm)",
+    fig.suptitle("MateBot v16 — pièce à imprimer  (une plaque plate, ≤ 250 mm)",
                  fontsize=12, fontweight="bold")
     w, ye_ = p["half_w"], ye
     ax.set_aspect("equal")
@@ -216,9 +224,18 @@ def fig_parts():
     for x, z in pat["cable_front"]["holes"]:
         ax.add_patch(Circle((x, p["wall_t"] / 2), p["cable_hole_d"] / 2,
                             facecolor="white", edgecolor="#1F4E79", lw=0.8))
-    for h in pat.get("attach_m3", {}).get("holes", []):
-        ax.add_patch(Circle((h["x"], h["y"]), 1.7, facecolor="white",
-                            edgecolor="#1F4E79", lw=0.7))
+    if "end_m3" in pat:
+        seen = set()
+        for h in pat["end_m3"]["holes"]:
+            y = p["wall_t"] / 2 if h["end"] == "front" else ye_ - p["wall_t"] / 2
+            key = (h["end"], h["x"])
+            if key in seen:
+                continue
+            seen.add(key)
+            ax.add_patch(Circle((h["x"], y), 1.7, facecolor="white",
+                                edgecolor="#1F4E79", lw=0.8))
+            ax.text(h["x"], y, "2×", ha="center", va="center",
+                    fontsize=4.5, color="#1F4E79", fontweight="bold")
     r_post = p.get("m2_boss_od", 9.4) / 2
     for h in pat.get("servo_idler_m2", {}).get("holes", []):
         ax.add_patch(Circle((h["x"], h["y"]), r_post, facecolor="#c8b89a",
@@ -256,7 +273,7 @@ def fig_parts():
 def fig_tubes():
     # Kept as the third annotated drawing (cables + mounting), French labels.
     fig = plt.figure(figsize=(13.2, 9.6), facecolor="white")
-    fig.suptitle("MateBot v15 — trous, vis et câbles  (légendes en français)",
+    fig.suptitle("MateBot v16 — trous, vis et câbles  (légendes en français)",
                  fontsize=12.5, fontweight="bold", y=0.98)
     ax = fig.add_axes([0.05, 0.08, 0.55, 0.84])
     draw_top_view(ax, with_notes=True)
@@ -303,17 +320,18 @@ def fig_tubes():
         ("face (toujours sans flancs en U). Ne pas", "#7A3E00"),
         ("utiliser les oreilles côté palonnier.", "#7A3E00"),
         ("", None),
-        ("Attaches : 8 × M3 passage Ø3,4", None),
-        ("Un trou par servo, sur le côté plein", "#1F4E79"),
-        ("opposé à la découpe (côté câble), à", "#1F4E79"),
-        ("x = ±12,50 mm, y = axe du servo.", "#1F4E79"),
-        ("Vis de l'intérieur vers l'extérieur.", "#1F4E79"),
-        ("Lamage Ø6,5 × 1,8 mm à l'intérieur pour", "#1F4E79"),
-        ("une tête bouton ISO 7380 affleurante", "#1F4E79"),
-        ("(elle ne doit pas toucher le servo).", "#1F4E79"),
-        ("Mettre les vis avant les servos.", "#1F4E79"),
-        ("Pas de trous dans les murs d'extrémité :", "#1F4E79"),
-        ("ces 8 trous les remplacent.", "#1F4E79"),
+        ("Attaches : 8 × M3 dans les murs", None),
+        ("4 trous par extrémité, DEUX de chaque", "#1F4E79"),
+        ("côté du centre (et des trous de câbles) :", "#1F4E79"),
+        ("x = ±24 mm, z = −5,0 et −12,5 mm", "#1F4E79"),
+        ("(rectangle 48 × 7,5 mm). Axe selon Y.", "#1F4E79"),
+        ("Lamage Ø6,5 × 1,8 mm à l'intérieur du", "#1F4E79"),
+        ("mur (tête bouton ISO 7380 affleurante).", "#1F4E79"),
+        ("Vis de l'intérieur vers l'extérieur, à", "#1F4E79"),
+        ("poser avant les servos. Pas de poteaux", "#1F4E79"),
+        ("vers l'intérieur : le mur (3,5 mm) est", "#1F4E79"),
+        ("contre le premier / dernier servo.", "#1F4E79"),
+        ("Les 8 trous dans la toile (v15) sont retirés.", "#1F4E79"),
         ("", None),
         ("Câbles", None),
         ("Les sorties bus sont sur les côtés (±X).", "#1F4E79"),
@@ -323,7 +341,7 @@ def fig_tubes():
         ("", None),
         ("Bobine spool_r8 : 4 × M3×6 sur le cercle de", "#222"),
         ("14 mm + vis centrale M3×6. Inchangée.", "#222"),
-        ("v14 (plaque élargie) est remplacé.", "#7A3E00"),
+        ("v15 (8 trous dans la toile) est remplacé.", "#7A3E00"),
     ]
 
     y = 0.995

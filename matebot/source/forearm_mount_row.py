@@ -1,6 +1,6 @@
-# MateBot v15 (UNTESTED): one minimal FLAT plate holding a single row of
+# MateBot v16 (UNTESTED): one minimal FLAT plate holding a single row of
 # 8 x Feetech STS3215 (12 V). Bodies sit face-to-face (0.4 mm nominal gap,
-# no glue). v14 and v13 are superseded.
+# no glue). v15, v14 and v13 are superseded.
 #
 # Layout: the same packed row as v12/v13. Long axis ACROSS the forearm,
 # output shaft perpendicular to the plate. Faces follow TL, TR, BL, BR,
@@ -18,14 +18,21 @@
 # bosses, no wrist flange, no side-rail grid, no corner posts, no
 # widening (v14's 78 mm plate is rejected).
 #
-# v15 additions, on top of that v13 plate:
-# - 8 x M3 clearance holes in the web, one over each servo body, on the
-#   solid side opposite the spool / idler cut-out (the cable end).
-#   Screws go from the inside to the outside. A shallow counterbore on
-#   the inner face lets an M3 button head sit flush so it does not hit
-#   the servo. These 8 holes are the attachment provision (Ian-Remi:
-#   "8 trous par plaque c'est bon"); there are no holes in the end
-#   walls.
+# v16 additions, on top of that v13 plate (v15 is corrected, not widened):
+# - 8 x M3 clearance holes in the END WALLS, for later attachments:
+#   4 per end (front and back), TWO on each side of the centre / of the
+#   front cable-hole pair (the "arc"), stacked in Z. Not 1 per side, and
+#   not 1 per servo in the web (that was v15's reading of "8 trous par
+#   plaque"). Pattern: x = ±24 mm, z = -5.0 and -12.5 mm (rectangle
+#   48 x 7.5 mm). The 56 mm width is kept; the holes sit in the 5.4 mm
+#   side margins of the 16 mm walls, just outside the body (|x|<=22.61)
+#   and outboard of the front Ø10 cable holes (x=±16, z=-8). A shallow
+#   counterbore on the inner face of each wall lets an M3 button head
+#   sit flush so it does not hit the first/last servo (those faces are
+#   flush with the wall). No inward posts: there is no gap between the
+#   wall and the pack (the 3.5 mm wall is the meat around the hole).
+#   Screws go from the inside of each end toward the outside, into the
+#   later attachment; fit them before the servos.
 # - The 16 M2 idler-ear holes (index, ring) each have a 3.5 mm-wall
 #   post on the inside and a 90 deg countersink on the outer face for
 #   a flat-head screw (M2x10 DIN 7991 / ISO 10642). A full 9.4 mm
@@ -46,7 +53,8 @@
 # on the inner face (the face the servos sit against / the posts grow
 # from). +X ulnar, +Y toward the back / elbow, +Z outward through the
 # plate (servo bodies hang in -Z). M2 access is from the outside (+Z).
-# M3 attachment access is from the inside (z = 0), thread out at z = +4.
+# M3 end-attachment access is from the inside of each end wall (toward
+# the pack), thread out at the front (y = 0) or the back (y = y_end).
 #
 # CadQuery. MateBot, CC BY 4.0.
 #
@@ -86,9 +94,11 @@ P = dict(
     m2_boss_h=3.5,          # post height, into the body side; servos sit on the ends
     m2_csk_d=4.8,           # 90 deg countersink on the outer face (DIN 7991 M2 dk=4.0)
     m2_csk_angle=90.0,
-    m3_clear=3.4,           # M3 clearance (inside -> outside)
+    m3_clear=3.4,           # M3 clearance (inside of the end -> outside)
     m3_cbore_d=6.5,         # inner-face counterbore for an ISO 7380 M3 button head (dk=5.7)
-    m3_cbore_h=1.8,         # flush / slightly sub-flush with z=0
+    m3_cbore_h=1.8,         # flush with the inner face of the end wall
+    end_m3_x=24.0,          # one column on each side of the centre / cable-hole pair
+    end_m3_z=(-5.0, -12.5), # TWO holes per side, stacked in Z (4 per end wall)
     cable_hole_d=10.0,
     cable_hole_x=16.0,      # two holes in the front wall, left and right
     cable_hole_z=-8.0,      # idler-side bus stub sits ~8 mm below the inner face
@@ -266,20 +276,27 @@ def _cut_cyls_y(wp, points_xz, y0, h, r):
     return wp.cut(comp)
 
 
-def attach_m3_holes(p=P):
-    """Eight M3 clearance holes in the web, one over each servo body,
-    on the solid side opposite the spool / idler cut-out (cable end).
-    x = -xf (the mirrored shaft column), y = station y.
-    Screws go inside -> outside: head in the inner-face counterbore
-    (flush at z = 0), thread out at z = +web_t."""
+def end_m3_holes(p=P):
+    """Eight M3 clearance holes in the end walls: 4 per end (front and
+    back), TWO on each side of the centre (and of the front cable-hole
+    pair). x = ±end_m3_x, z in end_m3_z. Axis along Y. Head in a
+    counterbore on the inner face of the wall, thread out to the
+    later attachment on the outside of each end."""
+    ye = y_end(p)
     holes = []
-    for s in stations(p):
-        holes.append(dict(
-            i=s["i"], finger=s["finger"], ab=s["ab"], face=s["face"],
-            x=round(-s["xf"], 3), y=round(s["y"], 3), z=0.0,
-            dir="Z", screw="M3", d=p["m3_clear"],
-            access="inside -> outside",
-        ))
+    for end, y_out, y_in in (
+        ("front", 0.0, p["wall_t"]),
+        ("back", ye, ye - p["wall_t"]),
+    ):
+        for x in (-p["end_m3_x"], p["end_m3_x"]):
+            for z in p["end_m3_z"]:
+                holes.append(dict(
+                    end=end, x=round(x, 3),
+                    y_out=round(y_out, 3), y_in=round(y_in, 3),
+                    z=round(z, 3),
+                    dir="Y", screw="M3", d=p["m3_clear"],
+                    access="inside of the end -> outside",
+                ))
     return holes
 
 
@@ -296,8 +313,9 @@ def m2_hole_xy(p=P):
 
 def patterns(p=P):
     """Catalogue: countersunk M2 idler screws of the four plate-facing
-    servos, 8 web M3 attachments, spool and idler cut-outs, two front
-    cable holes. No end-wall M3, no side-rail grid, no wrist."""
+    servos, 8 end-wall M3 attachments (4 per end, 2 per side),
+    spool and idler cut-outs, two front cable holes. No web M3
+    grid, no side-rail grid, no inward end posts, no wrist."""
     sts = stations(p)
     m2 = []
     for s in sts:
@@ -325,18 +343,21 @@ def patterns(p=P):
                   "l'oreille (2,8 mm). Ne pas utiliser de M2×12. Pouce et majeur : "
                   "pas de vis M2 sur cette plaque (bobine en travers, Ø28)."),
         ),
-        attach_m3=dict(
-            name_fr="Attaches diverses — 8 × M3 dans la plaque, au-dessus des servos",
-            screw="M3 passage Ø3.4, tête fraisée/bouton affleurante à l'intérieur, vis de l'intérieur vers l'extérieur",
-            holes=attach_m3_holes(p),
-            note=("Un trou par servo, sur le côté plein opposé à la découpe "
-                  "bobine / fouet (côté câble), à x = −xf = ±12,50 mm, y = axe "
-                  "du servo. Lamage Ø6,5 × 1,8 mm sur la face intérieure pour "
-                  "une tête bouton ISO 7380 (ou équivalent) affleurante, afin "
-                  "de ne pas toucher le servo. La tige ressort à l'extérieur "
-                  "(z = +4). Pas de trous dans les murs avant / arrière : ces "
-                  "8 trous les remplacent. Les vis doivent être mises en place "
-                  "avant les servos (la tête est sous le corps)."),
+        end_m3=dict(
+            name_fr="Attaches avant et arrière — 4 × M3 par extrémité (2 de chaque côté)",
+            screw="M3 passage Ø3.4, tête bouton affleurante à l'intérieur du mur, vis de l'intérieur vers l'extérieur",
+            holes=end_m3_holes(p),
+            note=("4 trous par mur d'extrémité, deux de chaque côté du centre "
+                  "(et de la paire de trous de câbles en façade) : x = ±24 mm, "
+                  "z = −5,0 et −12,5 mm (rectangle 48 × 7,5 mm). Axe selon Y. "
+                  "Lamage Ø6,5 × 1,8 mm sur la face intérieure du mur pour une "
+                  "tête bouton ISO 7380 affleurante (le premier / dernier servo "
+                  "est contre cette face). La tige ressort à l'extérieur pour "
+                  "une attache à dessiner plus tard. Pas de poteaux vers "
+                  "l'intérieur : il n'y a pas de jeu entre le mur et les servos "
+                  "(le mur de 3,5 mm fait office de paroi). Mettre les vis "
+                  "avant les servos. Les 8 trous dans la toile de v15 sont "
+                  "retirés : ces 8 trous d'extrémité les remplacent."),
         ),
         spool_cuts=dict(
             name_fr="Découpes bobine Ø28 (pouce, majeur)",
@@ -394,7 +415,7 @@ def _m2_posts(p, sts):
 
 def plate(p=P):
     """One flat 4 mm plate, low back stop, low front wall with two cable
-    holes, clipped M2 posts, countersunk M2, 8 flush M3 in the web."""
+    holes, clipped M2 posts, countersunk M2, 8 M3 in the end walls."""
     sts = stations(p)
     ye = y_end(p)
     w = p["half_w"]
@@ -429,11 +450,20 @@ def plate(p=P):
                               (p["cable_hole_x"], p["cable_hole_z"])],
                        -1.0, wt + 2.0, p["cable_hole_d"] / 2)
 
-    # 8 x M3 through the web, inside -> outside, plus an inner counterbore
-    # so the button head sits flush at z = 0 and does not hit the servo.
-    m3_pts = [(h["x"], h["y"]) for h in attach_m3_holes(p)]
-    body = _cut_cyls_z(body, m3_pts, -1.0, t + 2.0, p["m3_clear"] / 2)
-    body = _cut_cyls_z(body, m3_pts, -0.2, p["m3_cbore_h"] + 0.2, p["m3_cbore_d"] / 2)
+    # 8 x M3 through the end walls, along Y, plus an inner-face
+    # counterbore so a button head sits flush and does not hit the pack.
+    end_len = wt + 2.0
+    front_xz = [(h["x"], h["z"]) for h in end_m3_holes(p) if h["end"] == "front"]
+    back_xz = [(h["x"], h["z"]) for h in end_m3_holes(p) if h["end"] == "back"]
+    body = _cut_cyls_y(body, front_xz, -1.0, end_len, p["m3_clear"] / 2)
+    body = _cut_cyls_y(body, back_xz, ye - wt - 1.0, end_len, p["m3_clear"] / 2)
+    cb_h = p["m3_cbore_h"] + 0.2
+    cb_r = p["m3_cbore_d"] / 2.0
+    # Front: inner face at y = wt, counterbore cuts into the wall (-Y).
+    front_cb = [_cyl(cb_r, cb_h, (x, wt + 0.2, z), (0, -1, 0)).val() for x, z in front_xz]
+    # Back: inner face at y = ye - wt, counterbore cuts into the wall (+Y).
+    back_cb = [_cyl(cb_r, cb_h, (x, ye - wt - 0.2, z), (0, 1, 0)).val() for x, z in back_xz]
+    body = body.cut(cq.Compound.makeCompound(front_cb + back_cb))
     return body
 
 
@@ -465,13 +495,13 @@ def _export(name, wp, dest_step, dest_stl):
 if __name__ == "__main__":
     out_step = STEP_DIR if os.path.isdir(STEP_DIR) else HERE
     out_stl = STL_DIR if os.path.isdir(STL_DIR) else HERE
-    print("v15 stations (front -> back), pack_gap =", P["pack_gap"],
+    print("v16 stations (front -> back), pack_gap =", P["pack_gap"],
           "pitch =", P["pitch"], "pack_len =", P["pack_len"])
     for s in stations():
         print(f"  {s['i']}: {s['finger']:6s} {s['ab']}  face={s['face']:6s}  "
               f"side={s['side']:5s}  shaft=({s['xf']:+.2f}, {s['y']:.2f}, {s['zf']:+.1f})")
     print(f"y_end = {y_end():.2f} mm  (one flat plate, {2*P['half_w']:.0f} mm wide, "
-          f"attach M3={len(attach_m3_holes())}, M2={len(m2_hole_xy())})")
+          f"end M3={len(end_m3_holes())}, M2={len(m2_hole_xy())})")
     parts = build_all()
     _export("forearm_plate", parts["plate"],
             os.path.join(out_step, "forearm_plate.step"),
@@ -482,6 +512,6 @@ if __name__ == "__main__":
         print(f"  {k}: {v.get('name_fr','')}")
         if "holes" in v:
             print(f"      {len(v['holes'])} items")
-            if k == "attach_m3":
+            if k == "end_m3":
                 for h in v["holes"]:
-                    print(f"        {h['i']}: ({h['x']:+.2f}, {h['y']:.2f}) {h['finger']} {h['ab']}")
+                    print(f"        {h['end']:5s}  ({h['x']:+.2f}, z={h['z']:+.1f})")

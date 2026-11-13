@@ -1,6 +1,6 @@
-# Verification of the v15 one-piece flat forearm plate
+# Verification of the v16 one-piece flat forearm plate
 # (packed single row of 8 STS3215, body-to-body, TL/TR/BL/BR,
-#  8 web M3 attachments over the bodies, clipped M2 posts
+#  8 end-wall M3 attachments, 4 per end / 2 per side, clipped M2 posts
 #  with a countersink on the outer face).
 # Usage: python verify_forearm_mount_row.py
 import os, sys, math
@@ -35,7 +35,7 @@ def ivol(a, b):
         except Exception:
             return float("nan")
 
-print("building v15 plate...")
+print("building v16 plate...")
 parts = F.build_all()
 p = F.P
 sts = parts["stations"]
@@ -58,7 +58,7 @@ chk("spool_r8: one valid solid, max dim <= 250 mm",
     len(sols_s) == 1 and all(s.isValid() for s in sols_s) and max(bb_s.xlen, bb_s.ylen, bb_s.zlen) <= 250,
     f"solids={len(sols_s)}  {bb_s.xlen:.1f} x {bb_s.ylen:.1f} x {bb_s.zlen:.1f} mm")
 
-# 2. thicknesses and v15 features, still the v13 envelope (56 mm, no rails)
+# 2. thicknesses and v16 features, still the v13 envelope (56 mm, no rails)
 chk("web 4 mm, low end walls 3.5 x 16 mm, plate 56 mm wide, M2 posts 3.5 mm wall / 3.5 mm tall, no U flanges",
     p["web_t"] >= 4.0 and p["wall_t"] >= 3.0 and p["wall_h"] >= 8.0
     and abs(p["half_w"] - 28.0) < 1e-9
@@ -147,56 +147,76 @@ chk("16 M2 holes line up with the idler ears of index and ring only, countersunk
     f"csk_side_solid={sum(csk_side_solid)}/{len(csk_side_solid)}, "
     f"web={p['web_t']} + post={p['m2_boss_h']} + 2.5 mm in the 2.8 mm ear = M2x10")
 
-# 8. still no wrist flange, U flanges, sockets, second plate, rails or end posts
+# 8. still no wrist flange, U flanges, sockets, second plate or v14 rails
 extra = [k for k in pat if k in ("front_wi_m2", "side_flange_m3", "web_shell_top_m3",
                                    "web_shell_bot_m3", "elbow_m3", "joint_m3",
-                                   "end_m3", "web_m3")]
-chk("no wrist flange, no U flanges, no joint, no socket bosses, no second plate, no v14 rails or end posts",
+                                   "attach_m3", "web_m3")]
+chk("no wrist flange, no U flanges, no joint, no socket bosses, no second plate, no v14 rails or v15 web M3",
     extra == [] and "plate_bottom" not in parts and "plate_top" not in parts
-    and "plate" in parts and "attach_m3" in pat,
+    and "plate" in parts and "end_m3" in pat,
     f"extra patterns={extra}, keys={sorted(parts)}, pat={sorted(pat)}")
 
-# 9. 8 web M3 over the solid body, opposite the cut-outs
-att = pat["attach_m3"]["holes"]
-att_ok = True
-att_detail = []
-for h, s in zip(att, sts):
-    want_x = -s["xf"]
-    good = (h["i"] == s["i"] and abs(h["x"] - want_x) < 1e-9 and abs(h["y"] - s["y"]) < 1e-9)
-    # hole is in the web (open at mid-thickness) and not in a cut-out
-    mid = cq.Vector(h["x"], h["y"], p["web_t"] / 2)
-    open_ = not pl.val().isInside(mid, 0.2)
-    # counterbore is open on the inner face
-    inner = not pl.val().isInside(cq.Vector(h["x"], h["y"], 0.5), 0.15)
-    # enough meat from the cut-out at (xf, y): cut r is 14 (spool) or 11 (idler)
-    cut_r = p["spool_cut_d"] / 2 if s["face"] == "top" else p["idler_cut_d"] / 2
-    dist_cut = abs(h["x"] - s["xf"]) - cut_r
-    # over the body: |x| <= BODY_L/2
-    over_body = abs(h["x"]) <= BODY_L / 2 + 0.01
-    att_detail.append((h["i"], round(h["x"], 2), round(h["y"], 2), open_, inner,
-                       round(dist_cut, 2), over_body))
-    if not (good and open_ and inner and dist_cut >= 3.0 and over_body):
-        att_ok = False
-chk("8 M3 clearance holes, one over each servo body, opposite the cut-out, inside-to-outside with an inner counterbore",
-    att_ok and len(att) == 8 and abs(p["m3_clear"] - 3.4) < 1e-9
-    and abs(p["m3_cbore_d"] - 6.5) < 1e-9 and p["m3_cbore_h"] >= 1.6,
-    f"n={len(att)}, items={att_detail}")
+# 9. 8 end-wall M3: 4 per end, TWO on each side, not 1 per side
+end = pat["end_m3"]["holes"]
+end_xs = sorted(set(h["x"] for h in end))
+end_zs = sorted(set(h["z"] for h in end))
+n_front = sum(1 for h in end if h["end"] == "front")
+n_back = sum(1 for h in end if h["end"] == "back")
+# two columns (sides), two rows (stacked in Z)
+per_side_front = {}
+for h in end:
+    if h["end"] == "front":
+        per_side_front.setdefault(h["x"], 0)
+        per_side_front[h["x"]] += 1
+two_per_side = per_side_front == {-p["end_m3_x"]: 2, p["end_m3_x"]: 2}
+# holes are open through the mid-wall
+open_ok, cbore_ok, edge_ok = True, True, True
+ye = parts["y_end"]
+wt = p["wall_t"]
+for h in end:
+    y_mid = (h["y_out"] + h["y_in"]) / 2
+    if pl.val().isInside(cq.Vector(h["x"], y_mid, h["z"]), 0.2):
+        open_ok = False
+    # counterbore on the inner face
+    y_in = h["y_in"]
+    # a point 0.5 mm into the pack from the inner face should be empty of plate
+    # and a point 0.5 mm into the wall from the inner face, on axis, is the cbore (empty)
+    if h["end"] == "front":
+        if pl.val().isInside(cq.Vector(h["x"], wt - 0.5, h["z"]), 0.15):
+            cbore_ok = False
+    else:
+        if pl.val().isInside(cq.Vector(h["x"], ye - wt + 0.5, h["z"]), 0.15):
+            cbore_ok = False
+    # stay inside the plate width and the wall height
+    if abs(h["x"]) + p["m3_clear"] / 2 > p["half_w"] - 1.0:
+        edge_ok = False
+    if not (0.0 > h["z"] > -p["wall_h"] + p["m3_clear"] / 2 + 0.8):
+        edge_ok = False
+chk("end walls have 4 M3 each (2 per side of the centre, stacked in Z), clearance 3.4, inner counterbore, 56 mm plate",
+    len(end) == 8 and n_front == 4 and n_back == 4 and two_per_side
+    and end_xs == [-p["end_m3_x"], p["end_m3_x"]]
+    and list(end_zs) == sorted(p["end_m3_z"])
+    and abs(p["end_m3_x"] - 24.0) < 1e-9
+    and abs(p["m3_clear"] - 3.4) < 1e-9
+    and open_ok and cbore_ok and edge_ok,
+    f"n={len(end)} front={n_front} back={n_back} xs={end_xs} zs={end_zs} "
+    f"two_per_side={two_per_side} open={open_ok} cbore={cbore_ok} edge={edge_ok}")
 
-# 10. M3 heads / holes miss the M2 posts and the cut-outs; M3 centre-to-M2 >= 8 mm
-m3_m2_ok, m3_m2_min = True, 1e9
-for h in att:
-    for m in m2:
-        d = math.hypot(h["x"] - m["x"], h["y"] - m["y"])
-        m3_m2_min = min(m3_m2_min, d)
-        if d < (p["m3_cbore_d"] / 2 + p["m2_boss_od"] / 2):
-            # may still be ok if the M2 boss is on a different servo and clipped;
-            # require a hard 8 mm centre distance
-            pass
-        if d < 8.0:
-            m3_m2_ok = False
-chk("web M3 stay clear of the M2 holes/posts (centre distance >= 8 mm) and of the cut-outs",
-    m3_m2_ok and m3_m2_min >= 8.0,
-    f"min M3-M2 = {m3_m2_min:.2f} mm")
+# 10. end M3 miss the front cable holes and stay off the pack mid-plane
+cable_ok, cable_min = True, 1e9
+need = p["cable_hole_d"] / 2 + p["m3_clear"] / 2 + 0.6  # ~7.3
+for h in end:
+    if h["end"] != "front":
+        continue
+    for cx, cz in pat["cable_front"]["holes"]:
+        d = math.hypot(h["x"] - cx, h["z"] - cz)
+        cable_min = min(cable_min, d)
+        if d < need:
+            cable_ok = False
+chk("front end M3 stay clear of the two Ø10 cable holes; all 8 stay in the end walls",
+    cable_ok and cable_min >= need
+    and all(h["dir"] == "Y" for h in end),
+    f"min M3-cable = {cable_min:.2f} mm (need >= {need:.2f})")
 
 # 11. spool / idler cut-outs
 spool_pts = pat["spool_cuts"]["holes"]
