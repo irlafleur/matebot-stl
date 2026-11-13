@@ -1,5 +1,5 @@
-# Verification of the v11 two-plate U-channel forearm chassis
-# (single row of 8 STS3215, long axis across the forearm, TL/TR/BL/BR).
+# Verification of the v12 two-plate U-channel forearm chassis
+# (packed single row of 8 STS3215, body-to-body, TL/TR/BL/BR).
 # Usage: python verify_forearm_mount_row.py
 # Optional: Amazing Hand STEP folder as argv[1] (Wrist_Interface check).
 import os, sys, math
@@ -36,14 +36,13 @@ def ivol(a, b):
         except Exception:
             return float("nan")
 
-print("building v11 plates...")
+print("building v12 plates...")
 parts = F.build_all()
 p = F.P
 sts = parts["stations"]
 pat = parts["patterns"]
 paths = parts["paths"]
-printed = ("plate_top_wrist", "plate_top_elbow",
-           "plate_bottom_wrist", "plate_bottom_elbow")
+printed = ("plate_top", "plate_bottom")
 
 # 1. each printed half is one solid and fits a 250 mm bed
 for n in printed + ("spool_r8",):
@@ -94,7 +93,14 @@ xs = [s["xf"] for s in sts]
 across = all(abs(abs(s["xf"]) - (BODY_L / 2 - SHAFT_FROM_OUT)) < 0.05 for s in sts)
 chk("single row of 8, long axis across the forearm, TL/TR/BL/BR, same-face adjacent pairs, shafts alternate L/R",
     seq == want and ys == sorted(ys) and across and xs == [-12.5, 12.5] * 4,
-    f"seq={seq}, y={ys}, xf={xs}")
+    f"seq={seq}, y={[round(y,2) for y in ys]}, xf={xs}")
+
+# 5b. body-to-body packing, 0-0.5 mm nominal gap, no service gap, one piece
+gaps = [round(ys[i+1] - ys[i] - BODY_W, 3) for i in range(7)]
+chk("bodies packed face-to-face: nominal gap 0-0.5 mm (0.4 mm), pitch = BODY_W + gap, no service gap",
+    0.0 <= p["pack_gap"] <= 0.5 and abs(p["pitch"] - (BODY_W + p["pack_gap"])) < 1e-9
+    and all(abs(g - p["pack_gap"]) < 1e-9 for g in gaps),
+    f"pack_gap={p['pack_gap']}, pitch={p['pitch']:.2f}, gaps={gaps}")
 
 # 6. M2 holes in the idler-side plate, access from the outside
 m2_ok, m2_n, m2_det = True, 0, []
@@ -198,11 +204,10 @@ side_n = len(pat["side_flange_m3"]["holes"])
 web_t = len(pat["web_shell_top_m3"]["holes"])
 web_b = len(pat["web_shell_bot_m3"]["holes"])
 elb_t, elb_b = len(pat["elbow_m3"]["top"]), len(pat["elbow_m3"]["bottom"])
-j_t, j_b = len(pat["joint_m3"]["top"]), len(pat["joint_m3"]["bottom"])
-chk("mounting patterns: front 6xM2 (R=21 mm WI), side M3 grid, web/lip M3 grids, elbow 4+4 M3, joint 4+4 M3",
-    len(front) == 6 and side_n >= 20 and web_t >= 20 and web_b >= 20
-    and elb_t == 4 and elb_b == 4 and j_t == 4 and j_b == 4,
-    f"WI {len(front)}, side {side_n}, lip top/bot {web_t}/{web_b}, elbow {elb_t}+{elb_b}, joint {j_t}+{j_b}")
+chk("mounting patterns: front 6xM2 (R=21 mm WI), side M3 grid (15 mm), web/lip M3 grids (20 mm), elbow 4+4 M3",
+    len(front) == 6 and side_n >= 20 and web_t >= 16 and web_b >= 16
+    and elb_t == 4 and elb_b == 4 and "joint_m3" not in pat,
+    f"WI {len(front)}, side {side_n}, lip top/bot {web_t}/{web_b}, elbow {elb_t}+{elb_b}")
 
 # 12. WI hole angles match the official circle
 angs_ok = True
@@ -256,9 +261,9 @@ else:
 # 15. assembled length / human-scale width
 ye = parts["y_end"]
 width = p["x_bot_wall_out"] * 2 + 2 * p["lip"] + 12  # lips + socket bosses
-chk("assembled pack is a human-scale forearm (width ~80-90 mm, split into halves under 250 mm)",
-    ye < 400 and width < 100,
-    f"y_end={ye:.1f} mm, y_cut={p['y_cut']:.1f} mm, approx width {width:.1f} mm, thickness webs+spools {2*p['z_outer_top']+2*(p['spool_h']-p['web_t']):.1f} mm")
+chk("assembled pack is one-piece (no split), human-scale, each plate <= 250 mm including the register",
+    ye + p["register_t"] <= 250 and width < 100,
+    f"y_end={ye:.1f} mm, with register {ye+p['register_t']:.1f} mm, approx width {width:.1f} mm, thickness webs+spools {2*p['z_outer_top']+2*(p['spool_h']-p['web_t']):.1f} mm")
 
 print()
 n_ok = sum(res)

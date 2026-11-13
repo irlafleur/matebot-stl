@@ -1,5 +1,6 @@
-# MateBot v11 (UNTESTED): two U-plates sandwiching a single row of 8 x
+# MateBot v12 (UNTESTED): two U-plates sandwiching a single row of 8 x
 # Feetech STS3215 (12 V), fixed wrist to R-Wrist_Interface.
+# Bodies sit face-to-face (0.4 mm nominal gap, no glue). v11 is superseded.
 #
 # Layout: ONE row along the forearm, servos side by side like stacked
 # cards, long axis ACROSS the forearm, output shaft perpendicular to
@@ -16,7 +17,15 @@
 # through the idler ears from the outside of the opposite plate.
 # Regular M3 grids on the webs and on the U flanges; front = official
 # Wrist_Interface 6xM2; rear = open elbow with an M3 pattern.
-# Plates are split at a service gap (each half < 250 mm).
+# Bodies are packed at BODY_W + 0.4 mm. The official 24.72 mm width already
+# includes the ears (Waveshare 2D and STEP: ears do not overhang the 24.72
+# faces; at the ear planes the STEP is ~24.0-24.45 mm). Same-face neighbours
+# therefore do not clash, and opposite-face neighbours have ears on opposite
+# plates anyway. 0.4 mm is the project's print allowance (CL), inside the
+# 0-0.5 mm "touching, no glue" band, so the fit does not rely on a zero
+# tolerance against Feetech's rounded 24.7 mm. The packed pack fits a
+# 250 mm bed as TWO single-piece plates. Bus cables leave through wall
+# slots and run along the outside of the U flanges to the open elbow.
 #
 # CadQuery. MateBot, CC BY 4.0.
 #
@@ -66,10 +75,9 @@ P = dict(
     flange_t=6.0,
     register_d=33.6, register_t=2.0,
     lane_w=10.0,
-    pitch=36.0,             # BODY_W + 11.28: room for the 8 mm sockets in Y
-    joint_extra=16.0,       # added only between stations 3 and 4 for the split
-    y0=58.0,              # room for a 30 mm thumb drop in front of station 0
-    lap=16.0,
+    pack_gap=0.4,           # nominal body-to-body gap, see header (0-0.5 mm)
+    y0=52.0,                # first shaft; leaves a 30 mm-class thumb drop
+    rear=6.0,               # web past the last body (elbow M3 sit on the lips)
     spool_cut_d=28.0,       # spool flange is Ø22; 3 mm radial clearance
     idler_cut_d=22.0,       # clearance for the idler horn (protrudes 2.25 mm)
     x_inner=24.5,           # inside of the inner (top) walls
@@ -88,10 +96,8 @@ P['x_top_wall_in'] = P['x_inner']                         # 24.5
 P['x_top_wall_out'] = P['x_inner'] + P['wall']             # 28.0
 P['x_bot_wall_in'] = P['x_top_wall_out']                   # 28.0
 P['x_bot_wall_out'] = P['x_bot_wall_in'] + P['wall']        # 31.5
+P['pitch'] = BODY_W + P['pack_gap']   # 25.12 mm
 P['lip'] = 5.0                  # outward M3 lip on each web, for arm-shell supports
-P['y_cut'] = P['y0'] + 3 * P['pitch'] + (BODY_W / 2 + P['joint_extra'] / 2)
-# stations 0..3 at y0 + i*pitch; 4..7 after the joint gap
-# y_end set after stations()
 
 # TL, TR, BL, BR, repeat. Same-face adjacent pairs (tubes stay on one plate).
 STATION_META = [
@@ -120,10 +126,7 @@ def stations(p=P):
     out = []
     for meta in STATION_META:
         i = meta["i"]
-        if i <= 3:
-            y = p["y0"] + i * p["pitch"]
-        else:
-            y = p["y0"] + 3 * p["pitch"] + p["joint_extra"] + p["pitch"] + (i - 4) * p["pitch"]
+        y = p["y0"] + i * p["pitch"]
         xf = -SHAFT_X if meta["side"] == "left" else SHAFT_X
         zf = p["z_inner_top"] if meta["face"] == "top" else p["z_inner_bot"]
         rec = dict(meta)
@@ -134,7 +137,7 @@ def stations(p=P):
 
 def y_end(p=P):
     last = stations(p)[-1]["y"]
-    return last + BODY_W / 2 + 8.0  # 8 mm of web past the last body for the elbow M3
+    return last + BODY_W / 2 + p["rear"]
 
 
 def groove_zs(face, p=P):
@@ -311,9 +314,7 @@ def patterns(p=P):
     y_side = []
     y = 12.0
     while y < ye - 6.0:
-        # skip a hole that would land exactly in the joint kerf
-        if abs(y - p["y_cut"]) > 4.0:
-            y_side.append(round(y, 2))
+        y_side.append(round(y, 2))
         y += 15.0
     z_side = (-5.0, 5.0)
     side = []
@@ -324,30 +325,32 @@ def patterns(p=P):
     # M3 lip grid on both long edges of each web (outboard of the U walls,
     # so the spool cut-outs never block it). Pas 20 mm.
     x_lip = p["x_bot_wall_out"] + p["lip"] / 2.0   # 34.0
+    def _lip_blocked(x, y):
+        for s in sts:
+            sx = sock_x_lip(s["finger"], p)
+            if (x >= 0) != (sx >= 0):
+                continue
+            y_ent, y_ex = sock_ys(s["y"], p)
+            if y_ent - 4.0 <= y <= y_ex + 4.0:
+                return True
+        return False
     web_top, web_bot = [], []
     y = 16.0
-    while y < ye - 6.0:
+    # Stop short of the elbow 4 x M3 (ye-10 and ye-4) so the two patterns
+    # do not almost-coincide (that left floating hole-slugs in the solid).
+    while y < ye - 14.0:
         for x in (-x_lip, x_lip):
+            if _lip_blocked(x, y):
+                continue
             web_top.append(dict(x=round(x, 2), y=round(y, 2), z=p["z_outer_top"],
                                 dir="Z", screw="M3", d=p["m3_d"]))
             web_bot.append(dict(x=round(x, 2), y=round(y, 2), z=p["z_outer_bot"],
                                 dir="Z", screw="M3", d=p["m3_d"]))
         y += 20.0
-    # Elbow (rear) open pattern: 4 x M3 on each web, 24 x 16 mm rectangle.
-    y_el1, y_el2 = ye - 12.0, ye - 5.0
-    elbow_top = [(x, y_el, p["z_outer_top"]) for x in (-12.0, 12.0) for y_el in (y_el1, y_el2)]
-    elbow_bot = [(x, y_el, p["z_outer_bot"]) for x in (-12.0, 12.0) for y_el in (y_el1, y_el2)]
-    # Half-lap joint, 4 x M3 per plate through the stacked webs.
-    lap_y = p["y_cut"]
-    joint_top = [(-15.0, lap_y, p["z_inner_top"]), (15.0, lap_y, p["z_inner_top"]),
-                 (-15.0, lap_y - 5.0, p["z_inner_top"]), (15.0, lap_y - 5.0, p["z_inner_top"])]
-    # wait, 4 holes: two at cut, or two rows? Use 2 at y_cut-4 and 2 at y_cut+4
-    joint_top = [(-15.0, lap_y - 4.0, p["z_inner_top"]), (15.0, lap_y - 4.0, p["z_inner_top"]),
-                 (-15.0, lap_y + 4.0, p["z_inner_top"]), (15.0, lap_y + 4.0, p["z_inner_top"])]
-    joint_bot = [(x, y, p["z_inner_bot"]) for x, y, _ in joint_top]
-    # Side splice tabs at the joint (M3 along X).
-    splice = dict(y=p["y_cut"] + 4.0, z=(0.0,), x_top=p["x_top_wall_out"],
-                  x_bot=p["x_bot_wall_out"])
+    # Elbow (rear) open pattern: 4 x M3 on the lips (clear of the last cut-out).
+    y_el1, y_el2 = ye - 10.0, ye - 4.0
+    elbow_top = [(x, y_el, p["z_outer_top"]) for x in (-x_lip, x_lip) for y_el in (y_el1, y_el2)]
+    elbow_bot = [(x, y_el, p["z_outer_bot"]) for x in (-x_lip, x_lip) for y_el in (y_el1, y_el2)]
     return dict(
         front_wi_m2=dict(
             name_fr="Interface poignet — R-Wrist_Interface",
@@ -387,22 +390,10 @@ def patterns(p=P):
         ),
         elbow_m3=dict(
             name_fr="Interface coude (arrière ouvert)",
-            screw="M3 passage Ø3.4, 4 vis par plaque, rectangle 24 × 7 mm",
+            screw="M3 passage Ø3.4, 4 vis par plaque, sur les lèvres à l'arrière",
             top=elbow_top,
             bottom=elbow_bot,
-            note="Le fond est ouvert pour la nappe bus. Les 8 trous (4 dessus, 4 dessous) reçoivent une pièce coude ou une coque plus tard.",
-        ),
-        joint_m3=dict(
-            name_fr="Joint des deux demis (demi-recouvrement)",
-            screw="M3×10 + écrou, 4 vis par plaque, selon Z",
-            top=joint_top,
-            bottom=joint_bot,
-            note="Demi-recouvrement de 16 mm à Y=156, dans l'intervalle de service entre l'index et le majeur.",
-        ),
-        splice_m3=dict(
-            name_fr="Pattes de splice au joint (flancs)",
-            screw="M3×12 + écrou, selon X, une patte de chaque côté",
-            info=splice,
+            note="Le fond est ouvert pour la nappe bus, qui sort des fentes des flancs et court le long des U jusqu'au coude. Les 8 trous (4 dessus, 4 dessous) reçoivent une pièce coude ou une coque plus tard.",
         ),
         spool_m3=dict(
             name_fr="Bobine spool_r8 sur le palonnier",
@@ -514,7 +505,7 @@ def _front_flange(p):
 
 
 def plate_bottom(p=P):
-    """Full lower U-plate, including the 6 mm wrist flange. Not yet split."""
+    """Lower U-plate, including the 6 mm wrist flange. One piece."""
     sts = stations(p)
     ye = y_end(p)
     y0 = p["flange_t"] - 0.2
@@ -532,18 +523,7 @@ def plate_bottom(p=P):
               p["z_outer_bot"], p["wall_overlap_z"])
     fl = _front_flange(p)
     bosses, recs = _socket_bosses("bottom", p, sts)
-    # Splice pads at the joint, outside the outer wall, elbow side of the cut
-    # (the matching tab lives on the wrist half after the split; both pads are
-    # modelled on the full plate, then the split keeps the right piece of each).
-    tab_t = 3.5
-    y_c = p["y_cut"]
-    pads = []
-    for sign in (-1, 1):
-        x_a = sign * p["x_bot_wall_out"]
-        x_b = sign * (p["x_bot_wall_out"] + tab_t)
-        x0, x1 = (x_a, x_b) if x_a < x_b else (x_b, x_a)
-        pads.append(_box(x0, x1, y_c - p["lap"] / 2, y_c + p["lap"] / 2, -6.0, 6.0))
-    body = fuse_fuzzy([web, wL, wR, fl] + bosses + pads)
+    body = fuse_fuzzy([web, wL, wR, fl] + bosses)
 
     # Spool cut-outs (bottom-face servos) and idler-horn holes (top-face servos)
     spool_pts = [(s["xf"], s["y"]) for s in sts if s["face"] == "bottom"]
@@ -563,31 +543,23 @@ def plate_bottom(p=P):
     # Sockets
     body = _cut_sockets(body, "bottom", p, sts)
 
-    # M3 web shell grid + elbow + joint (along Z)
+    # M3 web shell grid + elbow (along Z)
     pat = patterns(p)
     web_pts = _web_points(pat["web_shell_bot_m3"]["holes"])
     web_pts += [(x, y) for x, y, z in pat["elbow_m3"]["bottom"]]
-    web_pts += [(x, y) for x, y, z in pat["joint_m3"]["bottom"]]
     body = _cut_cyls_z(body, web_pts, p["z_outer_bot"] - 12.0, 24.0, p["m3_d"] / 2)
 
     # M3 side grid through the walls (along X), both sides
     yz = _side_hole_points(p)
-    body = _cut_cyls_x(body, yz, -p["x_bot_wall_out"] - 1.0, p["wall"] * 2 + tab_t + 4.0, p["m3_d"] / 2, sign=1)
-    body = _cut_cyls_x(body, yz, p["x_bot_wall_out"] + 1.0, p["wall"] * 2 + tab_t + 4.0, p["m3_d"] / 2, sign=-1)
-    # Splice M3 at y_cut+0, z=0, through the pads
-    body = _cut_cyls_x(body, [(p["y_cut"], 0.0)],
-                       -p["x_bot_wall_out"] - tab_t - 1.0,
-                       tab_t + 2.0, p["m3_d"] / 2, sign=1)
-    body = _cut_cyls_x(body, [(p["y_cut"], 0.0)],
-                       p["x_bot_wall_out"] + tab_t + 1.0,
-                       tab_t + 2.0, p["m3_d"] / 2, sign=-1)
+    body = _cut_cyls_x(body, yz, -p["x_bot_wall_out"] - 1.0, p["wall"] * 2 + 4.0, p["m3_d"] / 2, sign=1)
+    body = _cut_cyls_x(body, yz, p["x_bot_wall_out"] + 1.0, p["wall"] * 2 + 4.0, p["m3_d"] / 2, sign=-1)
 
     body = _cable_slots(body, p, sts, "bottom")
     return body, recs
 
 
 def plate_top(p=P):
-    """Full upper U-plate (no wrist flange). Not yet split."""
+    """Upper U-plate (no wrist flange). One piece."""
     sts = stations(p)
     ye = y_end(p)
     y0 = p["flange_t"]  # sits against the back of the bottom-plate flange
@@ -602,24 +574,7 @@ def plate_top(p=P):
               y0, ye,
               -p["wall_overlap_z"], p["z_outer_top"])
     bosses, recs = _socket_bosses("top", p, sts)
-    tab_t = 3.5
-    y_c = p["y_cut"]
-    pads = []
-    for sign in (-1, 1):
-        # tab just outside the top wall (in the nest gap it would collide with
-        # the bottom wall). Put it outside the BOTTOM wall instead, as a lug
-        # hanging from the top web via a short rib? Simpler: lug on the top
-        # web, at the same X as the bottom splice, connected by a thin rib
-        # from the top wall outward at z=0..6 and at the web.
-        x_a = sign * p["x_bot_wall_out"]
-        x_b = sign * (p["x_bot_wall_out"] + tab_t)
-        x0, x1 = (x_a, x_b) if x_a < x_b else (x_b, x_a)
-        # vertical rib from the top wall out to the lug, plus the lug itself
-        x_rib0 = sign * p["x_top_wall_out"]
-        x_rib1 = x_b
-        rx0, rx1 = (x_rib0, x_rib1) if x_rib0 < x_rib1 else (x_rib1, x_rib0)
-        pads.append(_box(rx0, rx1, y_c - p["lap"] / 2, y_c + p["lap"] / 2, -6.0, 6.0))
-    body = fuse_fuzzy([web, wL, wR] + bosses + pads)
+    body = fuse_fuzzy([web, wL, wR] + bosses)
 
     spool_pts = [(s["xf"], s["y"]) for s in sts if s["face"] == "top"]
     idler_pts = [(s["xf"], s["y"]) for s in sts if s["face"] == "bottom"]
@@ -639,91 +594,16 @@ def plate_top(p=P):
     pat = patterns(p)
     web_pts = _web_points(pat["web_shell_top_m3"]["holes"])
     web_pts += [(x, y) for x, y, z in pat["elbow_m3"]["top"]]
-    web_pts += [(x, y) for x, y, z in pat["joint_m3"]["top"]]
     body = _cut_cyls_z(body, web_pts, p["z_inner_top"] - 2.0, 24.0, p["m3_d"] / 2)
 
     yz = _side_hole_points(p)
     body = _cut_cyls_x(body, yz, -p["x_top_wall_out"] - 1.0, p["wall"] + 4.0, p["m3_d"] / 2, sign=1)
     body = _cut_cyls_x(body, yz, p["x_top_wall_out"] + 1.0, p["wall"] + 4.0, p["m3_d"] / 2, sign=-1)
-    body = _cut_cyls_x(body, [(p["y_cut"], 0.0)],
-                       -p["x_bot_wall_out"] - tab_t - 1.0,
-                       tab_t + 2.0, p["m3_d"] / 2, sign=1)
-    body = _cut_cyls_x(body, [(p["y_cut"], 0.0)],
-                       p["x_bot_wall_out"] + tab_t + 1.0,
-                       tab_t + 2.0, p["m3_d"] / 2, sign=-1)
 
     body = _cable_slots(body, p, sts, "top")
     return body, recs
 
 
-def split_plate(full, is_top, p=P):
-    """Split a full plate into wrist and elbow halves with a 16 mm web half-lap."""
-    ye = y_end(p)
-    y_c = p["y_cut"]
-    lap = p["lap"]
-    y_lo, y_hi = y_c - lap / 2, y_c + lap / 2
-    # Bounding box big enough to use as a cutter
-    X, Z = 80.0, 80.0
-    if is_top:
-        z_in, z_out, z_mid = p["z_inner_top"], p["z_outer_top"], (p["z_inner_top"] + p["z_outer_top"]) / 2
-    else:
-        z_in, z_out, z_mid = p["z_inner_bot"], p["z_outer_bot"], (p["z_inner_bot"] + p["z_outer_bot"]) / 2
-        # for the bottom plate, "outer" is more negative; mid is between them
-        # inner = -17.5, outer = -21.5, mid = -19.5
-        # outer half = z_out .. z_mid  (the palmar 2 mm)
-        # inner half = z_mid .. z_in   (the cavity-side 2 mm)
-
-    # Wrist keeps y < y_hi, but in the lap zone the INNER half of the web is removed.
-    # Elbow keeps y > y_lo, but in the lap zone the OUTER half of the web is removed.
-    # Also cut the walls at the mid-plane of the joint so they butt at y_c,
-    # except the splice pads which span the lap (already on the solid).
-
-    # Cutter to isolate the wrist half: remove everything with y > y_hi,
-    # and in the lap, remove the inner half of the WEB only (not the pads,
-    # which sit outboard of x_bot_wall_out).
-    beyond_wrist = _box(-X, X, y_hi, ye + 20.0, -Z, Z)
-    beyond_elbow = _box(-X, X, -20.0, y_lo, -Z, Z)
-
-    # Inner/outer web slabs in the lap, limited to the web width (not the pads).
-    xw = p["x_top_wall_out"] if is_top else p["x_bot_wall_out"]
-    # slightly inside the pads (pads start at x_bot_wall_out)
-    xw_cut = p["x_bot_wall_out"] + p["lip"] + 0.2
-    if is_top:
-        inner_slab = _box(-xw_cut, xw_cut, y_lo, y_hi, z_in - 0.05, z_mid)
-        outer_slab = _box(-xw_cut, xw_cut, y_lo, y_hi, z_mid, z_out + 0.05)
-    else:
-        # z_out < z_mid < z_in  (all negative)
-        inner_slab = _box(-xw_cut, xw_cut, y_lo, y_hi, z_mid, z_in + 0.05)
-        outer_slab = _box(-xw_cut, xw_cut, y_lo, y_hi, z_out - 0.05, z_mid)
-
-    # Walls should butt at y_c: remove wall material (not web, not pads) on
-    # the wrong side of y_c. Wall X ranges:
-    # top walls |x| = x_top_wall_in .. x_top_wall_out
-    # bot walls |x| = x_bot_wall_in .. x_bot_wall_out
-    # Pads |x| > x_bot_wall_out. So cutting |x| <= x_bot_wall_out + 0? pads start at x_bot_wall_out.
-    # Cut walls only: for each side, the wall X band, y from y_c to y_hi (wrist keeps walls only to y_c)
-    def wall_cutters(y_a, y_b):
-        cuts = []
-        # top-wall band and bot-wall band, both sides, full Z
-        for x0, x1 in ((-p["x_bot_wall_out"] + 0.05, -p["x_inner"] + 0.0),
-                       (p["x_inner"] - 0.0, p["x_bot_wall_out"] - 0.05)):
-            cuts.append(_box(x0, x1, y_a, y_b, -Z, Z))
-        return cuts
-
-    wrist = full.cut(beyond_wrist).cut(inner_slab)
-    for c in wall_cutters(y_c, y_hi + 0.01):
-        wrist = wrist.cut(c)
-
-    elbow = full.cut(beyond_elbow).cut(outer_slab)
-    for c in wall_cutters(y_lo - 0.01, y_c):
-        elbow = elbow.cut(c)
-
-    return wrist, elbow
-
-
-# ---------------------------------------------------------------------------
-# Tube paths (centreline of each PTFE, used by verify and the renderer)
-# ---------------------------------------------------------------------------
 def _vsub(a, b):
     return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
 
@@ -896,14 +776,10 @@ def min_bend_radius(pts):
 def build_all(p=P):
     top, recT = plate_top(p)
     bot, recB = plate_bottom(p)
-    top_w, top_e = split_plate(top, True, p)
-    bot_w, bot_e = split_plate(bot, False, p)
     sp = spool_r8(p)
     recs = recT + recB
     return dict(
         plate_top=top, plate_bottom=bot,
-        plate_top_wrist=top_w, plate_top_elbow=top_e,
-        plate_bottom_wrist=bot_w, plate_bottom_elbow=bot_e,
         spool_r8=sp, recs=recs, p=p,
         stations=stations(p), patterns=patterns(p),
         paths=tube_paths(p),
@@ -925,20 +801,15 @@ def _export(name, wp, dest_step, dest_stl):
 if __name__ == "__main__":
     out_step = STEP_DIR if os.path.isdir(STEP_DIR) else HERE
     out_stl = STL_DIR if os.path.isdir(STL_DIR) else HERE
-    print("v11 stations (wrist -> elbow):")
+    print("v12 stations (wrist -> elbow), pack_gap =", P["pack_gap"], "pitch =", P["pitch"])
     for s in stations():
         print(f"  {s['i']}: {s['finger']:6s} {s['ab']}  face={s['face']:6s}  "
               f"side={s['side']:5s}  shaft=({s['xf']:+.2f}, {s['y']:.1f}, {s['zf']:+.1f})")
-    print(f"y_end = {y_end():.1f} mm  y_cut = {P['y_cut']:.1f} mm")
+    print(f"y_end = {y_end():.1f} mm  (one-piece plates, no split)")
     parts = build_all()
     names = (
-        ("plate_top_wrist", "forearm_plate_top_wrist"),
-        ("plate_top_elbow", "forearm_plate_top_elbow"),
-        ("plate_bottom_wrist", "forearm_plate_bottom_wrist"),
-        ("plate_bottom_elbow", "forearm_plate_bottom_elbow"),
-        ("plate_top", "forearm_plate_top_full"),
-        ("plate_bottom", "forearm_plate_bottom_full"),
-        ("spool_r8", "spool_r8"),
+        ("plate_top", "forearm_plate_top"),
+        ("plate_bottom", "forearm_plate_bottom"),
     )
     for key, fn in names:
         _export(fn, parts[key],

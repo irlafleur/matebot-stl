@@ -1,4 +1,4 @@
-# v11 previews: top view + 3/4 view in the style of Ian-Remi's sketch,
+# v12 previews: top view + 3/4 view in the style of Ian-Remi's sketch,
 # French labels, and a tube-routing / mounting-pattern drawing.
 # Usage: python render_forearm_mount_row.py
 import os, math, sys
@@ -66,10 +66,7 @@ def draw_top_view(ax, with_tubes=False, with_patterns=True):
                                 p["flange_t"]),
                                p["wall"], ye - p["flange_t"],
                                facecolor="#9AAEB8", edgecolor="none", zorder=3, alpha=0.7))
-    # joint
-    ax.axhline(p["y_cut"], color="#7A3E00", ls="--", lw=0.9, zorder=4)
-    ax.axhspan(p["y_cut"] - p["lap"] / 2, p["y_cut"] + p["lap"] / 2,
-               color="#7A3E00", alpha=0.08, zorder=3)
+    # packed row: no service-gap joint
 
     # M3 lip grid
     if with_patterns:
@@ -79,9 +76,6 @@ def draw_top_view(ax, with_tubes=False, with_patterns=True):
         for x, y, z in pat["elbow_m3"]["top"]:
             ax.add_patch(Circle((x, y), 1.7, facecolor="none",
                                 edgecolor="#7A1F1F", lw=0.7, zorder=5))
-        for x, y, z in pat["joint_m3"]["top"]:
-            ax.add_patch(Circle((x, y), 1.7, facecolor="none",
-                                edgecolor="#7A3E00", lw=0.7, zorder=5))
         # WI holes at y=0
         for x, y, z in pat["front_wi_m2"]["positions"]:
             ax.add_patch(Circle((x, 3.0), 1.2, facecolor="none",
@@ -134,8 +128,8 @@ def draw_top_view(ax, with_tubes=False, with_patterns=True):
                 xy=(12, ye - 5), xytext=(50, ye - 20),
                 fontsize=6.5, ha="left", color="#7A1F1F",
                 arrowprops=dict(arrowstyle="->", color="#7A1F1F", lw=0.6))
-    ax.annotate("Joint des deux demis\nY=186 mm, 4 vis M3",
-                xy=(20, p["y_cut"]), xytext=(52, p["y_cut"] + 18),
+    ax.annotate("Servos collés\njeu 0,4 mm, sans colle",
+                xy=(0, (sts[3]["y"]+sts[4]["y"])/2), xytext=(52, 130),
                 fontsize=6.5, ha="left", color="#7A3E00",
                 arrowprops=dict(arrowstyle="->", color="#7A3E00", lw=0.6))
     ax.text(-x_lip - 2, (ye + p["flange_t"]) / 2, "Grille M3\nlèvres / coque\npas 20 mm",
@@ -220,7 +214,7 @@ def draw_34(ax):
 
 def fig_chassis():
     fig = plt.figure(figsize=(13.5, 10.2), facecolor="white")
-    fig.suptitle("MateBot v11 — châssis avant-bras, deux plaques en U  (non testé)",
+    fig.suptitle("MateBot v12 — châssis avant-bras, servos collés, deux plaques en U  (non testé)",
                  fontsize=13, fontweight="bold", y=0.98)
     ax1 = fig.add_axes([0.05, 0.07, 0.40, 0.86])
     ax2 = fig.add_axes([0.48, 0.10, 0.50, 0.80])
@@ -255,38 +249,31 @@ def fig_chassis():
 
 
 def fig_parts():
-    fig, axes = plt.subplots(1, 4, figsize=(14, 4.6), facecolor="white")
-    fig.suptitle("MateBot v11 — pièces à imprimer  (chaque demi < 250 mm)", fontsize=12, fontweight="bold")
+    fig, axes = plt.subplots(1, 2, figsize=(10.2, 5.4), facecolor="white")
+    fig.suptitle("MateBot v12 — pièces à imprimer  (deux plaques d'une pièce, ≤ 250 mm)", fontsize=12, fontweight="bold")
     info = [
-        ("Plaque sup. poignet", "forearm_plate_top_wrist", "79 × 188 × 38 mm", C_TOP),
-        ("Plaque sup. coude", "forearm_plate_top_elbow", "79 × 168 × 38 mm", C_TOP),
-        ("Plaque inf. poignet\n(+ bride 6 vis M2)", "forearm_plate_bottom_wrist", "88 × 196 × 82 mm", C_BOT),
-        ("Plaque inf. coude", "forearm_plate_bottom_elbow", "79 × 168 × 38 mm", C_BOT),
+        ("Plaque supérieure (une pièce)", "forearm_plate_top",
+         "85,0 × 240,2 × 37,5 mm", C_TOP),
+        ("Plaque inférieure (une pièce)\n(+ bride 6 vis M2, enregistrement Ø33,6)", "forearm_plate_bottom",
+         "88,0 × 248,2 × 82,0 mm", C_BOT),
     ]
-    # schematic plan of each half
     x_lip = p["x_bot_wall_out"] + p["lip"]
     for ax, (title, fn, dim, col) in zip(axes, info):
         ax.set_aspect("equal")
         ax.set_title(title, fontsize=9)
-        if "wrist" in fn:
-            y0, y1 = (0 if "bottom" in fn else p["flange_t"]), p["y_cut"] + p["lap"] / 2
-        else:
-            y0, y1 = p["y_cut"] - p["lap"] / 2, ye
-        x0 = -44 if "bottom" in fn and "wrist" in fn else -x_lip
-        x1 = 44 if "bottom" in fn and "wrist" in fn else x_lip
+        y0 = 0 if "bottom" in fn else p["flange_t"]
+        y1 = ye + (p["register_t"] if "bottom" in fn else 0)
+        x0 = -44 if "bottom" in fn else -x_lip
+        x1 = 44 if "bottom" in fn else x_lip
         ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, facecolor=col,
                                edgecolor="#222", lw=0.8, alpha=0.85))
-        # show stations that live on this half
         for s in sts:
-            if not (y0 - 5 <= s["y"] <= y1 + 5):
-                continue
-            sx0, sx1, sy0, sy1 = servo_rect(s)
             ax.add_patch(Circle((s["xf"], s["y"]), 8, facecolor=C_SPOOL if s["face"]==("top" if "top" in fn else "bottom") else "#eee",
                                 edgecolor="#444", lw=0.5))
         ax.set_xlim(x0 - 8, x1 + 8)
-        ax.set_ylim(y0 - 10, y1 + 10)
+        ax.set_ylim(y0 - 14, y1 + 14)
         ax.set_xticks([]); ax.set_yticks([])
-        ax.text(0.5, -0.08, dim, transform=ax.transAxes, ha="center", fontsize=7.5, color="#333")
+        ax.text(0.5, -0.06, dim, transform=ax.transAxes, ha="center", fontsize=7.5, color="#333")
     fig.text(0.5, 0.02,
              "Plus 8× spool_r8 (inchangé, Ø22 × 11,5 mm, cercle de 14 mm, vis M3×6).  "
              "Impression : PETG, 5 parois, 30 % gyroid, 0,2 mm.  Plaques : semelle vers le plateau.",
@@ -301,7 +288,7 @@ def fig_parts():
 
 def fig_tubes():
     fig = plt.figure(figsize=(13.2, 10.4), facecolor="white")
-    fig.suptitle("MateBot v11 — chemin des tubes PTFE et motifs de fixation  (légendes en français)",
+    fig.suptitle("MateBot v12 — chemin des tubes PTFE et motifs de fixation  (légendes en français)",
                  fontsize=12.5, fontweight="bold", y=0.98)
     ax = fig.add_axes([0.05, 0.08, 0.58, 0.86])
     draw_top_view(ax, with_tubes=True, with_patterns=True)
@@ -341,10 +328,16 @@ def fig_tubes():
         ("Lèvres des semelles : grille M3, pas 20 mm,", "#1F4E79"),
         ("  supports de coque, dessus et dessous.", "#1F4E79"),
         ("Coude (arrière ouvert) : 4 × M3 par plaque,", "#7A1F1F"),
-        ("  rectangle 24 × 7 mm, pour une pièce coude.", "#7A1F1F"),
-        ("Joint des demis : 4 × M3×10 + écrou par plaque,", "#7A3E00"),
-        ("  demi-recouvrement 16 mm à Y = 186 mm, plus", "#7A3E00"),
-        ("  une patte M3 de chaque côté.", "#7A3E00"),
+        ("  sur les lèvres arrière (ye-10 et ye-4),", "#7A1F1F"),
+        ("  pour une pièce coude.", "#7A1F1F"),
+        ("Servos collés, jeu 0,4 mm, sans colle.", "#7A3E00"),
+        ("  (largeur officielle 24,72 mm déjà avec oreilles;", "#7A3E00"),
+        ("  le jeu évite le zéro-tolérance Feetech 24,7).", "#7A3E00"),
+        ("Plaques d'une pièce : plus de joint ni vis de", "#7A3E00"),
+        ("  splice (l'ensemble tient dans 250 mm).", "#7A3E00"),
+        ("Câbles bus : fentes dans les parois, puis le", "#1F4E79"),
+        ("  long de l'extérieur des flancs en U jusqu'au", "#1F4E79"),
+        ("  coude ouvert (plus d'espace entre les corps).", "#1F4E79"),
         ("Bobine spool_r8 : 4 × M3×6 sur le cercle de", "#222"),
         ("  14 mm + vis centrale M3×6.  Inchangé.", "#222"),
     ]
