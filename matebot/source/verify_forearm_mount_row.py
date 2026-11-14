@@ -1,8 +1,9 @@
-# Verification of the v17 one-piece flat forearm plate
+# Verification of the v18 one-piece flat forearm plate
 # (packed single row of 8 STS3215, body-to-body, TL/TR/BL/BR,
 #  8 web M3 over the bodies, 8 end-wall M3 (4 per end / 2 per side of
 #  the arc), a R13 arch in both end walls, clipped M2 posts with a
-#  countersink on the outer face).
+#  countersink on the outer face and an inner cut for the official
+#  idler-face housing step).
 # Usage: python verify_forearm_mount_row.py
 import os, sys, math
 import cadquery as cq
@@ -10,6 +11,7 @@ from sts3215 import (
     BODY_L, BODY_W, BODY_H_FLANGE, H_TO_HORN, H_BOTH_HORNS, SHAFT_FROM_OUT,
     SHAFT_FROM_CABLE, HORN_OD, HORN_BCD, HORN_HOLE_D, HORN_T, IDL_HOLES,
     MOUNT_HOLE_D, EAR_T_IDLER, envelope, horn_holes_xy,
+    IDL_HOUSING_H, idler_housing_rect, CL,
 )
 import forearm_mount_row as F
 
@@ -36,7 +38,7 @@ def ivol(a, b):
         except Exception:
             return float("nan")
 
-print("building v17 plate...")
+print("building v18 plate...")
 parts = F.build_all()
 p = F.P
 sts = parts["stations"]
@@ -341,6 +343,60 @@ for i in range(7):
 chk("M2 posts are clipped out of the 0.4 mm pack gaps",
     gap_hits == [],
     f"gap_hits={gap_hits}")
+
+# 19. posts are cut back from the official idler-face housing (+ 0.4 mm).
+# Probe the nominal housing corners that fall inside an unclipped Ø9.4
+# post (the two cable-end corners): they must be empty of plate.
+# Remaining wall is measured only toward that nearest corner, not in
+# the already-thin body-edge direction (~0.9 mm from v15).
+housing_hits = []
+wall_details = []
+min_wall_h = 1e9
+hx0, hx1, hy0, hy1 = idler_housing_rect(0.0)  # official outline, no clearance
+post_r = p["m2_boss_od"] / 2.0
+hole_r = p["m2_clear"] / 2.0
+for s in sts:
+    if s["face"] != "bottom":
+        continue
+    corners = [F.xy_S_to_F(x, y, s) for x, y in
+               ((hx0, hy0), (hx1, hy0), (hx1, hy1), (hx0, hy1))]
+    for Xs, Ys in IDL_HOLES:
+        hx, hy = F.xy_S_to_F(Xs, Ys, s)
+        # nearest official corner to this hole
+        d_corn, near = min(
+            (math.hypot(cx - hx, cy - hy), (cx, cy)) for cx, cy in corners
+        )
+        if d_corn > post_r + 0.05:
+            continue  # this hole's post does not reach the housing
+        cx, cy = near
+        # the official corner itself must be empty (it is inside the keep-out)
+        if pl.val().isInside(cq.Vector(cx, cy, -1.5), 0.15):
+            housing_hits.append((s["i"], Xs, Ys, round(cx, 2), round(cy, 2),
+                                 round(d_corn, 2)))
+        # remaining wall toward that corner
+        vx, vy = cx - hx, cy - hy
+        nrm = math.hypot(vx, vy) or 1.0
+        ux, uy = vx / nrm, vy / nrm
+        empty_r = None
+        for step in range(12, 51):
+            rr = step / 10.0
+            if not pl.val().isInside(
+                cq.Vector(hx + ux * rr, hy + uy * rr, -1.5), 0.12
+            ):
+                empty_r = rr
+                break
+        wall = (empty_r if empty_r is not None else 5.0) - hole_r
+        min_wall_h = min(min_wall_h, wall)
+        wall_details.append((s["i"], Xs, Ys, round(d_corn, 2), round(wall, 2)))
+
+chk("M2 posts are clipped out of the official idler-face housing + 0.4 mm",
+    housing_hits == [] and abs(IDL_HOUSING_H - 1.90) < 1e-9
+    and len(wall_details) == 8,
+    f"hits={housing_hits}, n_clipped_posts={len(wall_details)}, housing_h={IDL_HOUSING_H}")
+
+chk("remaining wall toward the housing, around those M2 holes, is at least 1.8 mm",
+    min_wall_h >= 1.80 and len(wall_details) == 8,
+    f"min_wall={min_wall_h:.2f} mm (hole Ø{p['m2_clear']}), details={wall_details}")
 
 print()
 n_ok = sum(res)

@@ -1,4 +1,4 @@
-# v17 previews: top view + 3/4 view of the one flat plate, French labels.
+# v18 previews: top view + 3/4 view of the one flat plate, French labels.
 # Usage: python render_forearm_mount_row.py
 import os, math
 import matplotlib.pyplot as plt
@@ -131,7 +131,7 @@ def draw_top_view(ax, with_notes=True):
                     xy=(-12.5, sts[0]["y"]), xytext=(36, 14),
                     fontsize=6.5, ha="left", color="#1F4E79",
                     arrowprops=dict(arrowstyle="->", color="#1F4E79", lw=0.6))
-        ax.annotate("Poteaux M2\nparoi 3,5 mm\nvis fraisée M2×10",
+        ax.annotate("Poteaux M2\nparoi 3,5 mm\nrognés côté intérieur\n(bossage 1,9 mm)",
                     xy=(20.25, 66.1 + 10.25), xytext=(36, 40),
                     fontsize=6.5, ha="left", color="#5a4a2a",
                     arrowprops=dict(arrowstyle="->", color="#5a4a2a", lw=0.6))
@@ -199,7 +199,7 @@ def draw_34(ax):
 
 def fig_chassis():
     fig = plt.figure(figsize=(13.2, 8.6), facecolor="white")
-    fig.suptitle("MateBot v17 — plaque plate 56 mm, arc R13, M3 toile + extrémités, poteaux M2  (non testé)",
+    fig.suptitle("MateBot v18 — plaque plate 56 mm, poteaux M2 rognés sur le bossage du boîtier  (non testé)",
                  fontsize=13, fontweight="bold")
     ax = fig.add_axes([0.05, 0.08, 0.48, 0.82])
     draw_top_view(ax)
@@ -210,7 +210,7 @@ def fig_chassis():
     fig.text(0.75, 0.10,
              "Séquence avant → arrière : TL, TR, BL, BR, répétée.\n"
              "Axe long du servo en travers. Jeu 0,4 mm, sans colle.\n"
-             "v16 est corrigée : les 8 trous dans la toile sont rétablis.",
+             "v18 : poteaux M2 rognés côté intérieur (bossage idler 1,9 mm).",
              ha="center", fontsize=7.5, color="#333")
     # legend
     handles = [
@@ -232,7 +232,7 @@ def fig_chassis():
 
 def fig_parts():
     fig, ax = plt.subplots(1, 1, figsize=(8.2, 5.6), facecolor="white")
-    fig.suptitle("MateBot v17 — pièce à imprimer  (une plaque plate, ≤ 250 mm)",
+    fig.suptitle("MateBot v18 — pièce à imprimer  (une plaque plate, ≤ 250 mm)",
                  fontsize=12, fontweight="bold")
     w, ye_ = p["half_w"], ye
     ax.set_aspect("equal")
@@ -301,7 +301,7 @@ def fig_parts():
 def fig_tubes():
     # Kept as the third annotated drawing (cables + mounting), French labels.
     fig = plt.figure(figsize=(13.2, 9.6), facecolor="white")
-    fig.suptitle("MateBot v17 — trous, vis et câbles  (légendes en français)",
+    fig.suptitle("MateBot v18 — trous, vis et câbles  (légendes en français)",
                  fontsize=12.5, fontweight="bold", y=0.98)
     ax = fig.add_axes([0.05, 0.08, 0.55, 0.84])
     draw_top_view(ax, with_notes=True)
@@ -338,9 +338,14 @@ def fig_tubes():
         ("intérieur paroi 3,5 mm, haut 3,5 mm", C_BOT),
         ("(rogné côté voisin et palonnier : une paroi", C_BOT),
         ("circulaire Ø9,4 ne passe pas entre des", C_BOT),
-        ("servos au jeu 0,4 mm). 4 mm de plaque +", C_BOT),
-        ("3,5 mm de poteau + 2,5 mm dans l'oreille.", C_BOT),
-        ("Pas de M2×12 (elle buterait dans le boîtier).", C_BOT),
+        ("servos au jeu 0,4 mm). Rognés aussi côté", C_BOT),
+        ("intérieur (vers les 3 autres vis) pour le", C_BOT),
+        ("bossage du boîtier sur la face fouet :", C_BOT),
+        ("1,9 mm, rectangle officiel du STEP", C_BOT),
+        ("Waveshare, plus 0,4 mm de jeu. Paroi restante", C_BOT),
+        ("environ 2,1 mm autour du trou M2. 4 mm de", C_BOT),
+        ("plaque + 3,5 mm de poteau + 2,5 mm dans", C_BOT),
+        ("l'oreille. Pas de M2×12.", C_BOT),
         ("", None),
         ("Limite d'une seule plaque", None),
         ("Une plaque ne peut pas visser les 4 servos", "#7A3E00"),
@@ -377,7 +382,7 @@ def fig_tubes():
         ("", None),
         ("Bobine spool_r8 : 4 × M3×6 sur le cercle de", "#222"),
         ("14 mm + vis centrale M3×6. Inchangée.", "#222"),
-        ("v16 est corrigée (trous de toile rétablis).", "#7A3E00"),
+        ("v17 est remplacée (rognage du bossage idler).", "#7A3E00"),
     ]
 
     y = 0.995

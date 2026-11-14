@@ -1,6 +1,6 @@
-# MateBot v17 (UNTESTED): one minimal FLAT plate holding a single row of
+# MateBot v18 (UNTESTED): one minimal FLAT plate holding a single row of
 # 8 x Feetech STS3215 (12 V). Bodies sit face-to-face (0.4 mm nominal gap,
-# no glue). v16, v15, v14 and v13 are superseded.
+# no glue). v17, v16, v15, v14 and v13 are superseded.
 #
 # Layout: the same packed row as v12/v13. Long axis ACROSS the forearm,
 # output shaft perpendicular to the plate. Faces follow TL, TR, BL, BR,
@@ -62,6 +62,19 @@
 #   (3.5 mm further from the plate than in v13). Screw length is
 #   4 mm web + 3.5 mm post + 2.5 mm into the 2.8 mm ear = 10 mm.
 #   Do not use M2x12 (it would bottom on the housing).
+# - v18: the M2 posts are also clipped on their inner side (toward
+#   the centre of that servo's 4-hole pattern / the other 3 screws)
+#   to clear a raised housing on the official STS3215 idler face.
+#   Measured from the Waveshare ST3215.step: a rectangular step
+#   (X 19.55 to 29.40 mm from the shaft toward the cable, Y ±8.94 mm)
+#   standing 1.90 mm past the ear outer face, between the ears, on
+#   the cable-end side of the horn. The 2D drawing shows this area
+#   but does not dimension it. Keep-out = that outline + 0.4 mm.
+#   It reaches only the two cable-end posts of each idler-facing
+#   servo (closest official material 3.66 mm from those hole axes);
+#   the shaft-end pair stays clear of it and is still clipped only
+#   around the idler horn and the body/neighbour. Remaining wall
+#   around the M2 hole (Ø2.4) at the housing cut is about 2.1 mm.
 #
 # Official 24.72 mm width already includes the ears (Waveshare 2D and
 # STEP). 0.4 mm is the project's print allowance (CL).
@@ -86,7 +99,8 @@ from sts3215 import (
     BODY_L, BODY_W, BODY_H_FLANGE, H_TO_HORN, H_BOTH_HORNS,
     SHAFT_FROM_OUT, SHAFT_FROM_CABLE, HORN_OD, HORN_BCD, HORN_HOLE_D, HORN_T,
     IDL_HOLES, MOUNT_HOLE_D, EAR_T_IDLER, IDLER_PROTRUSION, CL,
-    envelope, horn_holes_xy,
+    IDL_HOUSING_X0, IDL_HOUSING_X1, IDL_HOUSING_HALF_W, IDL_HOUSING_H,
+    idler_housing_rect, envelope, horn_holes_xy,
 )
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -433,11 +447,46 @@ def patterns(p=P):
     )
 
 
+def xy_S_to_F(Xs, Ys, s):
+    """Map a point in the servo's idler-face XY (frame S) into plate frame F."""
+    x, y = Xs, Ys
+    if s["face"] == "bottom":
+        y = -y
+    if s["side"] == "right":
+        x, y = -x, -y
+    return s["xf"] + x, s["y"] + y
+
+
+def housing_keepout_F(s, p, clear=CL):
+    """Official idler-face housing, mapped into F, expanded by clear and
+    extruded through the post height. Minkowski offset of the sharp
+    rectangle (side slabs + r=clear corner cylinders)."""
+    x0, x1, y0, y1 = idler_housing_rect(0.0)
+    corners = [xy_S_to_F(x, y, s) for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1))]
+    xs, ys = zip(*corners)
+    xa, xb, ya, yb = min(xs), max(xs), min(ys), max(ys)
+    h = p["m2_boss_h"]
+    parts = [
+        _box(xa, xb, ya, yb, -h - 1, 1),
+        _box(xa - clear, xa, ya, yb, -h - 1, 1),
+        _box(xb, xb + clear, ya, yb, -h - 1, 1),
+        _box(xa, xb, ya - clear, ya, -h - 1, 1),
+        _box(xa, xb, yb, yb + clear, -h - 1, 1),
+        _cyl(clear, h + 2, (xa, ya, 1.0), (0, 0, -1)),
+        _cyl(clear, h + 2, (xb, ya, 1.0), (0, 0, -1)),
+        _cyl(clear, h + 2, (xb, yb, 1.0), (0, 0, -1)),
+        _cyl(clear, h + 2, (xa, yb, 1.0), (0, 0, -1)),
+    ]
+    return fuse_fuzzy(parts)
+
+
 def _m2_posts(p, sts):
     """Inside posts around each M2 hole: 3.5 mm target wall, 3.5 mm tall,
     clipped so they stay inside their own servo's body outline (out of
-    the 0.4 mm pack gap and out of the neighbour) and out of the
-    idler-horn keep-out. Printable, growing down from the web."""
+    the 0.4 mm pack gap and out of the neighbour), out of the
+    idler-horn keep-out, and out of the official idler-face housing
+    step (plus 0.4 mm) on the inner side of the 4-hole pattern.
+    Printable, growing down from the web."""
     r = p["m2_clear"] / 2.0 + p["m2_boss_wall"]
     h = p["m2_boss_h"]
     keep_r = HORN_OD / 2.0 + 0.4
@@ -458,6 +507,7 @@ def _m2_posts(p, sts):
             _box(-p["half_w"] - 5, p["half_w"] + 5, -20.0, y0, -h - 1, 1),
             _box(-p["half_w"] - 5, p["half_w"] + 5, y1, y_end(p) + 20.0, -h - 1, 1),
             _cyl(keep_r, h + 2, (s["xf"], s["y"], 1.0), (0, 0, -1)),
+            housing_keepout_F(s, p, CL),
         ]
         comp = cq.Compound.makeCompound([c.val() for c in clips])
         groups.append(posts.cut(comp))
@@ -555,7 +605,7 @@ def _export(name, wp, dest_step, dest_stl):
 if __name__ == "__main__":
     out_step = STEP_DIR if os.path.isdir(STEP_DIR) else HERE
     out_stl = STL_DIR if os.path.isdir(STL_DIR) else HERE
-    print("v17 stations (front -> back), pack_gap =", P["pack_gap"],
+    print("v18 stations (front -> back), pack_gap =", P["pack_gap"],
           "pitch =", P["pitch"], "pack_len =", P["pack_len"])
     for s in stations():
         print(f"  {s['i']}: {s['finger']:6s} {s['ab']}  face={s['face']:6s}  "

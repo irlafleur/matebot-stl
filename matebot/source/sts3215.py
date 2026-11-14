@@ -64,6 +64,34 @@ IDL_HOLES = ((8.30, 10.25), (8.30, -10.25), (32.75, 10.25), (32.75, -10.25))
 # Idler-horn protrusion past the idler ear outer face: 37.25 - 35.00 = 2.25
 IDLER_PROTRUSION = H_BOTH_HORNS - H_TO_HORN
 
+# --- idler-face housing step, from the official STEP (2) ---
+# The 2D drawing (1) shows a rectangular area on the idler face, between
+# the four mounting ears on the cable-end side of the horn, but does not
+# dimension it. Measured in CadQuery from ST3215.step: shaft at X=-25.500,
+# ear outer face at Y=-25.600, this housing's outer face at Y=-27.500
+# (1.90 mm past the ears, toward the idler horn). Outline in servo frame S
+# (X toward the cable, Y across the width), taken from the proud silhouette
+# (material at least 0.3 mm past the ear, outside the horn):
+#   X = 19.551 to 29.397  (= STEP X -5.949 to 3.897, plus 25.500)
+#   Y = ±8.936            (= STEP Z)
+# An inner pad (X 21.50 to 27.50, Y ±6.00) sits 1.75 mm past the ears
+# (STEP Y=-27.350); the outer rim is 1.90 mm past. This housing is
+# separate from the idler horn (Ø19.2, tip 2.05 mm past the ears in the
+# STEP, 2.25 mm on the drawing). It reaches the two cable-end idler
+# holes (X=32.75, Y=±10.25): closest proud material is 3.66 mm from
+# those hole axes (the shaft-end pair is clear of it; they only see
+# the horn).
+IDL_HOUSING_X0 = 19.551
+IDL_HOUSING_X1 = 29.397
+IDL_HOUSING_HALF_W = 8.936
+IDL_HOUSING_H = 1.90
+
+def idler_housing_rect(clear=0.0):
+    """Axis-aligned rectangle of the idler-face housing in S (X toward
+    cable, Y across), optionally expanded by clear."""
+    return (IDL_HOUSING_X0 - clear, IDL_HOUSING_X1 + clear,
+            -IDL_HOUSING_HALF_W - clear, IDL_HOUSING_HALF_W + clear)
+
 # Print clearance around the body in a pocket (not from a drawing; a print allowance)
 CL = 0.4
 
